@@ -149,7 +149,7 @@ def get_in_out_groups(gb, ingroup, outgroup):
             ingroup_keys.append(key)
 	elif outgroup in gb[key].annotations['taxonomy']:
 	    outgroup_keys.append(key)
-	if i == 10:                    #
+	if i == 200:                    #
 	    return ingroup_keys, outgroup_keys    #
 	else:                            # FOR TESTING ONLY
 	    i += 1                      #
@@ -160,7 +160,7 @@ def make_distance_matrix(gb, seq_keys):
     Takes as input a dictionary of SeqRecords gb and the keys to all sequences.
     Returns a 2 dimensional list of distances. Distances are blastn e-values.
     """
-    dist_matrix = [[10] * len(seq_keys) for i in range(len(seq_keys))]
+    dist_matrix = [[99] * len(seq_keys) for i in range(len(seq_keys))]
     i = 0
     j = 0
     for key in seq_keys:
@@ -169,24 +169,32 @@ def make_distance_matrix(gb, seq_keys):
         output_handle.close()
 
         for key2 in seq_keys:
-	    if key == key2:
-	        dist_matrix[i][j] = 0
-	    else:
-                output_handle = open('query.fasta', 'w')
-                SeqIO.write(gb[key2], output_handle, 'fasta')
-                output_handle.close()
+	    # only calculate e-values for pairs that have not yet been compared
+	    if dist_matrix[i][j] == 99:
+	        if key == key2:
+	            dist_matrix[i][j] = 0.0
+	        else:
+                    output_handle = open('query.fasta', 'w')
+                    SeqIO.write(gb[key2], output_handle, 'fasta')
+                    output_handle.close()
 
-                blastn_cmd = NcbiblastnCommandline(query='query.fasta', subject='subject.fasta', out='blast1.xml', outfmt=5)
-                stdout, stderr = blastn_cmd()
-                blastn_xml = open('blast1.xml', 'r')
-                blast_records = NCBIXML.parse(blastn_xml)
+                    blastn_cmd = NcbiblastnCommandline(query='query.fasta', subject='subject.fasta', out='blast.xml', outfmt=5)
+                    stdout, stderr = blastn_cmd()
+                    blastn_xml = open('blast.xml', 'r')
+                    blast_records = NCBIXML.parse(blastn_xml)
 
-                for blast_record in blast_records:
-                    if hasattr(blast_record, 'alignments'):
-                        dist_matrix[i][j] = blast_record.alignments[0].hsps[0].expect
-                blastn_xml.close()
+                    for blast_record in blast_records:
+			if blast_record.alignments:
+			    if blast_record.alignments[0].hsps:
+                                # blast hit found
+			        dist_matrix[i][j] = blast_record.alignments[0].hsps[0].expect
+                                dist_matrix[j][i] = blast_record.alignments[0].hsps[0].expect
+		        else:
+			    # no blast hit found, set distance to default 10.0
+		            dist_matrix[i][j] = 10.0
+			    dist_matrix[j][i] = 10.0
+		    blastn_xml.close()
 	    j += 1
-        
         j = 0
 	i += 1
 	sys.stdout.write(color.blue + '.' + color.done)    
