@@ -5,21 +5,44 @@ supermatrix.py
 Will Freyman
 freyman@berkeley.edu
 
-Usage: 
+This script:
+1: Downloads GenBank database of the specified GB division (PLN, MAM, etc)
+2: Build cluster of all sequences for ingroup and outgroup clades
+	- use single-linkage hierarchical clustering with identity 
+	- use default blastn e-value 1.0e-10, overlap >= 50% 
+3: Aligns each cluster of sequences using MUSCLE.
+4: Concatenates the clusters creating a supermatrix.
+5: Prunes out excess members of the outgroup, keeping those with the
+   most sequence data.
+
+
+usage: supermatrix.py [-h] [--download_gb DOWNLOAD_GB] [--ingroup INGROUP]
+                      [--outgroup OUTGROUP] [--max_outgroup MAX_OUTGROUP]
+                      [--evalue EVALUE]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --download_gb DOWNLOAD_GB, -d DOWNLOAD_GB
+                        Name of the GenBank division to download (e.g. PLN or
+                        MAM).
+  --ingroup INGROUP, -i INGROUP
+                        Ingroup clade to build supermatrix.
+  --outgroup OUTGROUP, -o OUTGROUP
+                        Outgroup clade to build supermatrix.
+  --max_outgroup MAX_OUTGROUP, -m MAX_OUTGROUP
+                        Maximum number of taxa to include in outgroup.
+                        Defaults to 10.
+  --evalue EVALUE, -e EVALUE
+                        BLAST E-value threshold to cluster taxa. Defaults to
+                        0.1
+
+
+Example: 
 supermatrix.py -d pln -i Onagraceae -o Lythraceae
 
-for testing:
+Example for testing:
 python supermatrix.py -i Ceratobasidiaceae -o ceratobasidiaceae
 
-to do:
-1: download genbank databases
-	- specify gb division (pln, etc)
-2: build clusters for a certain clade
-	- specify clade name, % identity, % coverage
-	- use single-linkage hierarchical clustering with identity 
-	- use blastn e-value 1.0e-10, overlap >= 50% 
-	http://home.deib.polimi.it/matteucc/Clustering/tutorial_html/hierarchical.html
-3: concatenate clusters
 
 """
 
