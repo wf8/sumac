@@ -7,9 +7,9 @@ freyman@berkeley.edu
 
 This script:
 1: Downloads GenBank database of the specified GB division (PLN, MAM, etc)
-2: Build cluster of all sequences for ingroup and outgroup clades
-	- use single-linkage hierarchical clustering with identity 
-	- use default blastn e-value 1.0e-10, overlap >= 50% 
+2: Build clusters of all sequences for ingroup and outgroup clades
+	- use hierarchical clustering algorithm
+	- distance threshold default blastn e-value 1.0e-10, overlap >= 50% 
 3: Aligns each cluster of sequences using MUSCLE.
 4: Concatenates the clusters creating a supermatrix.
 5: Prunes out excess members of the outgroup, keeping those with the
@@ -149,7 +149,7 @@ def get_in_out_groups(gb, ingroup, outgroup):
             ingroup_keys.append(key)
 	elif outgroup in gb[key].annotations['taxonomy']:
 	    outgroup_keys.append(key)
-	if i == 100:                    #
+	if i == 10:                    #
 	    return ingroup_keys, outgroup_keys    #
 	else:                            # FOR TESTING ONLY
 	    i += 1                      #
@@ -187,9 +187,9 @@ def make_distance_matrix(gb, seq_keys):
                 blastn_xml.close()
 	    j += 1
         
-	j = 0		
-        i += 1
-        sys.stdout.write(color.blue + '.' + color.done)    
+        j = 0
+	i += 1
+	sys.stdout.write(color.blue + '.' + color.done)    
 	sys.stdout.flush()    
     sys.stdout.write("\n")
     sys.stdout.flush()
@@ -212,21 +212,21 @@ def make_clusters(seq_keys, distance_matrix, e=0.1):
 		break
 	if not in_cluster:
 	    # it is not in a cluster, so make a new cluster
-	    j = 0
 	    new_cluster = [key]
-	    # check to see if other sequences should be in this cluster
-	    for key2 in seq_keys:
-	        if key2 != key:
-	            # skip the other sequences that are already in a cluster
-	            key2_in_cluster = False
-	            for cluster in clusters:
-		        if key2 in cluster:
-		            key2_in_cluster = True
-			    break
-		    # if the other sequence is not in a cluster and it is below the e-value threshold
-		    # add it to the new cluster
-		    if not key2_in_cluster and distance_matrix[i][j] <= e:
-                        new_cluster.append(key2)
+	    # check to see if other sequences should be in new cluster
+	    j = i + 1
+            while j < len(seq_keys):
+	        key2 = seq_keys[j]
+		# skip the other sequences that are already in a cluster
+	        key2_in_cluster = False
+	        for cluster in clusters:
+		    if key2 in cluster:
+		        key2_in_cluster = True
+			break
+		# if the other sequence is not in a cluster and it is below the e-value threshold
+		# add it to the new cluster
+		if not key2_in_cluster and distance_matrix[i][j] <= e:
+                    new_cluster.append(key2)
 		j += 1
 	    clusters.append(new_cluster)
         i += 1
