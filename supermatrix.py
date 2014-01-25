@@ -10,9 +10,10 @@ Python module that:
 2: Build clusters of all sequences for ingroup and outgroup clades
 	- use hierarchical agglomerative clustering algorithm
 	- distance threshold default blastn e-value 1.0e-10 
-3: Aligns each cluster of sequences using MUSCLE.
-4: Concatenates the clusters creating a supermatrix.
-5: Prunes out excess members of the outgroup, keeping those with the
+3: Determines whether sequences must be reverse complemented.
+4: Aligns each cluster of sequences using MUSCLE.
+5: Concatenates the clusters creating a supermatrix.
+6: Prunes out excess members of the outgroup, keeping those with the
    most sequence data.
 
 Requirements:
@@ -245,7 +246,23 @@ def make_clusters(seq_keys, distance_matrix, e=0.1):
         i += 1
     return clusters	
 
+def make_matrices(gb, clusters):
+    """
+    Inputs the dictionary of all GenBank sequences and a list of clustered accessions.
+    Must determine whether sequences must be reverse complemented by using BLAST.
+    Outputs a list of FASTA files, each file containing an unaligned sequence cluster.
+    """
+    matrices = []
+    # do stuff
+    return matrices
 
+def align_matrices(matrices):
+    """
+    Inputs a list of FASTA files, each file containing an unaligned sequence cluster.
+    Outputs a list of FASTA files, each file containing an aligned sequence cluster.
+    """
+    # do stuff
+    # return aligned_matrices
 
 if __name__ == "__main__":
     # parse the command line arguments
@@ -295,8 +312,10 @@ if __name__ == "__main__":
 	else:
 	    print(color.purple + "Using default e-value threshold 0.1" + color.done)
             clusters = make_clusters(all_seq_keys, distance_matrix)
-            print clusters
-            # now align each cluster, then concantenate, then reduce the number of outgroup taxa
+            
+	print(color.yellow + "Building sequence matrices for each cluster." + color.done)
+	print(color.yellow + "Checking for sequences that must be reverse complemented..." + color.done)
+	unaligned_matrices = make_matrices(gb, clusters)
 
 
-
+        # now align each cluster, then concantenate, then reduce the number of outgroup taxa
