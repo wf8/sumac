@@ -16,8 +16,10 @@ Python module that:
    most sequence data.
 
 Requirements:
-Python 2.7
-Biopython
+    Python 2.7
+    Biopython
+    MUSCLE
+    BLAST+
 
 usage: supermatrix.py [-h] [--download_gb DOWNLOAD_GB] [--ingroup INGROUP]
                       [--outgroup OUTGROUP] [--max_outgroup MAX_OUTGROUP]
@@ -242,6 +244,8 @@ def make_clusters(seq_keys, distance_matrix, e=0.1):
 	    clusters.append(new_cluster)
         i += 1
     return clusters	
+
+
 
 if __name__ == "__main__":
     # parse the command line arguments
