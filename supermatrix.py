@@ -5,16 +5,19 @@ supermatrix.py
 Will Freyman
 freyman@berkeley.edu
 
-This script:
+Python module that:
 1: Downloads GenBank database of the specified GB division (PLN, MAM, etc)
 2: Build clusters of all sequences for ingroup and outgroup clades
-	- use hierarchical clustering algorithm
-	- distance threshold default blastn e-value 1.0e-10, overlap >= 50% 
+	- use hierarchical agglomerative clustering algorithm
+	- distance threshold default blastn e-value 1.0e-10 
 3: Aligns each cluster of sequences using MUSCLE.
 4: Concatenates the clusters creating a supermatrix.
 5: Prunes out excess members of the outgroup, keeping those with the
    most sequence data.
 
+Requirements:
+Python 2.7
+Biopython
 
 usage: supermatrix.py [-h] [--download_gb DOWNLOAD_GB] [--ingroup INGROUP]
                       [--outgroup OUTGROUP] [--max_outgroup MAX_OUTGROUP]
