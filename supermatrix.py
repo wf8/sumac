@@ -8,7 +8,7 @@ freyman@berkeley.edu
 Python module that:
 1: Downloads GenBank database of the specified GB division (PLN, MAM, etc)
 2: Build clusters of all sequences for ingroup and outgroup clades
-	- use hierarchical agglomerative clustering algorithm
+	- use single-linkage hierarchical clustering algorithm
 	- distance threshold default blastn e-value 1.0e-10 
 3: Determines whether sequences must be reverse complemented.
 4: Aligns each cluster of sequences using MUSCLE.
@@ -209,42 +209,52 @@ def make_distance_matrix(gb, seq_keys):
     sys.stdout.flush()
     return dist_matrix
 
-def make_clusters(seq_keys, distance_matrix, e=0.1):
+def make_clusters(seq_keys, distance_matrix, threshold=0.1):
     """
     Input: seq_keys a list of all sequences used in the analysis, distance_matrix based on BLAST e-values, and an optional e-value threshold for clustering.
     Output: a list of clusters (each cluster is itself a list of keys to sequences)
     """
-    i = 0
-    j = 0
+    # put each sequence in its own cluster
     clusters = []
-    for key in seq_keys:
-        # skip this sequence if it is already in a cluster
-        in_cluster = False
-        for cluster in clusters:
-	    if key in cluster:
-	        in_cluster = True
-		break
-	if not in_cluster:
-	    # it is not in a cluster, so make a new cluster
-	    new_cluster = [key]
-	    # check to see if other sequences should be in new cluster
-	    j = i + 1
-            while j < len(seq_keys):
-	        key2 = seq_keys[j]
-		# skip the other sequences that are already in a cluster
-	        key2_in_cluster = False
-	        for cluster in clusters:
-		    if key2 in cluster:
-		        key2_in_cluster = True
-			break
-		# if the other sequence is not in a cluster and it is below the e-value threshold
-		# add it to the new cluster
-		if not key2_in_cluster and distance_matrix[i][j] <= e:
-                    new_cluster.append(key2)
-		j += 1
-	    clusters.append(new_cluster)
-        i += 1
-    return clusters	
+    for seq in seq_keys:
+        clusters.append([seq])
+    merge_closest_clusters(clusters, distance_matrix, threshold)
+
+def merge_closest_clusters(clusters, distance_matrix, threshold):
+    cluster1 = 0
+    cluster2 = 0
+    min_distance = 99
+    x = 0
+    y = 0
+    # find the most similar pair of clusters (or the first pair with distance = 0)
+    while x < len(distance_matrix[x]):
+        y = x + 1
+        while y < len(distance_matrix[x]):
+	    if x != y:
+		if distance_matrix[x][y] < min_distance:
+		    min_distance = distance_matrix[x][y]
+		    cluster1 = x
+		    cluster2 = y
+		if min_distance = 0:
+		    break
+	    if min_distance = 0:
+     	        break
+            y += 1
+	x += 1
+	
+    # check to see if we are done
+    if min_distance > threshold:
+        return clusters
+
+    # merge the two clusters
+    for sequence in clusters[cluster2]:
+        clusters[cluster1].append(sequence)
+    del clusters[cluster2]
+
+    # update distance matrix
+    
+    
+    merge_closest_clusters(clusters, distance_matrix, threshold)
 
 def make_matrices(gb, clusters):
     """
