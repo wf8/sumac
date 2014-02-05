@@ -46,8 +46,8 @@ optional arguments:
 Example: 
 supermatrix.py -d pln -i Onagraceae -o Lythraceae
 
-Example for testing:
-python supermatrix.py -i Ceratobasidiaceae -o ceratobasidiaceae
+If you already downloaded the GB database:
+supermatrix.py -i Onagraceae -o Lythraceae
 
 
 """
@@ -100,7 +100,7 @@ def download_gb_db(division):
     """
     Downloads and uncompresses files for a GenBank division.
     """
-    print(color.yellow + "Connecting to ftp.ncbi.nih.gov..." + color.done)
+    print(color.purple + "Connecting to ftp.ncbi.nih.gov..." + color.done)
     ftp = FTP("ftp.ncbi.nih.gov")
     ftp.login()
     print(color.yellow + "Opening directory genbank..." + color.done)
@@ -132,12 +132,10 @@ def setup_sqlite():
     Sets up the SQLite db for the GenBank division.
     Returns a dictionary of SeqRecord objects.
     """
-    print(color.yellow + "Setting up SQLite database..." + color.done)
     os.chdir("genbank/")
     files = os.listdir(".")
-    print files
     gb = SeqIO.index_db("gb.idx", files, "genbank")
-    os.chdir("..")
+    os.chdir(os.pardir)
     return gb
 
 def get_in_out_groups(gb, ingroup, outgroup):
@@ -149,16 +147,24 @@ def get_in_out_groups(gb, ingroup, outgroup):
     keys = gb.keys()
     ingroup_keys = []
     outgroup_keys = []
-    i = 0          # FOR TESTING ONLY
     for key in keys:
 	if ingroup in gb[key].annotations['taxonomy']:
             ingroup_keys.append(key)
 	elif outgroup in gb[key].annotations['taxonomy']:
 	    outgroup_keys.append(key)
-	if i == 200:                    #
-	    return ingroup_keys, outgroup_keys    #
-	else:                            # FOR TESTING ONLY
-	    i += 1                      #
+	sys.stdout.write('\r' + color.yellow + 'Ingroup sequences found: ' + color.red + str(len(ingroup_keys)) + color.yellow \
+	    + '  Outgroup sequences found: ' + color.red + str(len(outgroup_keys)) + color.done)    
+	sys.stdout.flush()    
+	if len(ingroup_keys) == 50:  ##
+            sys.stdout.write("\n")   ## FOR TESTING ONLY
+            sys.stdout.flush()       ## # FOR TESTING ONLY
+	    os.chdir(os.pardir)      ##
+	    return ingroup_keys, outgroup_keys    # FOR TESTING ONLY
+	#else:                            # FOR TESTING ONLY
+	#    i += 1                      ## FOR TESTING ONLY
+    sys.stdout.write("\n")
+    sys.stdout.flush()
+    os.chdir(os.pardir)
     return ingroup_keys, outgroup_keys
 
 def make_distance_matrix(gb, seq_keys):
@@ -203,48 +209,62 @@ def make_distance_matrix(gb, seq_keys):
 	    j += 1
         j = 0
 	i += 1
-	sys.stdout.write(color.blue + '.' + color.done)    
+	percent = str(round(100 * i/float(len(seq_keys)), 2))
+	sys.stdout.write('\r' + color.blue + 'Completed: ' + color.red + str(i) + '/' + str(len(seq_keys)) + ' (' + percent + '%)' + color.done)    
 	sys.stdout.flush()    
     sys.stdout.write("\n")
     sys.stdout.flush()
+    os.remove("blast.xml")
+    os.remove("query.fasta")
+    os.remove("subject.fasta")
     return dist_matrix
 
 def make_clusters(seq_keys, distance_matrix, threshold=0.1):
     """
     Input: seq_keys a list of all sequences used in the analysis, distance_matrix based on BLAST e-values, and an optional e-value threshold for clustering.
     Output: a list of clusters (each cluster is itself a list of keys to sequences)
+    This function is a wrapper around the recursive function merge_closest_clusters.
     """
     # put each sequence in its own cluster
     clusters = []
     for seq in seq_keys:
         clusters.append([seq])
-    merge_closest_clusters(clusters, distance_matrix, threshold)
+    return merge_closest_clusters(clusters, distance_matrix, threshold)
 
 def merge_closest_clusters(clusters, distance_matrix, threshold):
+    """
+    Input: a list of clusters, distance_matrix based on BLAST e-values, and the e-value threshold to stop clustering
+    Output: a list of clusters (each cluster is itself a list of keys to sequences)
+    Single-linkage hierarchical clustering algorithm.
+    """
     cluster1 = 0
     cluster2 = 0
     min_distance = 99
     x = 0
     y = 0
     # find the most similar pair of clusters (or the first pair with distance = 0)
-    while x < len(distance_matrix[x]):
+    while x < len(distance_matrix):
         y = x + 1
-        while y < len(distance_matrix[x]):
+        while y < len(distance_matrix):
 	    if x != y:
 		if distance_matrix[x][y] < min_distance:
 		    min_distance = distance_matrix[x][y]
 		    cluster1 = x
 		    cluster2 = y
-		if min_distance = 0:
+		if min_distance == 0:
 		    break
-	    if min_distance = 0:
-     	        break
             y += 1
+	if min_distance == 0:
+     	    break
 	x += 1
 	
     # check to see if we are done
     if min_distance > threshold:
         return clusters
+    
+    # TODO:
+    # check the average length of the two clusters
+    # and don't merge unless similar
 
     # merge the two clusters
     for sequence in clusters[cluster2]:
@@ -252,9 +272,15 @@ def merge_closest_clusters(clusters, distance_matrix, threshold):
     del clusters[cluster2]
 
     # update distance matrix
-    
-    
-    merge_closest_clusters(clusters, distance_matrix, threshold)
+    for i in range(len(distance_matrix[cluster1])):
+        if distance_matrix[cluster1][i] > distance_matrix[cluster2][i]:
+	    distance_matrix[cluster1][i] = distance_matrix[cluster2][i]
+	    distance_matrix[i][cluster1] = distance_matrix[cluster2][i]
+    del distance_matrix[cluster2]
+    for i in range(len(distance_matrix)):
+        del distance_matrix[i][cluster2]
+
+    return merge_closest_clusters(clusters, distance_matrix, threshold)
 
 def make_matrices(gb, clusters):
     """
@@ -263,7 +289,21 @@ def make_matrices(gb, clusters):
     Outputs a list of FASTA files, each file containing an unaligned sequence cluster.
     """
     matrices = []
-    # do stuff
+    if not os.path.exists("clusters"):
+        os.makedirs("clusters")
+    i = 0
+    # TODO:
+    # blast to check forward/reverse sequences...
+    for cluster in clusters:
+	sequences = []
+	for seq_key in cluster:
+            sequences.append(gb[seq_key])
+        file_name = "clusters/" + str(i) + ".fasta"
+        file = open(file_name, "wb")
+	SeqIO.write(sequences, file, 'fasta')
+	file.close()
+	matrices.append(file_name)
+	i += 1
     return matrices
 
 def align_matrices(matrices):
@@ -274,7 +314,7 @@ def align_matrices(matrices):
     # do stuff
     # return aligned_matrices
 
-if __name__ == "__main__":
+def main():
     # parse the command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("--download_gb", "-d", help="Name of the GenBank division to download (e.g. PLN or MAM).")
@@ -283,13 +323,16 @@ if __name__ == "__main__":
     parser.add_argument("--max_outgroup", "-m", help="Maximum number of taxa to include in outgroup. Defaults to 10.")
     parser.add_argument("--evalue", "-e", help="BLAST E-value threshold to cluster taxa. Defaults to 0.1")
     args = parser.parse_args()
-    
+   
+    print("")
+    print(color.blue + "SUMAC: supermatrix constructor" + color.done)
+    print("")
+
     if args.download_gb:
         gb_division = str(args.download_gb).lower()
         download_gb_db(gb_division)
-        # set up SQLite database
+        print(color.yellow + "Setting up SQLite database..." + color.done)
         gb = setup_sqlite()
-
     elif not os.path.exists("genbank/gb.idx"):
         print(color.red + "GenBank database not downloaded. Re-run with the -d option. See --help for more details." + color.done)
         sys.exit(0)
@@ -307,9 +350,6 @@ if __name__ == "__main__":
         print(color.blue + "Searching for ingroup and outgroup sequences..." + color.done)
         ingroup_keys, outgroup_keys = get_in_out_groups(gb, ingroup, outgroup)
         
-	print(color.yellow + "Found " + str(len(ingroup_keys)) + " ingroup sequences." + color.done)
-        print(color.yellow + "Found " + str(len(outgroup_keys)) + " outgroup sequences." + color.done)
-        
 	all_seq_keys = ingroup_keys + outgroup_keys
 
         print(color.blue + "Making distance matrix for all sequences..." + color.done)
@@ -318,14 +358,25 @@ if __name__ == "__main__":
         print(color.purple + "Clustering sequences..." + color.done)
 	if args.evalue:
 	    print(color.purple + "Using e-value threshold " + str(args.evalue) + color.done) 
-	    clusters = make_clusters(gb, distance_matrix, float(args.evalue))
+	    clusters = make_clusters(all_seq_keys, distance_matrix, float(args.evalue))
 	else:
 	    print(color.purple + "Using default e-value threshold 0.1" + color.done)
             clusters = make_clusters(all_seq_keys, distance_matrix)
-            
+        
+        print(color.purple + "Found " + str(len(clusters)) + " clusters." + color.done)
+
+        for cluster in clusters:
+	    print("***cluster:")
+	    print(cluster)
+
 	print(color.yellow + "Building sequence matrices for each cluster." + color.done)
 	print(color.yellow + "Checking for sequences that must be reverse complemented..." + color.done)
 	unaligned_matrices = make_matrices(gb, clusters)
 
+        print(unaligned_matrices)
 
         # now align each cluster, then concantenate, then reduce the number of outgroup taxa
+
+	
+if __name__ == "__main__":
+    main()
