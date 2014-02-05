@@ -222,7 +222,7 @@ def make_distance_matrix(gb, seq_keys):
     os.remove("subject.fasta")
     return dist_matrix
 
-def make_clusters(seq_keys, distance_matrix, threshold=0.1):
+def make_clusters(seq_keys, distance_matrix, threshold=(1.0/10**10)):
     """
     Input: seq_keys a list of all sequences used in the analysis, distance_matrix based on BLAST e-values, and an optional e-value threshold for clustering.
     Output: a list of clusters (each cluster is itself a list of keys to sequences)
