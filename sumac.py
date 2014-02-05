@@ -157,13 +157,14 @@ def get_in_out_groups(gb, ingroup, outgroup):
 	sys.stdout.write('\r' + color.yellow + 'Ingroup sequences found: ' + color.red + str(len(ingroup_keys)) + color.yellow \
 	    + '  Outgroup sequences found: ' + color.red + str(len(outgroup_keys)) + color.done)    
 	sys.stdout.flush()    
+	## FOR TESTING ONLY
 	if len(ingroup_keys) == 50:  ##
             sys.stdout.write("\n")   ## FOR TESTING ONLY
             sys.stdout.flush()       ## # FOR TESTING ONLY
 	    os.chdir(os.pardir)      ##
 	    return ingroup_keys, outgroup_keys    # FOR TESTING ONLY
-	#else:                            # FOR TESTING ONLY
-	#    i += 1                      ## FOR TESTING ONLY
+	## FOR TESTING ONLY
+	## remove above
     sys.stdout.write("\n")
     sys.stdout.flush()
     os.chdir(os.pardir)
@@ -284,18 +285,15 @@ def merge_closest_clusters(clusters, distance_matrix, threshold):
 
     return merge_closest_clusters(clusters, distance_matrix, threshold)
 
-def make_matrices(gb, clusters):
+def assemble_fasta_clusters(gb, clusters):
     """
     Inputs the dictionary of all GenBank sequences and a list of clustered accessions.
-    Must determine whether sequences must be reverse complemented by using BLAST.
     Outputs a list of FASTA files, each file containing an unaligned sequence cluster.
     """
     matrices = []
     if not os.path.exists("clusters"):
         os.makedirs("clusters")
     i = 0
-    # TODO:
-    # blast to check forward/reverse sequences...
     for cluster in clusters:
 	sequences = []
 	for seq_key in cluster:
@@ -306,15 +304,21 @@ def make_matrices(gb, clusters):
 	file.close()
 	matrices.append(file_name)
 	i += 1
+    # TODO:
+    # remove clusters with fewer than x number of sequences...
     return matrices
 
 def align_matrices(matrices):
     """
     Inputs a list of FASTA files, each file containing an unaligned sequence cluster.
+    Must determine whether sequences must be reverse complemented by using BLAST.
     Outputs a list of FASTA files, each file containing an aligned sequence cluster.
     """
     # do stuff
     # return aligned_matrices
+    # TODO:
+    # blast to check forward/reverse sequences...
+
 
 def main():
     # parse the command line arguments
@@ -373,7 +377,7 @@ def main():
 
 	print(color.yellow + "Building sequence matrices for each cluster." + color.done)
 	print(color.yellow + "Checking for sequences that must be reverse complemented..." + color.done)
-	unaligned_matrices = make_matrices(gb, clusters)
+	unaligned_matrices = assemble_fasta_clusters(gb, clusters)
 
         print(unaligned_matrices)
 
