@@ -1,6 +1,8 @@
 #! /usr/bin/python
 """
-supermatrix.py
+
+SUMAC: supermatrix constructor
+sumac.py
 
 Will Freyman
 freyman@berkeley.edu
@@ -22,7 +24,7 @@ Requirements:
     MUSCLE
     BLAST+
 
-usage: supermatrix.py [-h] [--download_gb DOWNLOAD_GB] [--ingroup INGROUP]
+usage: sumac.py [-h] [--download_gb DOWNLOAD_GB] [--ingroup INGROUP]
                       [--outgroup OUTGROUP] [--max_outgroup MAX_OUTGROUP]
                       [--evalue EVALUE]
 
@@ -44,10 +46,10 @@ optional arguments:
 
 
 Example: 
-supermatrix.py -d pln -i Onagraceae -o Lythraceae
+sumac.py -d pln -i Onagraceae -o Lythraceae
 
 If you already downloaded the GB database:
-supermatrix.py -i Onagraceae -o Lythraceae
+sumac.py -i Onagraceae -o Lythraceae
 
 
 """
