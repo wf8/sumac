@@ -43,7 +43,9 @@ optional arguments:
   --evalue EVALUE, -e EVALUE
                         BLAST E-value threshold to cluster taxa. Defaults to
                         0.1
-
+  --length LENGTH, -; LENGTH
+                        Threshold of sequence length percent similarity to 
+			cluster taxa. Defaults to 0.5
 
 Example: 
 sumac.py -d pln -i Onagraceae -o Lythraceae
@@ -170,9 +172,13 @@ def get_in_out_groups(gb, ingroup, outgroup):
     os.chdir(os.pardir)
     return ingroup_keys, outgroup_keys
 
-def make_distance_matrix(gb, seq_keys):
+def make_distance_matrix(gb, seq_keys, length_threshold):
     """
     Takes as input a dictionary of SeqRecords gb and the keys to all sequences.
+    length_threshold is the threshold of sequence length percent similarity to cluster taxa.
+    For example if length_threshold = 0.25, and one sequence has
+    length 100, the other sequence must have length 75 to 125. If the lengths are not similar
+    enough the distance is set to 50 (which keeps them from being clustered).
     Returns a 2 dimensional list of distances. Distances are blastn e-values.
     """
     dist_matrix = [[99] * len(seq_keys) for i in range(len(seq_keys))]
@@ -188,27 +194,35 @@ def make_distance_matrix(gb, seq_keys):
 	    if dist_matrix[i][j] == 99:
 	        if key == key2:
 	            dist_matrix[i][j] = 0.0
-	        else:
-                    output_handle = open('query.fasta', 'w')
-                    SeqIO.write(gb[key2], output_handle, 'fasta')
-                    output_handle.close()
+		# check sequence lengths
+		else:
+		    length1 = len(gb[key].seq)
+		    length2 = len(gb[key2].seq)
+		    if (length1 > length2 * (1 + float(length_threshold))) or (length1 < length2 * (1 - float(length_threshold))):
+                        dist_matrix[i][j] = 50.0
+			dist_matrix[j][i] = 50.0
+		    else:
+		        # do the blast comparison
+                        output_handle = open('query.fasta', 'w')
+                        SeqIO.write(gb[key2], output_handle, 'fasta')
+                        output_handle.close()
 
-                    blastn_cmd = NcbiblastnCommandline(query='query.fasta', subject='subject.fasta', out='blast.xml', outfmt=5)
-                    stdout, stderr = blastn_cmd()
-                    blastn_xml = open('blast.xml', 'r')
-                    blast_records = NCBIXML.parse(blastn_xml)
+                        blastn_cmd = NcbiblastnCommandline(query='query.fasta', subject='subject.fasta', out='blast.xml', outfmt=5)
+                        stdout, stderr = blastn_cmd()
+                        blastn_xml = open('blast.xml', 'r')
+                        blast_records = NCBIXML.parse(blastn_xml)
 
-                    for blast_record in blast_records:
-			if blast_record.alignments:
-			    if blast_record.alignments[0].hsps:
-                                # blast hit found
-			        dist_matrix[i][j] = blast_record.alignments[0].hsps[0].expect
-                                dist_matrix[j][i] = blast_record.alignments[0].hsps[0].expect
-		        else:
-			    # no blast hit found, set distance to default 10.0
-		            dist_matrix[i][j] = 10.0
-			    dist_matrix[j][i] = 10.0
-		    blastn_xml.close()
+                        for blast_record in blast_records:
+			    if blast_record.alignments:
+			        if blast_record.alignments[0].hsps:
+                                    # blast hit found
+			            dist_matrix[i][j] = blast_record.alignments[0].hsps[0].expect
+                                    dist_matrix[j][i] = blast_record.alignments[0].hsps[0].expect
+		            else:
+			        # no blast hit found, set distance to default 10.0
+		                dist_matrix[i][j] = 10.0
+			        dist_matrix[j][i] = 10.0
+		        blastn_xml.close()
 	    j += 1
         j = 0
 	i += 1
@@ -265,10 +279,6 @@ def merge_closest_clusters(clusters, distance_matrix, threshold):
     if min_distance > threshold:
         return clusters
     
-    # TODO:
-    # check the average length of the two clusters
-    # and don't merge unless similar
-
     # merge the two clusters
     for sequence in clusters[cluster2]:
         clusters[cluster1].append(sequence)
@@ -328,6 +338,7 @@ def main():
     parser.add_argument("--outgroup", "-o", help="Outgroup clade to build supermatrix.")
     parser.add_argument("--max_outgroup", "-m", help="Maximum number of taxa to include in outgroup. Defaults to 10.")
     parser.add_argument("--evalue", "-e", help="BLAST E-value threshold to cluster taxa. Defaults to 0.1")
+    parser.add_argument("--length", "-l", help="Threshold of sequence length percent similarity to cluster taxa. Defaults to 0.5")
     args = parser.parse_args()
    
     print("")
@@ -359,7 +370,12 @@ def main():
 	all_seq_keys = ingroup_keys + outgroup_keys
 
         print(color.blue + "Making distance matrix for all sequences..." + color.done)
-	distance_matrix = make_distance_matrix(gb, all_seq_keys)
+	
+	length_threshold = 0.5
+	if args.length:
+	     length_threshold = args.length
+	print(color.blue + "Using sequence length similarity threshold " + str(length_threshold) + color.done)
+	distance_matrix = make_distance_matrix(gb, all_seq_keys, length_threshold)
 
         print(color.purple + "Clustering sequences..." + color.done)
 	if args.evalue:
