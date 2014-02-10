@@ -348,6 +348,7 @@ def main():
     print(color.blue + "SUMAC: supermatrix constructor" + color.done)
     print("")
 
+    # download and set up sqllite db
     if args.download_gb:
         gb_division = str(args.download_gb).lower()
         download_gb_db(gb_division)
@@ -359,50 +360,55 @@ def main():
     else:
         print(color.purple + "Genbank database already downloaded. Indexing sequences..." + color.done)
 	gb = SeqIO.index_db("genbank/gb.idx")
-
     print(color.purple + "%i sequences indexed!" % len(gb) + color.done)
 
+    # check for ingroup and outgroup
     if args.ingroup and args.outgroup:
         ingroup = args.ingroup
         outgroup = args.outgroup
-        print(color.blue + "Outgroup = " + outgroup)
-	print("Ingroup = " + ingroup + color.done)
-        print(color.blue + "Searching for ingroup and outgroup sequences..." + color.done)
-        ingroup_keys, outgroup_keys = get_in_out_groups(gb, ingroup, outgroup)
-        
-	all_seq_keys = ingroup_keys + outgroup_keys
-
-        print(color.blue + "Making distance matrix for all sequences..." + color.done)
+    else:
+        print(color.red + "Please specify ingroup and outgroup. See --help for details." + color.done)
+	sys.exit(0)
 	
-	length_threshold = 0.5
-	if args.length:
-	     length_threshold = args.length
-	print(color.blue + "Using sequence length similarity threshold " + str(length_threshold) + color.done)
-	distance_matrix = make_distance_matrix(gb, all_seq_keys, length_threshold)
+    # search db for sequences
+    print(color.blue + "Outgroup = " + outgroup)
+    print("Ingroup = " + ingroup + color.done)
+    print(color.blue + "Searching for ingroup and outgroup sequences..." + color.done)
+    ingroup_keys, outgroup_keys = get_in_out_groups(gb, ingroup, outgroup)        
+    all_seq_keys = ingroup_keys + outgroup_keys
 
-        print(color.purple + "Clustering sequences..." + color.done)
-	if args.evalue:
-	    print(color.purple + "Using e-value threshold " + str(args.evalue) + color.done) 
-	    clusters = make_clusters(all_seq_keys, distance_matrix, float(args.evalue))
-	else:
-	    print(color.purple + "Using default e-value threshold 0.1" + color.done)
-            clusters = make_clusters(all_seq_keys, distance_matrix)
-        
-        print(color.purple + "Found " + str(len(clusters)) + " clusters." + color.done)
+    # make distance matrix
+    print(color.blue + "Making distance matrix for all sequences..." + color.done)
+    length_threshold = 0.5
+    if args.length:
+	length_threshold = args.length
+    print(color.blue + "Using sequence length similarity threshold " + str(length_threshold) + color.done)
+    distance_matrix = make_distance_matrix(gb, all_seq_keys, length_threshold)
 
-	print(color.yellow + "Building sequence matrices for each cluster." + color.done)
-	# print(color.yellow + "Checking for sequences that must be reverse complemented..." + color.done)
-	unaligned_matrices, clusters = assemble_fasta_clusters(gb, clusters)
-        
-	print(color.purple + "Kept " + str(len(clusters)) + " clusters, discarded those with < 4 sequences." + color.done)
+    # cluster sequences
+    print(color.purple + "Clustering sequences..." + color.done)
+    if args.evalue:
+	print(color.purple + "Using e-value threshold " + str(args.evalue) + color.done) 
+	clusters = make_clusters(all_seq_keys, distance_matrix, float(args.evalue))
+    else:
+	print(color.purple + "Using default e-value threshold 0.1" + color.done)
+        clusters = make_clusters(all_seq_keys, distance_matrix)
+    print(color.purple + "Found " + str(len(clusters)) + " clusters." + color.done)
 
-        for cluster in clusters:
-	    print("***cluster:")
-	    print(cluster)
+    # make FASTA files
+    print(color.yellow + "Building sequence matrices for each cluster." + color.done)
+    # print(color.yellow + "Checking for sequences that must be reverse complemented..." + color.done)
+    unaligned_matrices, clusters = assemble_fasta_clusters(gb, clusters)
 
-        print(unaligned_matrices)
+    print(color.purple + "Kept " + str(len(clusters)) + " clusters, discarded those with < 4 sequences." + color.done)
 
-        # now align each cluster, then concantenate, then reduce the number of outgroup taxa
+    for cluster in clusters:
+	print("***cluster:")
+	print(cluster)
+
+    print(unaligned_matrices)
+
+    # now align each cluster, then concantenate, then reduce the number of outgroup taxa
 
 	
 if __name__ == "__main__":
