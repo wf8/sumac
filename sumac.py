@@ -306,6 +306,7 @@ def assemble_fasta_clusters(gb, clusters):
     if not os.path.exists("clusters"):
         os.makedirs("clusters")
     i = 0
+    to_delete = []
     for cluster in clusters:
 	if len(cluster) > 3:
 	    sequences = []
@@ -318,7 +319,9 @@ def assemble_fasta_clusters(gb, clusters):
 	    matrices.append(file_name)
 	    i += 1
 	else:
-	    del clusters[clusters.index(cluster)]
+	    to_delete.append(cluster)
+    for cluster in to_delete:
+        del clusters[clusters.index(cluster)]
     return matrices, clusters
 
 def align_matrices(matrices):
