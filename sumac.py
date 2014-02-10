@@ -298,25 +298,28 @@ def merge_closest_clusters(clusters, distance_matrix, threshold):
 def assemble_fasta_clusters(gb, clusters):
     """
     Inputs the dictionary of all GenBank sequences and a list of clustered accessions.
-    Outputs a list of FASTA files, each file containing an unaligned sequence cluster.
+    Only make fasta files of clusters containing 4 sequences or more.
+    Outputs a list of FASTA files, each file containing an unaligned sequence cluster,
+    and an updated list of clustered accessions.
     """
     matrices = []
     if not os.path.exists("clusters"):
         os.makedirs("clusters")
     i = 0
     for cluster in clusters:
-	sequences = []
-	for seq_key in cluster:
-            sequences.append(gb[seq_key])
-        file_name = "clusters/" + str(i) + ".fasta"
-        file = open(file_name, "wb")
-	SeqIO.write(sequences, file, 'fasta')
-	file.close()
-	matrices.append(file_name)
-	i += 1
-    # TODO:
-    # remove clusters with fewer than x number of sequences...
-    return matrices
+	if len(cluster) > 3:
+	    sequences = []
+	    for seq_key in cluster:
+                sequences.append(gb[seq_key])
+            file_name = "clusters/" + str(i) + ".fasta"
+            file = open(file_name, "wb")
+	    SeqIO.write(sequences, file, 'fasta')
+	    file.close()
+	    matrices.append(file_name)
+	    i += 1
+	else:
+	    del clusters[clusters.index(cluster)]
+    return matrices, clusters
 
 def align_matrices(matrices):
     """
@@ -387,13 +390,15 @@ def main():
         
         print(color.purple + "Found " + str(len(clusters)) + " clusters." + color.done)
 
+	print(color.yellow + "Building sequence matrices for each cluster." + color.done)
+	# print(color.yellow + "Checking for sequences that must be reverse complemented..." + color.done)
+	unaligned_matrices, clusters = assemble_fasta_clusters(gb, clusters)
+        
+	print(color.purple + "Kept " + str(len(clusters)) + " clusters, discarded those with < 4 sequences." + color.done)
+
         for cluster in clusters:
 	    print("***cluster:")
 	    print(cluster)
-
-	print(color.yellow + "Building sequence matrices for each cluster." + color.done)
-	print(color.yellow + "Checking for sequences that must be reverse complemented..." + color.done)
-	unaligned_matrices = assemble_fasta_clusters(gb, clusters)
 
         print(unaligned_matrices)
 
