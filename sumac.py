@@ -12,6 +12,8 @@ Python module that:
 2: Build clusters of all sequences for ingroup and outgroup clades
 	- use single-linkage hierarchical clustering algorithm
 	- distance threshold default blastn e-value 1.0e-10 
+        - uses sequence length percent similarity cutoff default 0.5
+	- discards clusters with fewer than 4 sequences
 3: Determines whether sequences must be reverse complemented.
 4: Aligns each cluster of sequences using MUSCLE.
 5: Concatenates the clusters creating a supermatrix.
