@@ -311,6 +311,8 @@ def assemble_fasta_clusters(gb, clusters):
     i = 0
     to_delete = []
     for cluster in clusters:
+	# TODO:
+	# make sure cluster has > 3 taxa, not just sequences
 	if len(cluster) > 3:
 	    sequences = []
 	    for seq_key in cluster:
@@ -346,17 +348,60 @@ def align_clusters(cluster_files):
 	alignment_files.append(alignment_file)
     return alignment_files
 
-def concantenate(alignment_files):
+def concatenate(alignment_files):
     """
     Inputs a list of FASTA files, each containing an aligned sequence cluster
-    Returns a concantenated FASTA file
+    Returns a concatenated FASTA file
     """
+    # first build up a dictionary of all OTUs
+    otus = {}
     for alignment in alignment_files:
         records = SeqIO.parse(alignment, "fasta")
         for record in records:
 	    # sample record.description:
             # AF495760.1 Lythrum salicaria chloroplast ribulose 1,5-bisphosphate carboxylase/oxygenase large subunit-like mRNA, partial sequence
-	    #record.description
+	    descriptors = record.description.split(" ")
+            otu = descriptors[1] + " " + descriptors[2]
+	    if otu not in otus:
+	        otus[otu] = ""
+
+    # now concatenate the sequences
+    total_length = 0
+    for alignment in alignment_files:
+        records = SeqIO.parse(alignment, "fasta")
+	for record in records:
+	    descriptors = record.description.split(" ")
+	    otu = descriptors[1] + " " + descriptors[2]
+	    otus[otu] = otus[otu] + record.seq
+	    loci_length = len(record.seq)
+        total_length += loci_length
+	for otu in otus:
+	    if len(otus[otu]) < total_length:
+	        otus[otu] = otus[otu] + make_gaps(loci_length)
+
+    # write to FASTA file
+    f = open("alignments/final.fasta", "w")
+    for otu in otus:
+        # >otu
+	# otus[otu]
+	f.write("> " + otu + "\n")
+	sequence = str(otus[otu])
+	i = 0
+	while i < len(sequence):
+	    f.write(sequence[i:i+80] + "\n")
+	    i += 80
+    f.close()
+    return "alignments/final.fasta"
+
+def make_gaps(length):
+    """
+    Inputs an integer.
+    Returns a string of '-' of length
+    """
+    gap = ""
+    for i in range(length):
+        gap = "-" + gap
+    return gap
 
 def main():
     # parse the command line arguments
@@ -426,11 +471,13 @@ def main():
     print(color.purple + "Kept " + color.red + str(len(clusters)) + color.purple + " clusters, discarded those with < 4 sequences." + color.done)
     
     # now align each cluster with MUSCLE
-    print(color.red + "Aligning clusters with MUSCLE..." + color.red)
-    align_clusters(cluster_files)
+    print(color.red + "Aligning clusters with MUSCLE..." + color.done)
+    alignment_files = align_clusters(cluster_files)
 
     # TODO:
-    #concantenate, then reduce the number of outgroup taxa
-	
+    #concatenate, then reduce the number of outgroup taxa, make graphs, etc
+    print(color.blue + "Concatenating alignments..." + color.done)
+    final_alignment = concatenate(alignment_files)
+
 if __name__ == "__main__":
     main()
