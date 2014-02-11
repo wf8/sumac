@@ -354,6 +354,17 @@ def align_clusters(cluster_files):
 	alignment_files.append(alignment_file)
     return alignment_files
 
+def print_region_data(alignment_files):
+    """
+    Inputs a list of FASTA files, each containing an aligned sequence cluster
+    Prints the name of each DNA region, the number of taxa, the aligned length,
+    missing data (%), and taxon coverage density
+    TODO: calculate the variable characters (and %), PI characters (and %)
+    """
+    # TODO: calculate the variable characters (and %), PI characters (and %)
+    # first get list of all taxa
+
+
 def concatenate(alignment_files):
     """
     Inputs a list of FASTA files, each containing an aligned sequence cluster
@@ -477,13 +488,16 @@ def main():
     print(color.purple + "Kept " + color.red + str(len(clusters)) + color.purple + " clusters, discarded those with < 4 taxa." + color.done)
     
     # now align each cluster with MUSCLE
-    print(color.red + "Aligning clusters with MUSCLE..." + color.done)
+    print(color.blue + "Aligning clusters with MUSCLE..." + color.done)
     alignment_files = align_clusters(cluster_files)
 
-    # TODO:
-    #concatenate, then reduce the number of outgroup taxa, make graphs, etc
+    # concatenate alignments
     print(color.blue + "Concatenating alignments..." + color.done)
     final_alignment = concatenate(alignment_files)
+    print(color.yellow + "Final alignment: " + color.red + "alignments/final.fasta" + color.don)
+
+    # TODO:
+    # reduce the number of outgroup taxa, make graphs, etc
 
 if __name__ == "__main__":
     main()
