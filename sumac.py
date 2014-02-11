@@ -28,7 +28,7 @@ Requirements:
 
 usage: sumac.py [-h] [--download_gb DOWNLOAD_GB] [--ingroup INGROUP]
                       [--outgroup OUTGROUP] [--max_outgroup MAX_OUTGROUP]
-                      [--evalue EVALUE]
+                      [--evalue EVALUE] [--length LENGTH]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -66,6 +66,7 @@ from ftplib import FTP
 from Bio import Entrez
 from Bio import SeqIO
 from Bio.Blast.Applications import NcbiblastnCommandline
+from Bio.Align.Applications import MuscleCommandline
 from Bio.Blast import NCBIXML
 
 class color:
@@ -304,7 +305,7 @@ def assemble_fasta_clusters(gb, clusters):
     Outputs a list of FASTA files, each file containing an unaligned sequence cluster,
     and an updated list of clustered accessions.
     """
-    matrices = []
+    cluster_files = []
     if not os.path.exists("clusters"):
         os.makedirs("clusters")
     i = 0
@@ -318,25 +319,44 @@ def assemble_fasta_clusters(gb, clusters):
             file = open(file_name, "wb")
 	    SeqIO.write(sequences, file, 'fasta')
 	    file.close()
-	    matrices.append(file_name)
+	    cluster_files.append(file_name)
 	    i += 1
 	else:
 	    to_delete.append(cluster)
     for cluster in to_delete:
         del clusters[clusters.index(cluster)]
-    return matrices, clusters
+    return cluster_files, clusters
 
-def align_matrices(matrices):
+def align_clusters(cluster_files):
     """
     Inputs a list of FASTA files, each file containing an unaligned sequence cluster.
     Must determine whether sequences must be reverse complemented by using BLAST.
-    Outputs a list of FASTA files, each file containing an aligned sequence cluster.
+    Returns a list of aligned FASTA files.
     """
-    # do stuff
-    # return aligned_matrices
     # TODO:
     # blast to check forward/reverse sequences...
+    alignment_files = []
+    if not os.path.exists("alignments"):
+        os.makedirs("alignments")
+    for cluster in cluster_files:
+	alignment_file = "alignments" + cluster[cluster.index("/"):]
+        muscle_cline = MuscleCommandline(input=cluster, out=alignment_file)
+        print(color.red + str(muscle_cline) + color.done)
+	stdout, stderr = muscle_cline()
+	alignment_files.append(alignment_file)
+    return alignment_files
 
+def concantenate(alignment_files):
+    """
+    Inputs a list of FASTA files, each containing an aligned sequence cluster
+    Returns a concantenated FASTA file
+    """
+    for alignment in alignment_files:
+        records = SeqIO.parse(alignment, "fasta")
+        for record in records:
+	    # sample record.description:
+            # AF495760.1 Lythrum salicaria chloroplast ribulose 1,5-bisphosphate carboxylase/oxygenase large subunit-like mRNA, partial sequence
+	    #record.description
 
 def main():
     # parse the command line arguments
@@ -398,23 +418,19 @@ def main():
     else:
 	print(color.purple + "Using default e-value threshold 0.1" + color.done)
         clusters = make_clusters(all_seq_keys, distance_matrix)
-    print(color.purple + "Found " + str(len(clusters)) + " clusters." + color.done)
+    print(color.purple + "Found " + color.red + str(len(clusters)) + color.purple + " clusters." + color.done)
 
-    # make FASTA files
+    # filter clusters, make FASTA files
     print(color.yellow + "Building sequence matrices for each cluster." + color.done)
-    # print(color.yellow + "Checking for sequences that must be reverse complemented..." + color.done)
-    unaligned_matrices, clusters = assemble_fasta_clusters(gb, clusters)
+    cluster_files, clusters = assemble_fasta_clusters(gb, clusters)
+    print(color.purple + "Kept " + color.red + str(len(clusters)) + color.purple + " clusters, discarded those with < 4 sequences." + color.done)
+    
+    # now align each cluster with MUSCLE
+    print(color.red + "Aligning clusters with MUSCLE..." + color.red)
+    align_clusters(cluster_files)
 
-    print(color.purple + "Kept " + str(len(clusters)) + " clusters, discarded those with < 4 sequences." + color.done)
-
-    for cluster in clusters:
-	print("***cluster:")
-	print(cluster)
-
-    print(unaligned_matrices)
-
-    # now align each cluster, then concantenate, then reduce the number of outgroup taxa
-
+    # TODO:
+    #concantenate, then reduce the number of outgroup taxa
 	
 if __name__ == "__main__":
     main()
