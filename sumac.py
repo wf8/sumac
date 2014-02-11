@@ -139,10 +139,12 @@ def setup_sqlite():
     Sets up the SQLite db for the GenBank division.
     Returns a dictionary of SeqRecord objects.
     """
-    os.chdir("genbank/")
-    files = os.listdir(".")
-    gb = SeqIO.index_db("gb.idx", files, "genbank")
-    os.chdir(os.pardir)
+    gb_dir = os.path.abspath("genbank/")
+    files = os.listdir(gb_dir)
+    abs_path_files = []
+    for file in files:
+        abs_path_files.append(gb_dir + "/" + file)
+    gb = SeqIO.index_db(gb_dir + "/gb.idx", abs_path_files, "genbank")
     return gb
 
 def get_in_out_groups(gb, ingroup, outgroup):
@@ -150,29 +152,30 @@ def get_in_out_groups(gb, ingroup, outgroup):
     Takes as input a dictionary of SeqRecords gb and the names of ingroup and outgroup clades.
     Returns lists of keys to SeqRecords for the ingroup and outgroup.
     """
-    os.chdir("genbank/")
     keys = gb.keys()
     ingroup_keys = []
     outgroup_keys = []
+    total = len(keys)
+    i = 0
     for key in keys:
 	if ingroup in gb[key].annotations['taxonomy']:
             ingroup_keys.append(key)
 	elif outgroup in gb[key].annotations['taxonomy']:
 	    outgroup_keys.append(key)
 	sys.stdout.write('\r' + color.yellow + 'Ingroup sequences found: ' + color.red + str(len(ingroup_keys)) + color.yellow \
-	    + '  Outgroup sequences found: ' + color.red + str(len(outgroup_keys)) + color.done)    
-	sys.stdout.flush()    
+	    + '  Outgroup sequences found: ' + color.red + str(len(outgroup_keys)) + color.yellow + '  Percent searched: ' \
+	    + color.red + str(round( 100 * float(i) / total , 1)) + color.done)    
+	sys.stdout.flush() 
+	i += 1
 	## FOR TESTING ONLY
 	#if len(ingroup_keys) == 50:  ##
         #    sys.stdout.write("\n")   ## FOR TESTING ONLY
         #    sys.stdout.flush()       ## # FOR TESTING ONLY
-	#    os.chdir(os.pardir)      ##
 	#    return ingroup_keys, outgroup_keys    # FOR TESTING ONLY
 	## FOR TESTING ONLY
 	## remove above
     sys.stdout.write("\n")
     sys.stdout.flush()
-    os.chdir(os.pardir)
     return ingroup_keys, outgroup_keys
 
 def make_distance_matrix(gb, seq_keys, length_threshold):
@@ -472,7 +475,8 @@ def main():
         sys.exit(0)
     else:
         print(color.purple + "Genbank database already downloaded. Indexing sequences..." + color.done)
-	gb = SeqIO.index_db("genbank/gb.idx")
+	gb_dir = os.path.abspath("genbank/")
+	gb = SeqIO.index_db(gb_dir + "/gb.idx")
     print(color.purple + "%i sequences indexed!" % len(gb) + color.done)
 
     # check for ingroup and outgroup
