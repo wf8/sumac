@@ -163,11 +163,11 @@ def get_in_out_groups(gb, ingroup, outgroup):
 	    + '  Outgroup sequences found: ' + color.red + str(len(outgroup_keys)) + color.done)    
 	sys.stdout.flush()    
 	## FOR TESTING ONLY
-	if len(ingroup_keys) == 50:  ##
-            sys.stdout.write("\n")   ## FOR TESTING ONLY
-            sys.stdout.flush()       ## # FOR TESTING ONLY
-	    os.chdir(os.pardir)      ##
-	    return ingroup_keys, outgroup_keys    # FOR TESTING ONLY
+	#if len(ingroup_keys) == 50:  ##
+        #    sys.stdout.write("\n")   ## FOR TESTING ONLY
+        #    sys.stdout.flush()       ## # FOR TESTING ONLY
+	#    os.chdir(os.pardir)      ##
+	#    return ingroup_keys, outgroup_keys    # FOR TESTING ONLY
 	## FOR TESTING ONLY
 	## remove above
     sys.stdout.write("\n")
@@ -319,10 +319,16 @@ def assemble_fasta_clusters(gb, clusters):
 	    if otu not in otus:
 	        otus.append(otu)
 	# make fasta file if > 3 OTUs in cluster
+	otus_in_cluster = []
 	if len(otus) > 3:
 	    sequences = []
 	    for seq_key in cluster:
-                sequences.append(gb[seq_key])
+                descriptors = gb[seq_key].description.split(" ")
+		otu = descriptors[0] + " " + descriptors[1]
+		# do not allow duplicate OTUs in cluster
+		if otu not in otus_in_cluster:
+		    sequences.append(gb[seq_key])
+		    otus_in_cluster.append(otu)
             file_name = "clusters/" + str(i) + ".fasta"
             file = open(file_name, "wb")
 	    SeqIO.write(sequences, file, 'fasta')
@@ -377,7 +383,7 @@ def print_region_data(alignment_files):
     for alignment in alignment_files:
         records = list(SeqIO.parse(alignment, "fasta"))
 	descriptors = records[0].description.split(" ")
-	print(color.blue + "Cluster #: " + color.red + str(i) + color.done)
+	print(color.blue + "Aligned cluster #: " + color.red + str(i) + color.done)
 	print(color.yellow + "DNA region: " + color.red + " ".join(descriptors[3:]) + color.done)
 	print(color.yellow + "Taxa: " + color.red + str(len(records)) + color.done)
 	print(color.yellow + "Aligned length: " + color.red + str(len(records[0].seq)) + color.done)
@@ -515,7 +521,7 @@ def main():
     # concatenate alignments
     print(color.purple + "Concatenating alignments..." + color.done)
     final_alignment = concatenate(alignment_files)
-    print(color.yellow + "Final alignment: " + color.red + "alignments/final.fasta" + color.don)
+    print(color.yellow + "Final alignment: " + color.red + "alignments/final.fasta" + color.done)
 
     # TODO:
     # reduce the number of outgroup taxa, make graphs, etc
