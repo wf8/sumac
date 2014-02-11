@@ -363,7 +363,27 @@ def print_region_data(alignment_files):
     """
     # TODO: calculate the variable characters (and %), PI characters (and %)
     # first get list of all taxa
+    taxa = []
+    for alignment in alignment_files:
+        records = SeqIO.parse(alignment, "fasta")
+	for record in records:
+	    descriptors = record.description.split(" ")
+	    taxon = descriptors[1] + " " + descriptors[2]
+	    if taxon not in taxa:
+	        taxa.append(taxon)
 
+    # print data for each region
+    i = 0
+    for alignment in alignment_files:
+        records = list(SeqIO.parse(alignment, "fasta"))
+	descriptors = records[0].description.split(" ")
+	print(color.blue + "Cluster #: " + color.red + str(i) + color.done)
+	print(color.yellow + "DNA region: " + color.red + " ".join(descriptors[3:]) + color.done)
+	print(color.yellow + "Taxa: " + color.red + str(len(records)) + color.done)
+	print(color.yellow + "Aligned length: " + color.red + str(len(records[0].seq)) + color.done)
+	print(color.yellow + "Missing data (%): " + color.red + str(round(100 - (100 * len(records)/float(len(taxa))), 1)) + color.done)
+	print(color.yellow + "Taxon coverage density: "  + color.red + str(round(len(records)/float(len(taxa)), 2)) + color.done)
+        i += 1
 
 def concatenate(alignment_files):
     """
@@ -490,9 +510,10 @@ def main():
     # now align each cluster with MUSCLE
     print(color.blue + "Aligning clusters with MUSCLE..." + color.done)
     alignment_files = align_clusters(cluster_files)
+    print_region_data(alignment_files)
 
     # concatenate alignments
-    print(color.blue + "Concatenating alignments..." + color.done)
+    print(color.purple + "Concatenating alignments..." + color.done)
     final_alignment = concatenate(alignment_files)
     print(color.yellow + "Final alignment: " + color.red + "alignments/final.fasta" + color.don)
 
