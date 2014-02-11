@@ -13,7 +13,7 @@ Python module that:
 	- use single-linkage hierarchical clustering algorithm
 	- distance threshold default blastn e-value 1.0e-10 
         - uses sequence length percent similarity cutoff default 0.5
-	- discards clusters with fewer than 4 sequences
+	- discards clusters with fewer than 4 taxa
 3: Determines whether sequences must be reverse complemented.
 4: Aligns each cluster of sequences using MUSCLE.
 5: Concatenates the clusters creating a supermatrix.
@@ -301,7 +301,7 @@ def merge_closest_clusters(clusters, distance_matrix, threshold):
 def assemble_fasta_clusters(gb, clusters):
     """
     Inputs the dictionary of all GenBank sequences and a list of clustered accessions.
-    Only make fasta files of clusters containing 4 sequences or more.
+    Only make fasta files of clusters containing 4 taxa or more.
     Outputs a list of FASTA files, each file containing an unaligned sequence cluster,
     and an updated list of clustered accessions.
     """
@@ -311,9 +311,15 @@ def assemble_fasta_clusters(gb, clusters):
     i = 0
     to_delete = []
     for cluster in clusters:
-	# TODO:
-	# make sure cluster has > 3 taxa, not just sequences
-	if len(cluster) > 3:
+	# get all OTUs in cluster
+	otus = []
+	for seq_key in cluster:
+	    descriptors = gb[seq_key].description.split(" ")
+            otu = descriptors[0] + " " + descriptors[1]
+	    if otu not in otus:
+	        otus.append(otu)
+	# make fasta file if > 3 OTUs in cluster
+	if len(otus) > 3:
 	    sequences = []
 	    for seq_key in cluster:
                 sequences.append(gb[seq_key])
@@ -468,7 +474,7 @@ def main():
     # filter clusters, make FASTA files
     print(color.yellow + "Building sequence matrices for each cluster." + color.done)
     cluster_files, clusters = assemble_fasta_clusters(gb, clusters)
-    print(color.purple + "Kept " + color.red + str(len(clusters)) + color.purple + " clusters, discarded those with < 4 sequences." + color.done)
+    print(color.purple + "Kept " + color.red + str(len(clusters)) + color.purple + " clusters, discarded those with < 4 taxa." + color.done)
     
     # now align each cluster with MUSCLE
     print(color.red + "Aligning clusters with MUSCLE..." + color.done)
