@@ -179,24 +179,31 @@ def get_in_out_groups(gb, ingroup, outgroup):
     sys.stdout.flush()
     return ingroup_keys, outgroup_keys
 
-def distance_matrix_worker(gb, seq_keys, length_threshold, dist_matrix, processed, lock, process_num):
+def distance_matrix_worker(seq_keys, length_threshold, dist_matrix, already_compared, lock, process_num):
     """
+    Worker process for make_distance_matrix(). Takes a list "already_compared" of sequences that have
+    already had all pairwise comparisons. Each worker process will work making pairwise comparisons
+    for a different sequence, adding them to the "already_compared" list as they are completed.
     """
-    i = 0
-    j = 0
+    # each process must load its own sqlite gb
+    gb_dir = os.path.abspath("genbank/")
+    gb = SeqIO.index_db(gb_dir + "/gb.idx")
     process_num = str(process_num)
+    i = 0
     for key in seq_keys:
-        process = False
+        # check whether another process is already comparing this row
+	compare_row = False
 	with lock:
-            if key not in processed:
-	        processed.append(key)
-		process = True
-	if process:
+            if key not in already_compared:
+	        already_compared.append(key)
+		compare_row = True
+	if compare_row:
+	    # get the sequence record to compare
 	    record1 = gb[key]
 	    output_handle = open('subject' + process_num + '.fasta', 'w')
             SeqIO.write(record1, output_handle, 'fasta')
             output_handle.close()
-
+            j = 0
             for key2 in seq_keys:
 	        # only calculate e-values for pairs that have not yet been compared
 	        if dist_matrix[i][j] == 99:
@@ -206,9 +213,11 @@ def distance_matrix_worker(gb, seq_keys, length_threshold, dist_matrix, processe
 			dist_matrix[i] = row
 		    # check sequence lengths
 		    else:
+			# print("proc # = "+process_num+" i = "+str(i)+ " j = "+str(j))
 			record2 = gb[key2]
 		        length1 = len(record1.seq)
 		        length2 = len(record2.seq)
+			# set distance to 50.0 if length similarity threshold not met
 		        if (length1 > length2 * (1 + float(length_threshold))) or (length1 < length2 * (1 - float(length_threshold))):
 			    row = dist_matrix[i]
 			    row[j] = 50.0
@@ -231,7 +240,7 @@ def distance_matrix_worker(gb, seq_keys, length_threshold, dist_matrix, processe
                             for blast_record in blast_records:
 			        if blast_record.alignments:
 			            if blast_record.alignments[0].hsps:
-                                        # blast hit found
+                                        # blast hit found, set distance to e-value
 			                row = dist_matrix[i]
 					row[j] = blast_record.alignments[0].hsps[0].expect
 					dist_matrix[i] = row
@@ -248,11 +257,11 @@ def distance_matrix_worker(gb, seq_keys, length_threshold, dist_matrix, processe
 				    dist_matrix[j] = row
 		            blastn_xml.close()
 	        j += 1
-            j = 0
-	    i += 1
-	    percent = str(round(100 * len(processed)/float(len(seq_keys)), 2))
-	    sys.stdout.write('\r' + color.blue + 'Completed: ' + color.red + str(len(processed)) + '/' + str(len(seq_keys)) + ' (' + percent + '%)' + color.done)    
-	    sys.stdout.flush()    
+	i += 1
+	# update status
+	percent = str(round(100 * len(already_compared)/float(len(seq_keys)), 2))
+	sys.stdout.write('\r' + color.blue + 'Completed: ' + color.red + str(len(already_compared)) + '/' + str(len(seq_keys)) + ' (' + percent + '%)' + color.done)    
+	sys.stdout.flush()    
     # done looping through all keys, now clean up
     os.remove("blast" + process_num + ".xml")
     os.remove("query" + process_num + ".fasta")
@@ -269,7 +278,7 @@ def make_distance_matrix(gb, seq_keys, length_threshold):
     """
     lock = multiprocessing.Lock()
     manager = multiprocessing.Manager()
-    processed = manager.list()
+    already_compared = manager.list()
     dist_matrix = manager.list()
     row = []
     for i in range(len(seq_keys)):
@@ -277,11 +286,11 @@ def make_distance_matrix(gb, seq_keys, length_threshold):
     for i in range(len(seq_keys)):
 	dist_matrix.append(row)
 
-    num_cores = 10 # multiprocessing.cpu_count()
+    num_cores = 10 #TODO multiprocessing.cpu_count()
     processes = []
     
     for i in range(num_cores):
-        p = multiprocessing.Process(target=distance_matrix_worker, args=(gb, seq_keys, length_threshold, dist_matrix, processed, lock, i))
+        p = multiprocessing.Process(target=distance_matrix_worker, args=(seq_keys, length_threshold, dist_matrix, already_compared, lock, i))
 	p.start()
 	processes.append(p)
 
@@ -291,62 +300,7 @@ def make_distance_matrix(gb, seq_keys, length_threshold):
     sys.stdout.write("\n")
     sys.stdout.flush()
     return dist_matrix
-    """
-    def distance_matrix_worker(gb, seq_keys, length_threshold, dist_matrix, processed, lock, process_num):
-    i = 0
-    j = 0
-    for key in seq_keys:
-        output_handle = open('subject.fasta', 'w')
-        SeqIO.write(gb[key], output_handle, 'fasta')
-        output_handle.close()
 
-        for key2 in seq_keys:
-	    # only calculate e-values for pairs that have not yet been compared
-	    if dist_matrix[i][j] == 99:
-	        if key == key2:
-	            dist_matrix[i][j] = 0.0
-		# check sequence lengths
-		else:
-		    length1 = len(gb[key].seq)
-		    length2 = len(gb[key2].seq)
-		    if (length1 > length2 * (1 + float(length_threshold))) or (length1 < length2 * (1 - float(length_threshold))):
-                        dist_matrix[i][j] = 50.0
-			dist_matrix[j][i] = 50.0
-		    else:
-		        # do the blast comparison
-                        output_handle = open('query.fasta', 'w')
-                        SeqIO.write(gb[key2], output_handle, 'fasta')
-                        output_handle.close()
-
-                        blastn_cmd = NcbiblastnCommandline(query='query.fasta', subject='subject.fasta', out='blast.xml', outfmt=5)
-                        stdout, stderr = blastn_cmd()
-                        blastn_xml = open('blast.xml', 'r')
-                        blast_records = NCBIXML.parse(blastn_xml)
-
-                        for blast_record in blast_records:
-			    if blast_record.alignments:
-			        if blast_record.alignments[0].hsps:
-                                    # blast hit found
-			            dist_matrix[i][j] = blast_record.alignments[0].hsps[0].expect
-                                    dist_matrix[j][i] = blast_record.alignments[0].hsps[0].expect
-		            else:
-			        # no blast hit found, set distance to default 10.0
-		                dist_matrix[i][j] = 10.0
-			        dist_matrix[j][i] = 10.0
-		        blastn_xml.close()
-	    j += 1
-        j = 0
-	i += 1
-	percent = str(round(100 * i/float(len(seq_keys)), 2))
-	sys.stdout.write('\r' + color.blue + 'Completed: ' + color.red + str(i) + '/' + str(len(seq_keys)) + ' (' + percent + '%)' + color.done)    
-	sys.stdout.flush()    
-    sys.stdout.write("\n")
-    sys.stdout.flush()
-    os.remove("blast.xml")
-    os.remove("query.fasta")
-    os.remove("subject.fasta")
-    return dist_matrix
-    """
 def make_clusters(seq_keys, distance_matrix, threshold=(1.0/10**10)):
     """
     Input: seq_keys a list of all sequences used in the analysis, distance_matrix based on BLAST e-values, and an optional e-value threshold for clustering.
@@ -398,11 +352,20 @@ def merge_closest_clusters(clusters, distance_matrix, threshold):
     # update distance matrix
     for i in range(len(distance_matrix[cluster1])):
         if distance_matrix[cluster1][i] > distance_matrix[cluster2][i]:
-	    distance_matrix[cluster1][i] = distance_matrix[cluster2][i]
-	    distance_matrix[i][cluster1] = distance_matrix[cluster2][i]
+	    row = distance_matrix[cluster1]
+	    row[i] = distance_matrix[cluster2][i]
+	    distance_matrix[cluster1] = row
+	    row = distance_matrix[i]
+	    row[cluster1] = distance_matrix[cluster2][i]
+	    distance_matrix[i] = row
+	    #distance_matrix[cluster1][i] = distance_matrix[cluster2][i]
+	    #distance_matrix[i][cluster1] = distance_matrix[cluster2][i]
     del distance_matrix[cluster2]
     for i in range(len(distance_matrix)):
-        del distance_matrix[i][cluster2]
+        row = distance_matrix[i]
+	del row[cluster2]
+	distance_matrix[i] = row
+	#del distance_matrix[i][cluster2]
 
     return merge_closest_clusters(clusters, distance_matrix, threshold)
 
@@ -457,6 +420,7 @@ def align_clusters(cluster_files):
     """
     # TODO:
     # blast to check forward/reverse sequences...
+    # TODO: make multiprocessor!
     alignment_files = []
     if not os.path.exists("alignments"):
         os.makedirs("alignments")
