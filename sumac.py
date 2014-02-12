@@ -63,6 +63,7 @@ import sys
 import gzip
 import argparse
 from ftplib import FTP
+import multiprocessing
 from Bio import Entrez
 from Bio import SeqIO
 from Bio.Blast.Applications import NcbiblastnCommandline
@@ -168,15 +169,94 @@ def get_in_out_groups(gb, ingroup, outgroup):
 	sys.stdout.flush() 
 	i += 1
 	## FOR TESTING ONLY
-	#if len(ingroup_keys) == 50:  ##
-        #    sys.stdout.write("\n")   ## FOR TESTING ONLY
-        #    sys.stdout.flush()       ## # FOR TESTING ONLY
-	#    return ingroup_keys, outgroup_keys    # FOR TESTING ONLY
+	if len(ingroup_keys) == 50:  ##
+            sys.stdout.write("\n")   ## FOR TESTING ONLY
+            sys.stdout.flush()       ## # FOR TESTING ONLY
+	    return ingroup_keys, outgroup_keys    # FOR TESTING ONLY
 	## FOR TESTING ONLY
 	## remove above
     sys.stdout.write("\n")
     sys.stdout.flush()
     return ingroup_keys, outgroup_keys
+
+def distance_matrix_worker(gb, seq_keys, length_threshold, dist_matrix, processed, lock, process_num):
+    """
+    """
+    i = 0
+    j = 0
+    process_num = str(process_num)
+    for key in seq_keys:
+        process = False
+	with lock:
+            if key not in processed:
+	        processed.append(key)
+		process = True
+	if process:
+	    record1 = gb[key]
+	    output_handle = open('subject' + process_num + '.fasta', 'w')
+            SeqIO.write(record1, output_handle, 'fasta')
+            output_handle.close()
+
+            for key2 in seq_keys:
+	        # only calculate e-values for pairs that have not yet been compared
+	        if dist_matrix[i][j] == 99:
+	            if key == key2:
+		        row = dist_matrix[i]
+			row[j] = 0.0
+			dist_matrix[i] = row
+		    # check sequence lengths
+		    else:
+			record2 = gb[key2]
+		        length1 = len(record1.seq)
+		        length2 = len(record2.seq)
+		        if (length1 > length2 * (1 + float(length_threshold))) or (length1 < length2 * (1 - float(length_threshold))):
+			    row = dist_matrix[i]
+			    row[j] = 50.0
+			    dist_matrix[i] = row
+			    row = dist_matrix[j]
+			    row[i] = 50.0
+			    dist_matrix[j] = row
+		        else:
+		            # do the blast comparison
+                            output_handle = open('query' + process_num + '.fasta', 'w')
+                            SeqIO.write(record2, output_handle, 'fasta')
+                            output_handle.close()
+
+                            blastn_cmd = NcbiblastnCommandline(query='query' + process_num + '.fasta', subject='subject' + process_num + \
+			        '.fasta', out='blast' + process_num + '.xml', outfmt=5)
+                            stdout, stderr = blastn_cmd()
+                            blastn_xml = open('blast' + process_num + '.xml', 'r')
+                            blast_records = NCBIXML.parse(blastn_xml)
+
+                            for blast_record in blast_records:
+			        if blast_record.alignments:
+			            if blast_record.alignments[0].hsps:
+                                        # blast hit found
+			                row = dist_matrix[i]
+					row[j] = blast_record.alignments[0].hsps[0].expect
+					dist_matrix[i] = row
+					row = dist_matrix[j]
+					row[i] = blast_record.alignments[0].hsps[0].expect
+					dist_matrix[j] = row
+		                else:
+			            # no blast hit found, set distance to default 10.0
+		                    row = dist_matrix[i]
+				    row[j] = 10.0
+				    dist_matrix[i] = row
+				    row = dist_matrix[j]
+				    row[i] = 10.0
+				    dist_matrix[j] = row
+		            blastn_xml.close()
+	        j += 1
+            j = 0
+	    i += 1
+	    percent = str(round(100 * len(processed)/float(len(seq_keys)), 2))
+	    sys.stdout.write('\r' + color.blue + 'Completed: ' + color.red + str(len(processed)) + '/' + str(len(seq_keys)) + ' (' + percent + '%)' + color.done)    
+	    sys.stdout.flush()    
+    # done looping through all keys, now clean up
+    os.remove("blast" + process_num + ".xml")
+    os.remove("query" + process_num + ".fasta")
+    os.remove("subject" + process_num + ".fasta")
 
 def make_distance_matrix(gb, seq_keys, length_threshold):
     """
@@ -187,7 +267,32 @@ def make_distance_matrix(gb, seq_keys, length_threshold):
     enough the distance is set to 50 (which keeps them from being clustered).
     Returns a 2 dimensional list of distances. Distances are blastn e-values.
     """
-    dist_matrix = [[99] * len(seq_keys) for i in range(len(seq_keys))]
+    lock = multiprocessing.Lock()
+    manager = multiprocessing.Manager()
+    processed = manager.list()
+    dist_matrix = manager.list()
+    row = []
+    for i in range(len(seq_keys)):
+        row.append(99)
+    for i in range(len(seq_keys)):
+	dist_matrix.append(row)
+
+    num_cores = 10 # multiprocessing.cpu_count()
+    processes = []
+    
+    for i in range(num_cores):
+        p = multiprocessing.Process(target=distance_matrix_worker, args=(gb, seq_keys, length_threshold, dist_matrix, processed, lock, i))
+	p.start()
+	processes.append(p)
+
+    for p in processes:
+        p.join()
+    
+    sys.stdout.write("\n")
+    sys.stdout.flush()
+    return dist_matrix
+    """
+    def distance_matrix_worker(gb, seq_keys, length_threshold, dist_matrix, processed, lock, process_num):
     i = 0
     j = 0
     for key in seq_keys:
@@ -241,7 +346,7 @@ def make_distance_matrix(gb, seq_keys, length_threshold):
     os.remove("query.fasta")
     os.remove("subject.fasta")
     return dist_matrix
-
+    """
 def make_clusters(seq_keys, distance_matrix, threshold=(1.0/10**10)):
     """
     Input: seq_keys a list of all sequences used in the analysis, distance_matrix based on BLAST e-values, and an optional e-value threshold for clustering.
