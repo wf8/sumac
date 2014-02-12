@@ -168,10 +168,10 @@ def get_in_out_groups(gb, ingroup, outgroup):
 	sys.stdout.flush() 
 	i += 1
 	## FOR TESTING ONLY
-	#if len(ingroup_keys) == 50:  ##
-        #    sys.stdout.write("\n")   ## FOR TESTING ONLY
-        #    sys.stdout.flush()       ## # FOR TESTING ONLY
-	#    return ingroup_keys, outgroup_keys    # FOR TESTING ONLY
+	if len(ingroup_keys) == 50:  ##
+            sys.stdout.write("\n")   ## FOR TESTING ONLY
+            sys.stdout.flush()       ## # FOR TESTING ONLY
+	    return ingroup_keys, outgroup_keys    # FOR TESTING ONLY
 	## FOR TESTING ONLY
 	## remove above
     sys.stdout.write("\n")
