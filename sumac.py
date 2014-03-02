@@ -20,6 +20,8 @@ Python module that:
 6: Prunes out excess members of the outgroup, keeping those with the
    most sequence data.
 
+Optimized to run on multicore servers with the use parallel multiple processes.
+
 Requirements:
     Python 2.7
     Biopython
@@ -287,6 +289,7 @@ def make_distance_matrix(gb, seq_keys, length_threshold):
 	dist_matrix.append(row)
 
     num_cores = 10 #TODO multiprocessing.cpu_count()
+    print(color.blue + "Spawning " + str(num_cores) + " processes to make distance matrix." + color.done)
     processes = []
     
     for i in range(num_cores):
@@ -415,22 +418,34 @@ def assemble_fasta_clusters(gb, clusters):
 def align_clusters(cluster_files):
     """
     Inputs a list of FASTA files, each file containing an unaligned sequence cluster.
-    Must determine whether sequences must be reverse complemented by using BLAST.
+    Creates new processes to align each sequence cluster.
     Returns a list of aligned FASTA files.
     """
     # TODO:
     # blast to check forward/reverse sequences...
-    # TODO: make multiprocessor!
     alignment_files = []
     if not os.path.exists("alignments"):
         os.makedirs("alignments")
-    for cluster in cluster_files:
-	alignment_file = "alignments" + cluster[cluster.index("/"):]
-        muscle_cline = MuscleCommandline(input=cluster, out=alignment_file)
-        print(color.red + str(muscle_cline) + color.done)
-	stdout, stderr = muscle_cline()
-	alignment_files.append(alignment_file)
+    print(color.blue + "Spawning " + str(multiprocessing.cpu_count()) + " processes to align clusters." + color.done)
+    pool = multiprocessing.Pool(multiprocessing.cpu_count())
+    alignment_files = pool.map(align_cluster, cluster_files)
+    pool.close()
+    pool.join()
     return alignment_files
+
+
+def align_cluster(cluster_file):
+    """
+    Worker fuction for align_clusters
+    Inputs a FASTA file containing an unaligned sequence cluster.
+    Uses MUSCLE to align the cluster.
+    """
+    alignment_file = "alignments" + cluster_file[cluster_file.index("/"):]
+    muscle_cline = MuscleCommandline(input=cluster_file, out=alignment_file)
+    print(color.red + str(muscle_cline) + color.done)
+    sys.stdout.flush()
+    stdout, stderr = muscle_cline()
+    return alignment_file
 
 def print_region_data(alignment_files):
     """
