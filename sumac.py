@@ -9,18 +9,18 @@ freyman@berkeley.edu
 
 Python module that:
 1: Downloads GenBank database of the specified GB division (PLN, MAM, etc)
-2: Build clusters of all sequences for ingroup and outgroup clades
+2: Perform exhaustive all-by-all BLAST comparisons of each ingroup and outgroup sequence.
+3: Alternatively (much faster) uses a FASTA file of guide sequences to define each cluster. 
+   Each ingroup/outgroup sequence is BLASTed against the guide sequences.
+4: Build clusters of sequences:
 	- use single-linkage hierarchical clustering algorithm
-	- distance threshold default blastn e-value 1.0e-10 
+	- distance threshold default BLASTn e-value 1.0e-10 
         - uses sequence length percent similarity cutoff default 0.5
-	- discards clusters with fewer than 4 taxa
-3: Determines whether sequences must be reverse complemented.
-4: Aligns each cluster of sequences using MUSCLE.
-5: Concatenates the clusters creating a supermatrix.
-6: Prunes out excess members of the outgroup, keeping those with the
-   most sequence data.
+	- discards clusters that are not phylogenetically informative (< 4 taxa)
+5: Aligns each cluster of sequences using MUSCLE.
+6: Concatenates the clusters creating a supermatrix.
 
-Optimized to run on multicore servers with the use parallel multiple processes.
+Optimized to run on multicore servers with the use of parallel multiple processes.
 
 Requirements:
     Python 2.7
