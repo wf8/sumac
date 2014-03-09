@@ -30,7 +30,7 @@ Requirements:
 
 usage: sumac.py [-h] [--download_gb DOWNLOAD_GB] [--ingroup INGROUP]
                       [--outgroup OUTGROUP] [--max_outgroup MAX_OUTGROUP]
-                      [--evalue EVALUE] [--length LENGTH]
+                      [--evalue EVALUE] [--length LENGTH] [--guide GUIDE]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -47,9 +47,14 @@ optional arguments:
   --evalue EVALUE, -e EVALUE
                         BLAST E-value threshold to cluster taxa. Defaults to
                         0.1
-  --length LENGTH, -; LENGTH
+  --length LENGTH, -l LENGTH
                         Threshold of sequence length percent similarity to 
 			cluster taxa. Defaults to 0.5
+  --guide GUIDE, -g GUIDE
+                        FASTA file containing sequences to guide cluster 
+			construction. If this option is selected then 
+			all-by-all BLAST comparisons are not performed.
+
 
 Example: 
 sumac.py -d pln -i Onagraceae -o Lythraceae
@@ -361,14 +366,11 @@ def merge_closest_clusters(clusters, distance_matrix, threshold):
 	    row = distance_matrix[i]
 	    row[cluster1] = distance_matrix[cluster2][i]
 	    distance_matrix[i] = row
-	    #distance_matrix[cluster1][i] = distance_matrix[cluster2][i]
-	    #distance_matrix[i][cluster1] = distance_matrix[cluster2][i]
     del distance_matrix[cluster2]
     for i in range(len(distance_matrix)):
         row = distance_matrix[i]
 	del row[cluster2]
 	distance_matrix[i] = row
-	#del distance_matrix[i][cluster2]
 
     return merge_closest_clusters(clusters, distance_matrix, threshold)
 
@@ -542,6 +544,8 @@ def main():
     parser.add_argument("--max_outgroup", "-m", help="Maximum number of taxa to include in outgroup. Defaults to 10.")
     parser.add_argument("--evalue", "-e", help="BLAST E-value threshold to cluster taxa. Defaults to 0.1")
     parser.add_argument("--length", "-l", help="Threshold of sequence length percent similarity to cluster taxa. Defaults to 0.5")
+    parser.add_argument("--guide", "-g", help="FASTA file containing sequences to guide cluster construction. If this option is \\ 
+        selected then all-by-all BLAST comparisons are not performed.")
     args = parser.parse_args()
    
     print("")
@@ -578,22 +582,33 @@ def main():
     ingroup_keys, outgroup_keys = get_in_out_groups(gb, ingroup, outgroup)        
     all_seq_keys = ingroup_keys + outgroup_keys
 
-    # make distance matrix
-    print(color.blue + "Making distance matrix for all sequences..." + color.done)
+    # determine sequence length similarity threshold
     length_threshold = 0.5
     if args.length:
 	length_threshold = args.length
     print(color.blue + "Using sequence length similarity threshold " + str(length_threshold) + color.done)
-    distance_matrix = make_distance_matrix(gb, all_seq_keys, length_threshold)
 
-    # cluster sequences
-    print(color.purple + "Clustering sequences..." + color.done)
+    # determine e-value threshold
+    evalue_threshold = 0.1
     if args.evalue:
-	print(color.purple + "Using e-value threshold " + str(args.evalue) + color.done) 
-	clusters = make_clusters(all_seq_keys, distance_matrix, float(args.evalue))
+        evalue_threshold = float(args.evalue)
+    print(color.blue + "Using sequence length similarity threshold " + str(length_threshold) + color.done)
+
+    # now build clusters, first checking whether we are using FASTA file of guide sequences
+    # or doing all-by-all comparisons
+    if args.guide:
+        # use FASTA file of guide sequences
+        print(color.blue + "Comparing each sequence to the guide sequences..." + color.done)
+	clusters = make_guided_clusters(gb, all_seq_keys, length_threshold, evalue_threshold)
     else:
-	print(color.purple + "Using default e-value threshold 0.1" + color.done)
-        clusters = make_clusters(all_seq_keys, distance_matrix)
+        # make distance matrix
+        print(color.blue + "Making distance matrix for all sequences..." + color.done)
+        distance_matrix = make_distance_matrix(gb, all_seq_keys, length_threshold)
+
+        # cluster sequences
+        print(color.purple + "Clustering sequences..." + color.done)
+	clusters = make_clusters(all_seq_keys, distance_matrix, evalue_threshold)
+    
     print(color.purple + "Found " + color.red + str(len(clusters)) + color.purple + " clusters." + color.done)
 
     # filter clusters, make FASTA files
