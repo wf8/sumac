@@ -62,6 +62,8 @@ sumac.py -d pln -i Onagraceae -o Lythraceae
 If you already downloaded the GB database:
 sumac.py -i Onagraceae -o Lythraceae
 
+Using guide sequences to cluster:
+sumac.py -i Onagraceae -o Lythraceae -g guides.fasta
 
 """
 
@@ -76,6 +78,7 @@ from Bio import SeqIO
 from Bio.Blast.Applications import NcbiblastnCommandline
 from Bio.Align.Applications import MuscleCommandline
 from Bio.Blast import NCBIXML
+
 
 class color:
     purple = '\033[95m'
@@ -94,6 +97,7 @@ class color:
         self.done = ''
 
 
+
 def gettext(ftp, filename, outfile=None):
     """ 
     Fetch a text file. 
@@ -103,6 +107,8 @@ def gettext(ftp, filename, outfile=None):
     # use a lambda to add newlines to the lines read from the server
     ftp.retrlines("RETR " + filename, lambda s, w=outfile.write: w(s+"\n"))
 
+
+
 def getbinary(ftp, filename, outfile=None):
     """ 
     Fetch a binary file. 
@@ -110,6 +116,8 @@ def getbinary(ftp, filename, outfile=None):
     if outfile is None:
         outfile = sys.stdout
     ftp.retrbinary("RETR " + filename, outfile.write)
+
+
 
 def download_gb_db(division):
     """
@@ -142,6 +150,8 @@ def download_gb_db(division):
 	file_name = 'gb' + division + str(i) + '.seq.gz'
     ftp.quit()
 
+
+
 def setup_sqlite():
     """
     Sets up the SQLite db for the GenBank division.
@@ -154,6 +164,8 @@ def setup_sqlite():
         abs_path_files.append(gb_dir + "/" + file)
     gb = SeqIO.index_db(gb_dir + "/gb.idx", abs_path_files, "genbank")
     return gb
+
+
 
 def get_in_out_groups(gb, ingroup, outgroup):
     """
@@ -185,6 +197,8 @@ def get_in_out_groups(gb, ingroup, outgroup):
     sys.stdout.write("\n")
     sys.stdout.flush()
     return ingroup_keys, outgroup_keys
+
+
 
 def distance_matrix_worker(seq_keys, length_threshold, dist_matrix, already_compared, lock, process_num):
     """
@@ -274,6 +288,8 @@ def distance_matrix_worker(seq_keys, length_threshold, dist_matrix, already_comp
     os.remove("query" + process_num + ".fasta")
     os.remove("subject" + process_num + ".fasta")
 
+
+
 def make_distance_matrix(gb, seq_keys, length_threshold):
     """
     Takes as input a dictionary of SeqRecords gb and the keys to all sequences.
@@ -294,7 +310,7 @@ def make_distance_matrix(gb, seq_keys, length_threshold):
 	dist_matrix.append(row)
 
     num_cores = multiprocessing.cpu_count()
-    print(color.blue + "Spawning " + str(num_cores) + " processes to make distance matrix." + color.done)
+    print(color.blue + "Spawning " + color.red + str(num_cores) + color.blue + " processes to make distance matrix." + color.done)
     processes = []
     
     for i in range(num_cores):
@@ -309,6 +325,8 @@ def make_distance_matrix(gb, seq_keys, length_threshold):
     sys.stdout.flush()
     return dist_matrix
 
+
+
 def make_clusters(seq_keys, distance_matrix, threshold=(1.0/10**10)):
     """
     Input: seq_keys a list of all sequences used in the analysis, distance_matrix based on BLAST e-values, and an optional e-value threshold for clustering.
@@ -320,6 +338,8 @@ def make_clusters(seq_keys, distance_matrix, threshold=(1.0/10**10)):
     for seq in seq_keys:
         clusters.append([seq])
     return merge_closest_clusters(clusters, distance_matrix, threshold)
+
+
 
 def merge_closest_clusters(clusters, distance_matrix, threshold):
     """
@@ -374,6 +394,121 @@ def merge_closest_clusters(clusters, distance_matrix, threshold):
 
     return merge_closest_clusters(clusters, distance_matrix, threshold)
 
+
+
+def make_guided_clusters(guide_seq, all_seq_keys, length_threshold, evalue_threshold):
+    """
+    Input: name of FASTA file containing guide sequences, dictionary of all GenBank sequences,
+    a list of ingroup/outgroup sequences, the e-value threshold to cluster, and the
+    threshold of sequence length percent similarity to cluster taxa.
+    Returns a list of clusters (each cluster is itself a list of keys to sequences).
+    """
+    lock = multiprocessing.Lock()
+    manager = multiprocessing.Manager()
+    already_compared = manager.list()
+    clusters = manager.list()
+
+    # check for fasta file of guide sequences
+    if not os.path.isfile(guide_seq):
+	print(color.red + "FASTA file of guide sequences not found. Please re-try." + color.done)
+	sys.exit(0)
+    else:
+        # initialize an empty list for each cluster
+        guide_sequences = SeqIO.parse(open(guide_seq, "rU"), "fasta")
+	for guide in guide_sequences:
+            clusters.append([])
+
+    num_cores = multiprocessing.cpu_count()
+    print(color.blue + "Spawning " + color.red + str(num_cores) + color.blue + " processes to make clusters." + color.done)
+    processes = []
+    
+    for i in range(num_cores):
+        p = multiprocessing.Process(target=make_guided_clusters_worker, args=(guide_seq, all_seq_keys, \
+	    length_threshold, evalue_threshold, clusters, already_compared, lock, i))
+	p.start()
+	processes.append(p)
+
+    for p in processes:
+        p.join()
+    
+    sys.stdout.write("\n")
+    sys.stdout.flush()
+    return clusters
+
+
+
+def make_guided_clusters_worker(guide_seq, all_seq_keys, length_threshold, evalue_threshold, clusters, already_compared, lock, process_num):
+    """
+    Worker process for make_guided_clusters(). Each process will compare all the ingroup/outgroup sequences
+    to a guide sequence, adding that guide sequence to the already_compared list.
+    """
+    # each process must load its own sqlite gb
+    gb_dir = os.path.abspath("genbank/")
+    gb = SeqIO.index_db(gb_dir + "/gb.idx")
+    process_num = str(process_num)
+
+    # open guide fasta file
+    if os.path.isfile(guide_seq):
+        guide_sequences = list(SeqIO.parse(open(guide_seq, "rU"), "fasta"))
+    else:        
+	print(color.red + "FASTA file of guide sequences not found. Please re-try." + color.done)
+	sys.exit(0)
+
+    # remember how many guide sequences there are
+    num_guides = len(list(guide_sequences))
+
+    for guide in guide_sequences:
+        # check whether another process is already comparing this guide sequence
+	compare_guide = False
+	with lock:
+            if guide.id not in already_compared:
+	        already_compared.append(guide.id)
+		compare_guide = True
+	if compare_guide:
+            # loop through each ingroup/outgroup sequence and blast to guide seq
+	    output_handle = open('subject' + process_num + '.fasta', 'w')
+            SeqIO.write(guide, output_handle, 'fasta')
+            output_handle.close()
+            for key in all_seq_keys:
+	        record = gb[key]
+		length1 = len(guide.seq)
+		length2 = len(record.seq)
+		# check if length similarity threshold met
+		if (length1 < length2 * (1 + float(length_threshold))) and (length1 > length2 * (1 - float(length_threshold))):
+		    # do the blast comparison
+                    output_handle = open('query' + process_num + '.fasta', 'w')
+                    SeqIO.write(record, output_handle, 'fasta')
+                    output_handle.close()
+
+                    blastn_cmd = NcbiblastnCommandline(query='query' + process_num + '.fasta', subject='subject' + process_num + \
+			'.fasta', out='blast' + process_num + '.xml', outfmt=5)
+                    stdout, stderr = blastn_cmd()
+                    blastn_xml = open('blast' + process_num + '.xml', 'r')
+                    blast_records = NCBIXML.parse(blastn_xml)
+
+                    for blast_record in blast_records:
+		        if blast_record.alignments:
+			    if blast_record.alignments[0].hsps:
+                                # blast hit found, add sequence to cluster
+			        with lock:
+				    temp_cluster = clusters[guide_sequences.index(guide)]
+				    temp_cluster.append(key)
+				    clusters[guide_sequences.index(guide)] = temp_cluster
+		    blastn_xml.close()
+	# update status
+	percent = str(round(100 * len(already_compared)/float(num_guides), 2))
+	sys.stdout.write('\r' + color.blue + 'Completed: ' + color.red + str(len(already_compared)) + '/' + str(num_guides) + ' (' + percent + '%)' + color.done)    
+	sys.stdout.flush()    
+    # done looping through all guides, now clean up
+    if os.path.isfile("blast" + process_num + ".xml"):
+        os.remove("blast" + process_num + ".xml")
+    if os.path.isfile("query" + process_num + ".fasta"):
+        os.remove("query" + process_num + ".fasta")
+    if os.path.isfile("subject" + process_num + ".fasta"):
+        os.remove("subject" + process_num + ".fasta")
+
+
+
 def assemble_fasta_clusters(gb, clusters):
     """
     Inputs the dictionary of all GenBank sequences and a list of clustered accessions.
@@ -417,6 +552,8 @@ def assemble_fasta_clusters(gb, clusters):
         del clusters[clusters.index(cluster)]
     return cluster_files, clusters
 
+
+
 def align_clusters(cluster_files):
     """
     Inputs a list of FASTA files, each file containing an unaligned sequence cluster.
@@ -428,12 +565,13 @@ def align_clusters(cluster_files):
     alignment_files = []
     if not os.path.exists("alignments"):
         os.makedirs("alignments")
-    print(color.blue + "Spawning " + str(multiprocessing.cpu_count()) + " processes to align clusters." + color.done)
+    print(color.blue + "Spawning " + color.red + str(multiprocessing.cpu_count()) + color.blue + " processes to align clusters." + color.done)
     pool = multiprocessing.Pool(multiprocessing.cpu_count())
     alignment_files = pool.map(align_cluster, cluster_files)
     pool.close()
     pool.join()
     return alignment_files
+
 
 
 def align_cluster(cluster_file):
@@ -448,6 +586,8 @@ def align_cluster(cluster_file):
     sys.stdout.flush()
     stdout, stderr = muscle_cline()
     return alignment_file
+
+
 
 def print_region_data(alignment_files):
     """
@@ -479,6 +619,8 @@ def print_region_data(alignment_files):
 	print(color.yellow + "Missing data (%): " + color.red + str(round(100 - (100 * len(records)/float(len(taxa))), 1)) + color.done)
 	print(color.yellow + "Taxon coverage density: "  + color.red + str(round(len(records)/float(len(taxa)), 2)) + color.done)
         i += 1
+
+
 
 def concatenate(alignment_files):
     """
@@ -525,6 +667,8 @@ def concatenate(alignment_files):
     f.close()
     return "alignments/final.fasta"
 
+
+
 def make_gaps(length):
     """
     Inputs an integer.
@@ -535,6 +679,8 @@ def make_gaps(length):
         gap = "-" + gap
     return gap
 
+
+
 def main():
     # parse the command line arguments
     parser = argparse.ArgumentParser()
@@ -544,8 +690,8 @@ def main():
     parser.add_argument("--max_outgroup", "-m", help="Maximum number of taxa to include in outgroup. Defaults to 10.")
     parser.add_argument("--evalue", "-e", help="BLAST E-value threshold to cluster taxa. Defaults to 0.1")
     parser.add_argument("--length", "-l", help="Threshold of sequence length percent similarity to cluster taxa. Defaults to 0.5")
-    parser.add_argument("--guide", "-g", help="FASTA file containing sequences to guide cluster construction. If this option is \\ 
-        selected then all-by-all BLAST comparisons are not performed.")
+    parser.add_argument("--guide", "-g", help="""FASTA file containing sequences to guide cluster construction. If this option is 
+                                                 selected then all-by-all BLAST comparisons are not performed.""")
     args = parser.parse_args()
    
     print("")
@@ -586,20 +732,20 @@ def main():
     length_threshold = 0.5
     if args.length:
 	length_threshold = args.length
-    print(color.blue + "Using sequence length similarity threshold " + str(length_threshold) + color.done)
+    print(color.blue + "Using sequence length similarity threshold " + color.red + str(length_threshold) + color.done)
 
     # determine e-value threshold
-    evalue_threshold = 0.1
+    evalue_threshold = (1.0/10**10)
     if args.evalue:
         evalue_threshold = float(args.evalue)
-    print(color.blue + "Using sequence length similarity threshold " + str(length_threshold) + color.done)
+    print(color.blue + "Using BLAST e-value threshold " + color.red + str(evalue_threshold) + color.done)
 
     # now build clusters, first checking whether we are using FASTA file of guide sequences
     # or doing all-by-all comparisons
     if args.guide:
         # use FASTA file of guide sequences
-        print(color.blue + "Comparing each sequence to the guide sequences..." + color.done)
-	clusters = make_guided_clusters(gb, all_seq_keys, length_threshold, evalue_threshold)
+        print(color.blue + "Building clusters using the guide sequences..." + color.done)
+	clusters = make_guided_clusters(args.guide, all_seq_keys, length_threshold, evalue_threshold)
     else:
         # make distance matrix
         print(color.blue + "Making distance matrix for all sequences..." + color.done)
@@ -610,12 +756,18 @@ def main():
 	clusters = make_clusters(all_seq_keys, distance_matrix, evalue_threshold)
     
     print(color.purple + "Found " + color.red + str(len(clusters)) + color.purple + " clusters." + color.done)
+    if len(clusters) == 0:
+        print(color.red + "No clusters found." + color.done)
+        sys.exit(0)
 
     # filter clusters, make FASTA files
     print(color.yellow + "Building sequence matrices for each cluster." + color.done)
     cluster_files, clusters = assemble_fasta_clusters(gb, clusters)
     print(color.purple + "Kept " + color.red + str(len(clusters)) + color.purple + " clusters, discarded those with < 4 taxa." + color.done)
-    
+    if len(clusters) == 0:
+        print(color.red + "No clusters left to align." + color.done)
+	sys.exit(0)
+
     # now align each cluster with MUSCLE
     print(color.blue + "Aligning clusters with MUSCLE..." + color.done)
     alignment_files = align_clusters(cluster_files)
@@ -628,6 +780,8 @@ def main():
 
     # TODO:
     # reduce the number of outgroup taxa, make graphs, etc
+
+
 
 if __name__ == "__main__":
     main()
