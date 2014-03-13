@@ -686,6 +686,30 @@ def make_gaps(length):
 
 
 
+def calculate_supermatrix_attributes():
+    """
+    Prints out details on the final aligned super matrix.
+    TODO: make the output of this more useful
+    """
+    records = SeqIO.parse("alignments/final.fasta", "fasta")
+    num_records = 0
+    total_gap = 0
+    for record in records:
+        otu = record.description
+	gap = 0
+	for letter in record.seq:
+            if letter == '-':
+	        gap += 1
+		total_gap += 1
+	print("Taxa: " + otu + " % gaps = " + str(round(gap/float(len(record.seq)), 2)))
+	num_records += 1
+	matrix_length = len(record.seq)
+    print("Total number of taxa = " + str(num_records))
+    print("Total length of matrix = " + str(matrix_length))
+    print("Total % gaps = " + str(round(total_gap/float(matrix_length * num_records), 2)))
+
+
+
 def main():
     # parse the command line arguments
     parser = argparse.ArgumentParser()
