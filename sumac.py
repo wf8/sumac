@@ -641,14 +641,19 @@ def concatenate(alignment_files):
 
     # now concatenate the sequences
     total_length = 0
-    for alignment in alignment_files:
-        records = SeqIO.parse(alignment, "fasta")
+    for alignment in alignment_files: 
+	records = SeqIO.parse(alignment, "fasta")
+	# make sure to only add 1 sequence per cluster for each otu
+	already_added = []
 	for record in records:
 	    descriptors = record.description.split(" ")
 	    otu = descriptors[1] + " " + descriptors[2]
-	    otus[otu] = otus[otu] + record.seq
+	    if otu not in already_added:
+	        otus[otu] = otus[otu] + record.seq
+		already_added.append(otu)
 	    loci_length = len(record.seq)
         total_length += loci_length
+	# add gaps for any OTU that didn't have a sequence
 	for otu in otus:
 	    if len(otus[otu]) < total_length:
 	        otus[otu] = otus[otu] + make_gaps(loci_length)
