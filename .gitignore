@@ -5,3 +5,4 @@ alignments/
 .DS_Store
 *.swp
 *.fasta
+build/
