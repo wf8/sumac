@@ -7,6 +7,8 @@ sumac.py
 Will Freyman
 freyman@berkeley.edu
 
+Freyman, W.A. 2014. Supermatrix Constructor (SUMAC): a Python module for data mining GenBank and building phylogenetic supermatrices.
+
 Python module that:
 1: Downloads GenBank database of the specified GB division (PLN, MAM, etc)
 2: Perform exhaustive all-by-all BLAST comparisons of each ingroup and outgroup sequence.
@@ -69,9 +71,7 @@ sumac.py -i Onagraceae -o Lythraceae -g guides.fasta
 
 import os
 import sys
-import gzip
 import argparse
-from ftplib import FTP
 import multiprocessing
 from Bio import Entrez
 from Bio import SeqIO
@@ -79,93 +79,22 @@ from Bio.Blast.Applications import NcbiblastnCommandline
 from Bio.Align.Applications import MuscleCommandline
 from Bio.Blast import NCBIXML
 
-
-class color:
-    purple = '\033[95m'
-    blue = '\033[94m'
-    green = '\033[92m'
-    yellow = '\033[93m'
-    red = '\033[91m'
-    done = '\033[0m'
-
-    def disable(self):
-        self.purple = ''
-        self.blue = ''
-        self.green = ''
-        self.yellow = ''
-        self.red = ''
-        self.done = ''
+from util import Color
+from util import GenBank
 
 
 
-def gettext(ftp, filename, outfile=None):
-    """ 
-    Fetch a text file. 
+class SeqKeys:
     """
-    if outfile is None:
-        outfile = sys.stdout
-    # use a lambda to add newlines to the lines read from the server
-    ftp.retrlines("RETR " + filename, lambda s, w=outfile.write: w(s+"\n"))
-
-
-
-def getbinary(ftp, filename, outfile=None):
-    """ 
-    Fetch a binary file. 
+    Class responsible for managing keys to all sequences in ingroup and outgroup.
     """
-    if outfile is None:
-        outfile = sys.stdout
-    ftp.retrbinary("RETR " + filename, outfile.write)
 
+    ingroup_keys = []
+    outgroup_keys = []
 
+    def write_keys_to_file():
 
-def download_gb_db(division):
-    """
-    Downloads and uncompresses files for a GenBank division.
-    """
-    print(color.purple + "Connecting to ftp.ncbi.nih.gov..." + color.done)
-    ftp = FTP("ftp.ncbi.nih.gov")
-    ftp.login()
-    print(color.yellow + "Opening directory genbank..." + color.done)
-    ftp.cwd("genbank")
-    file_list = ftp.nlst()
-    i = 1 
-    file_name = "gb" + division + str(i) + ".seq.gz"
-    if not os.path.exists("genbank"):
-        os.makedirs("genbank")
-    while file_name in file_list:
-        print(color.red + "Downloading file " + file_name + color.done)
-        file = open("genbank/" + file_name, "wb")
-        getbinary(ftp, file_name, file)
-	file.close()
-	print(color.yellow + "Uncompressing file " + file_name + color.done)
-	file = gzip.open("genbank/" + file_name, "rb")
-	file_content = file.read()
-	file.close()
-        file = open("genbank/" + file_name[:-3], "wb")
-	file.write(file_content)
-	file.close()
-	os.remove("genbank/" + file_name)
-	i += 1
-	file_name = 'gb' + division + str(i) + '.seq.gz'
-    ftp.quit()
-
-
-
-def setup_sqlite():
-    """
-    Sets up the SQLite db for the GenBank division.
-    Returns a dictionary of SeqRecord objects.
-    """
-    gb_dir = os.path.abspath("genbank/")
-    files = os.listdir(gb_dir)
-    abs_path_files = []
-    for file in files:
-        abs_path_files.append(gb_dir + "/" + file)
-    gb = SeqIO.index_db(gb_dir + "/gb.idx", abs_path_files, "genbank")
-    return gb
-
-
+    def read_keys_from_file():
 
 def get_in_out_groups(gb, ingroup, outgroup):
     """
@@ -182,9 +111,9 @@ def get_in_out_groups(gb, ingroup, outgroup):
             ingroup_keys.append(key)
 	elif outgroup in gb[key].annotations['taxonomy']:
 	    outgroup_keys.append(key)
-	sys.stdout.write('\r' + color.yellow + 'Ingroup sequences found: ' + color.red + str(len(ingroup_keys)) + color.yellow \
-	    + '  Outgroup sequences found: ' + color.red + str(len(outgroup_keys)) + color.yellow + '  Percent searched: ' \
-	    + color.red + str(round( 100 * float(i) / total , 1)) + color.done)    
+	sys.stdout.write('\r' + Color.yellow + 'Ingroup sequences found: ' + Color.red + str(len(ingroup_keys)) + Color.yellow \
+	    + '  Outgroup sequences found: ' + Color.red + str(len(outgroup_keys)) + Color.yellow + '  Percent searched: ' \
+	    + Color.red + str(round( 100 * float(i) / total , 1)) + Color.done)    
 	sys.stdout.flush() 
 	i += 1
 	## FOR TESTING ONLY
@@ -199,6 +128,11 @@ def get_in_out_groups(gb, ingroup, outgroup):
     return ingroup_keys, outgroup_keys
 
 
+
+class DistanceMatrix:
+    """
+    Builds distance matrix
+    """
 
 def distance_matrix_worker(seq_keys, length_threshold, dist_matrix, already_compared, lock, process_num):
     """
@@ -281,7 +215,7 @@ def distance_matrix_worker(seq_keys, length_threshold, dist_matrix, already_comp
 	i += 1
 	# update status
 	percent = str(round(100 * len(already_compared)/float(len(seq_keys)), 2))
-	sys.stdout.write('\r' + color.blue + 'Completed: ' + color.red + str(len(already_compared)) + '/' + str(len(seq_keys)) + ' (' + percent + '%)' + color.done)    
+	sys.stdout.write('\r' + Color.blue + 'Completed: ' + Color.red + str(len(already_compared)) + '/' + str(len(seq_keys)) + ' (' + percent + '%)' + Color.done)    
 	sys.stdout.flush()    
     # done looping through all keys, now clean up
     os.remove("blast" + process_num + ".xml")
@@ -310,7 +244,7 @@ def make_distance_matrix(gb, seq_keys, length_threshold):
 	dist_matrix.append(row)
 
     num_cores = multiprocessing.cpu_count()
-    print(color.blue + "Spawning " + color.red + str(num_cores) + color.blue + " processes to make distance matrix." + color.done)
+    print(Color.blue + "Spawning " + Color.red + str(num_cores) + Color.blue + " processes to make distance matrix." + Color.done)
     processes = []
     
     for i in range(num_cores):
@@ -410,7 +344,7 @@ def make_guided_clusters(guide_seq, all_seq_keys, length_threshold, evalue_thres
 
     # check for fasta file of guide sequences
     if not os.path.isfile(guide_seq):
-	print(color.red + "FASTA file of guide sequences not found. Please re-try." + color.done)
+	print(Color.red + "FASTA file of guide sequences not found. Please re-try." + Color.done)
 	sys.exit(0)
     else:
         # initialize an empty list for each cluster
@@ -419,7 +353,7 @@ def make_guided_clusters(guide_seq, all_seq_keys, length_threshold, evalue_thres
             clusters.append([])
 
     num_cores = multiprocessing.cpu_count()
-    print(color.blue + "Spawning " + color.red + str(num_cores) + color.blue + " processes to make clusters." + color.done)
+    print(Color.blue + "Spawning " + Color.red + str(num_cores) + Color.blue + " processes to make clusters." + Color.done)
     processes = []
     
     for i in range(num_cores):
@@ -451,7 +385,7 @@ def make_guided_clusters_worker(guide_seq, all_seq_keys, length_threshold, evalu
     if os.path.isfile(guide_seq):
         guide_sequences = list(SeqIO.parse(open(guide_seq, "rU"), "fasta"))
     else:        
-	print(color.red + "FASTA file of guide sequences not found. Please re-try." + color.done)
+	print(Color.red + "FASTA file of guide sequences not found. Please re-try." + Color.done)
 	sys.exit(0)
 
     # remember how many guide sequences there are
@@ -497,7 +431,7 @@ def make_guided_clusters_worker(guide_seq, all_seq_keys, length_threshold, evalu
 		    blastn_xml.close()
 	# update status
 	percent = str(round(100 * len(already_compared)/float(num_guides), 2))
-	sys.stdout.write('\r' + color.blue + 'Completed: ' + color.red + str(len(already_compared)) + '/' + str(num_guides) + ' (' + percent + '%)' + color.done)    
+	sys.stdout.write('\r' + Color.blue + 'Completed: ' + Color.red + str(len(already_compared)) + '/' + str(num_guides) + ' (' + percent + '%)' + Color.done)    
 	sys.stdout.flush()    
     # done looping through all guides, now clean up
     if os.path.isfile("blast" + process_num + ".xml"):
@@ -565,7 +499,7 @@ def align_clusters(cluster_files):
     alignment_files = []
     if not os.path.exists("alignments"):
         os.makedirs("alignments")
-    print(color.blue + "Spawning " + color.red + str(multiprocessing.cpu_count()) + color.blue + " processes to align clusters." + color.done)
+    print(Color.blue + "Spawning " + Color.red + str(multiprocessing.cpu_count()) + Color.blue + " processes to align clusters." + Color.done)
     pool = multiprocessing.Pool(multiprocessing.cpu_count())
     alignment_files = pool.map(align_cluster, cluster_files)
     pool.close()
@@ -582,7 +516,7 @@ def align_cluster(cluster_file):
     """
     alignment_file = "alignments" + cluster_file[cluster_file.index("/"):]
     muscle_cline = MuscleCommandline(input=cluster_file, out=alignment_file)
-    print(color.red + str(muscle_cline) + color.done)
+    print(Color.red + str(muscle_cline) + Color.done)
     sys.stdout.flush()
     stdout, stderr = muscle_cline()
     return alignment_file
@@ -612,12 +546,12 @@ def print_region_data(alignment_files):
     for alignment in alignment_files:
         records = list(SeqIO.parse(alignment, "fasta"))
 	descriptors = records[0].description.split(" ")
-	print(color.blue + "Aligned cluster #: " + color.red + str(i) + color.done)
-	print(color.yellow + "DNA region: " + color.red + " ".join(descriptors[3:]) + color.done)
-	print(color.yellow + "Taxa: " + color.red + str(len(records)) + color.done)
-	print(color.yellow + "Aligned length: " + color.red + str(len(records[0].seq)) + color.done)
-	print(color.yellow + "Missing data (%): " + color.red + str(round(100 - (100 * len(records)/float(len(taxa))), 1)) + color.done)
-	print(color.yellow + "Taxon coverage density: "  + color.red + str(round(len(records)/float(len(taxa)), 2)) + color.done)
+	print(Color.blue + "Aligned cluster #: " + Color.red + str(i) + Color.done)
+	print(Color.yellow + "DNA region: " + Color.red + " ".join(descriptors[3:]) + Color.done)
+	print(Color.yellow + "Taxa: " + Color.red + str(len(records)) + Color.done)
+	print(Color.yellow + "Aligned length: " + Color.red + str(len(records[0].seq)) + Color.done)
+	print(Color.yellow + "Missing data (%): " + Color.red + str(round(100 - (100 * len(records)/float(len(taxa))), 1)) + Color.done)
+	print(Color.yellow + "Taxon coverage density: "  + Color.red + str(round(len(records)/float(len(taxa)), 2)) + Color.done)
         i += 1
 
 
@@ -724,36 +658,36 @@ def main():
     args = parser.parse_args()
    
     print("")
-    print(color.blue + "SUMAC: supermatrix constructor" + color.done)
+    print(Color.blue + "SUMAC: supermatrix constructor" + Color.done)
     print("")
 
     # download and set up sqllite db
     if args.download_gb:
         gb_division = str(args.download_gb).lower()
-        download_gb_db(gb_division)
-        print(color.yellow + "Setting up SQLite database..." + color.done)
-        gb = setup_sqlite()
+        GenBank.download_gb_db(gb_division)
+        print(Color.yellow + "Setting up SQLite database..." + Color.done)
+        gb = GenBank.setup_sqlite()
     elif not os.path.exists("genbank/gb.idx"):
-        print(color.red + "GenBank database not downloaded. Re-run with the -d option. See --help for more details." + color.done)
+        print(Color.red + "GenBank database not downloaded. Re-run with the -d option. See --help for more details." + Color.done)
         sys.exit(0)
     else:
-        print(color.purple + "Genbank database already downloaded. Indexing sequences..." + color.done)
+        print(Color.purple + "Genbank database already downloaded. Indexing sequences..." + Color.done)
 	gb_dir = os.path.abspath("genbank/")
 	gb = SeqIO.index_db(gb_dir + "/gb.idx")
-    print(color.purple + "%i sequences indexed!" % len(gb) + color.done)
+    print(Color.purple + "%i sequences indexed!" % len(gb) + Color.done)
 
     # check for ingroup and outgroup
     if args.ingroup and args.outgroup:
         ingroup = args.ingroup
         outgroup = args.outgroup
     else:
-        print(color.red + "Please specify ingroup and outgroup. See --help for details." + color.done)
+        print(Color.red + "Please specify ingroup and outgroup. See --help for details." + Color.done)
 	sys.exit(0)
 	
     # search db for sequences
-    print(color.blue + "Outgroup = " + outgroup)
-    print("Ingroup = " + ingroup + color.done)
-    print(color.blue + "Searching for ingroup and outgroup sequences..." + color.done)
+    print(Color.blue + "Outgroup = " + outgroup)
+    print("Ingroup = " + ingroup + Color.done)
+    print(Color.blue + "Searching for ingroup and outgroup sequences..." + Color.done)
     ingroup_keys, outgroup_keys = get_in_out_groups(gb, ingroup, outgroup)        
     all_seq_keys = ingroup_keys + outgroup_keys
 
@@ -761,51 +695,51 @@ def main():
     length_threshold = 0.5
     if args.length:
 	length_threshold = args.length
-    print(color.blue + "Using sequence length similarity threshold " + color.red + str(length_threshold) + color.done)
+    print(Color.blue + "Using sequence length similarity threshold " + Color.red + str(length_threshold) + Color.done)
 
     # determine e-value threshold
     evalue_threshold = (1.0/10**10)
     if args.evalue:
         evalue_threshold = float(args.evalue)
-    print(color.blue + "Using BLAST e-value threshold " + color.red + str(evalue_threshold) + color.done)
+    print(Color.blue + "Using BLAST e-value threshold " + Color.red + str(evalue_threshold) + Color.done)
 
     # now build clusters, first checking whether we are using FASTA file of guide sequences
     # or doing all-by-all comparisons
     if args.guide:
         # use FASTA file of guide sequences
-        print(color.blue + "Building clusters using the guide sequences..." + color.done)
+        print(Color.blue + "Building clusters using the guide sequences..." + Color.done)
 	clusters = make_guided_clusters(args.guide, all_seq_keys, length_threshold, evalue_threshold)
     else:
         # make distance matrix
-        print(color.blue + "Making distance matrix for all sequences..." + color.done)
+        print(Color.blue + "Making distance matrix for all sequences..." + Color.done)
         distance_matrix = make_distance_matrix(gb, all_seq_keys, length_threshold)
 
         # cluster sequences
-        print(color.purple + "Clustering sequences..." + color.done)
+        print(Color.purple + "Clustering sequences..." + Color.done)
 	clusters = make_clusters(all_seq_keys, distance_matrix, evalue_threshold)
     
-    print(color.purple + "Found " + color.red + str(len(clusters)) + color.purple + " clusters." + color.done)
+    print(Color.purple + "Found " + Color.red + str(len(clusters)) + Color.purple + " clusters." + Color.done)
     if len(clusters) == 0:
-        print(color.red + "No clusters found." + color.done)
+        print(Color.red + "No clusters found." + Color.done)
         sys.exit(0)
 
     # filter clusters, make FASTA files
-    print(color.yellow + "Building sequence matrices for each cluster." + color.done)
+    print(Color.yellow + "Building sequence matrices for each cluster." + Color.done)
     cluster_files, clusters = assemble_fasta_clusters(gb, clusters)
-    print(color.purple + "Kept " + color.red + str(len(clusters)) + color.purple + " clusters, discarded those with < 4 taxa." + color.done)
+    print(Color.purple + "Kept " + Color.red + str(len(clusters)) + Color.purple + " clusters, discarded those with < 4 taxa." + Color.done)
     if len(clusters) == 0:
-        print(color.red + "No clusters left to align." + color.done)
+        print(Color.red + "No clusters left to align." + Color.done)
 	sys.exit(0)
 
     # now align each cluster with MUSCLE
-    print(color.blue + "Aligning clusters with MUSCLE..." + color.done)
+    print(Color.blue + "Aligning clusters with MUSCLE..." + Color.done)
     alignment_files = align_clusters(cluster_files)
     print_region_data(alignment_files)
 
     # concatenate alignments
-    print(color.purple + "Concatenating alignments..." + color.done)
+    print(Color.purple + "Concatenating alignments..." + Color.done)
     final_alignment = concatenate(alignment_files)
-    print(color.yellow + "Final alignment: " + color.red + "alignments/final.fasta" + color.done)
+    print(Color.yellow + "Final alignment: " + Color.red + "alignments/final.fasta" + Color.done)
 
     # TODO:
     # reduce the number of outgroup taxa, make graphs, etc
