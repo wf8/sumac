@@ -39,9 +39,10 @@ class GenBankSetup():
 
 
     @classmethod
-    def download(cls, division_input):
+    def download(cls, division_input, path):
         """
         Downloads and uncompresses files for a GenBank division.
+        Path should be the absolute path to save the GB files.
         """
         color = Color()
         division = str(division_input).lower()
@@ -53,21 +54,21 @@ class GenBankSetup():
         file_list = ftp.nlst()
         i = 1
         file_name = "gb" + division + str(i) + ".seq.gz"
-        if not os.path.exists("genbank"):
-            os.makedirs("genbank")
+        if not os.path.exists(path):
+            os.makedirs(path)
         while file_name in file_list:
             print(color.red + "Downloading file " + file_name + color.done)
-            file = open("genbank/" + file_name, "wb")
+            file = open(path + file_name, "wb")
             cls.getbinary(ftp, file_name, file)
             file.close()
             print(color.yellow + "Uncompressing file " + file_name + color.done)
-            file = gzip.open("genbank/" + file_name, "rb")
+            file = gzip.open(path + file_name, "rb")
             file_content = file.read()
             file.close()
-            file = open("genbank/" + file_name[:-3], "wb")
+            file = open(path + file_name[:-3], "wb")
             file.write(file_content)
             file.close()
-            os.remove("genbank/" + file_name)
+            os.remove(path + file_name)
             i += 1
             file_name = 'gb' + division + str(i) + '.seq.gz'
         # check if any files were downloaded
@@ -81,17 +82,17 @@ class GenBankSetup():
 
 
     @staticmethod
-    def sqlite():
+    def sqlite(path):
         """
         Sets up the SQLite db for the GenBank division.
+        Path is the absolute path of the GB files.
         Returns a dictionary of SeqRecord objects.
         """
-        gb_dir = os.path.abspath("genbank/")
-        files = os.listdir(gb_dir)
-        abs_path_files = []
+        files = os.listdir(path)
+        path_files = []
         for file in files:
-            abs_path_files.append(gb_dir + "/" + file)
-        gb = SeqIO.index_db(gb_dir + "/gb.idx", abs_path_files, "genbank")
+            path_files.append(path + "/" + file)
+        gb = SeqIO.index_db(path + "/gb.idx", path_files, "genbank")
         return gb
 
 
@@ -101,18 +102,19 @@ class GenBankSearch:
     """
     Class responsible for searching GenBank and managing lists of keys 
     to all sequences in ingroup and outgroup.
+    Path is the absolute path of the GB files.
     """
 
     ingroup = ''
     ingroup_keys = []
     outgroup = ''
     outgroup_keys = []
-  
+    path = ''
 
     def __init__(self, gb, ingroup, outgroup):
         """
         Takes as input a dictionary of SeqRecords gb and the names of ingroup 
-        and outgroup clades.
+        and outgroup clades. Option parameter location of directory to save GB files.
         Finds lists of keys to SeqRecords for the ingroup and outgroup.
         """
         self.ingroup = ingroup
@@ -171,14 +173,14 @@ class GenBankSearch:
         Saves results of GB search to file.
         """
         data = {"ingroup": self.ingroup, "outgroup": self.outgroup, "ingroup_keys": self.ingroup_keys, "outgroup_keys": self.outgroup.keys}
-        pickle.dump(data, open( "genbank/gb_search_results", "rb" ))
+        pickle.dump(data, open( "gb_search_results", "rb" ))
 
 
     def read_file(self):
         """
         Loads results of GB search from file.
         """
-        groups = pickle.load( open( "genbank/gb_search_results", "rb" ) )
+        groups = pickle.load( open( "gb_search_results", "rb" ) )
         self.ingroup = groups["ingroup"]
         self.outgroup = groups["outgroup"]
         self.ingroup_keys = groups["ingroup_keys"]
@@ -195,9 +197,9 @@ class GenBankSearch:
         """
         Check to see if ingroup/outgroup sequences have already been found.
         """
-        if not os.path.exists("genbank/gb_search_results"):
+        if not os.path.exists("gb_search_results"):
             return False
         else:
-            groups = pickle.load( open( "genbank/gb_search_results", "rb" ) )
+            groups = pickle.load( open( "gb_search_results", "rb" ) )
             if self.ingroup == groups["ingroup"] and self.outgroup == groups["outgroup"]:
                 return True

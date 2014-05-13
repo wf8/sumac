@@ -86,6 +86,7 @@ def main():
     # parse the command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("--download_gb", "-d", help="Name of the GenBank division to download (e.g. PLN or MAM).")
+    parser.add_argument("--path", "-p", help="Absolute path to download GenBank files to. Defaults to ./genbank/")
     parser.add_argument("--ingroup", "-i", help="Ingroup clade to build supermatrix.")
     parser.add_argument("--outgroup", "-o", help="Outgroup clade to build supermatrix.")
     parser.add_argument("--max_outgroup", "-m", help="Maximum number of taxa to include in outgroup. Defaults to 10.")
@@ -102,17 +103,20 @@ def main():
     print("")
 
     # download and set up sqllite db
+    if args.path:
+        gb_dir = args.path
+    else:
+        gb_dir = os.path.abspath("genbank/")
     if args.download_gb:
-        GenBankSetup.download(args.download_gb)
+        GenBankSetup.download(args.download_gb, gb_dir)
         print(color.yellow + "Setting up SQLite database..." + color.done)
-        gb = GenBankSetup.sqlite()
-    elif not os.path.exists("genbank/gb.idx"):
+        gb = GenBankSetup.sqlite(gb_dir)
+    elif not os.path.exists(gb_dir + "/gb.idx"):
         print(color.red + "GenBank database not downloaded. Re-run with the -d option. See --help for more details." + color.done)
         sys.exit(0)
     else:
         print(color.purple + "Genbank database already downloaded. Indexing sequences..." + color.done)
-    gb_dir = os.path.abspath("genbank/")
-    gb = SeqIO.index_db(gb_dir + "/gb.idx")
+        gb = GenBankSetup.sqlite(gb_dir)
     print(color.purple + "%i sequences indexed!" % len(gb) + color.done)
 
     # check for ingroup and outgroup
@@ -121,9 +125,9 @@ def main():
         outgroup = args.outgroup
     else:
         print(color.red + "Please specify ingroup and outgroup. See --help for details." + color.done)
-    sys.exit(0)
+        sys.exit(0)
     
-    # search db for sequences
+    # search db for ingroup and outgroup sequences
     print(color.blue + "Outgroup = " + outgroup)
     print("Ingroup = " + ingroup + color.done)
     print(color.blue + "Searching for ingroup and outgroup sequences..." + color.done)
@@ -170,7 +174,7 @@ def main():
     print(color.purple + "Kept " + color.red + str(len(clusters)) + color.purple + " clusters, discarded those with < 4 taxa." + color.done)
     if len(clusters) == 0:
         print(color.red + "No clusters left to align." + color.done)
-    sys.exit(0)
+        sys.exit(0)
 
     # now align each cluster with MUSCLE
     print(color.blue + "Aligning clusters with MUSCLE..." + color.done)
