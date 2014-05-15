@@ -12,7 +12,7 @@ from util import Color
 
 
 
-class GenBankSetup():
+class GenBankSetup(object):
     """
     Class responsible for downloading and indexing GenBank files.
     """
@@ -98,7 +98,7 @@ class GenBankSetup():
 
 
 
-class GenBankSearch:
+class GenBankSearch(object):
     """
     Class responsible for searching GenBank and managing lists of keys 
     to all sequences in ingroup and outgroup.

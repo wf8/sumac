@@ -11,6 +11,46 @@ from Bio.Blast import NCBIXML
 from util import Color
 
 
+class Clusters(object):
+    """
+    Class responsible for managing clusters of homologous sequences.
+    """
+
+    clusters = []
+    seq_keys = []
+
+    def __init__(self, seq_keys):
+        self.seq_keys = seq_keys
+
+    def write_fasta(self):
+        return True
+
+
+class DistanceMatrixClusters(Clusters):
+    """
+    Builds clusters from a distance matrix.
+    Inherits from Clusters.
+    """
+
+    distance_matrix = []
+
+    def __init__(self, seq_keys, distance_matrix, threshold=(1.0/10**10)):
+        Clusters.__init__(self, seq_keys)
+        self.distance_matrix = distance_matrix
+        return True
+
+class GuidedClusters(Clusters):
+    """
+    Builds clusters from guide sequences.
+    Inherits from Clusters.
+    """
+
+    def __init__(self, seq_keys):
+        Clusters.__init__(self, seq_keys)
+        return True
+
+
+
 def make_clusters(seq_keys, distance_matrix, threshold=(1.0/10**10)):
     """
     Input: seq_keys a list of all sequences used in the analysis, distance_matrix based on BLAST e-values, and an optional e-value threshold for clustering.

@@ -2,7 +2,7 @@
 
 import sys
 
-class Color:
+class Color(object):
     """
     Class for printing pretty colors to the terminal.
     """
