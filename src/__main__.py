@@ -77,8 +77,9 @@ import argparse
 from util import Color
 from genbank import GenBankSetup
 from genbank import GenBankSearch
-import distancematrix
-import clusters
+from distancematrix import DistanceMatrix
+from clusters import DistanceMatrixClusters
+from clusters import GuidedClusters
 import alignments
 
 
@@ -153,16 +154,16 @@ def main():
     if args.guide:
         # use FASTA file of guide sequences
         print(color.blue + "Building clusters using the guide sequences..." + color.done)
-        clusters = clusters.make_guided_clusters(args.guide, all_seq_keys, length_threshold, evalue_threshold)
+        clusters = GuidedClusters(args.guide, all_seq_keys, length_threshold, evalue_threshold, gb_dir).clusters
     else:
         # make distance matrix
         print(color.blue + "Making distance matrix for all sequences..." + color.done)
-        distance_matrix = distancematrix.make_distance_matrix(gb, all_seq_keys, length_threshold)
+        distance_matrix = DistanceMatrix(gb, all_seq_keys, length_threshold, gb_dir).dist_matrix
 
         # cluster sequences
         print(color.purple + "Clustering sequences..." + color.done)
-        clusters = clusters.make_clusters(all_seq_keys, distance_matrix, evalue_threshold)
-    
+        clusters = DistanceMatrixClusters(all_seq_keys, distance_matrix, evalue_threshold).clusters
+
     print(color.purple + "Found " + color.red + str(len(clusters)) + color.purple + " clusters." + color.done)
     if len(clusters) == 0:
         print(color.red + "No clusters found." + color.done)
