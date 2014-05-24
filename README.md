@@ -1,5 +1,5 @@
 
-## SUMAC: supermatrix constructor
+# SUMAC: supermatrix constructor
 
 
 Python package that:   
@@ -17,23 +17,23 @@ Python package that:
 
 Optimized to run on multicore servers with the use of parallel multiple processes.
 
-# Requirements:
+### Requirements:
     Python 2.7
     Biopython
     MUSCLE
     BLAST+
 
-# To install: 
+### To install: 
 
     python setup.py install
 
-# Usage:
+### Usage:
 
     python -m sumac [-h] [--download_gb DOWNLOAD_GB] [--ingroup INGROUP]
                           [--outgroup OUTGROUP] [--max_outgroup MAX_OUTGROUP]
                           [--evalue EVALUE] [--length LENGTH] [--guide GUIDE]
 
-# Optional arguments:
+### Optional arguments:
 
       -h, --help            show this help message and exit
       --download_gb DOWNLOAD_GB, -d DOWNLOAD_GB
@@ -57,7 +57,7 @@ Optimized to run on multicore servers with the use of parallel multiple processe
                 construction. If this option is selected then
                 all-by-all BLAST comparisons are not performed.
 
-# Examples:
+### Examples:
 
 A basic example:
 
@@ -71,7 +71,7 @@ Using guide sequences to build clusters:
 
     python -m sumac -i Onagraceae -o Lythraceae -g guides.fasta
 
-# Citation:
+### Citation:
 Freyman, W.A. 2014. Supermatrix Constructor (SUMAC): a Python package for data mining GenBank and building phylogenetic supermatrices.
 
 
