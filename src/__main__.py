@@ -179,13 +179,13 @@ def main():
 
     # now align each cluster with MUSCLE
     print(color.blue + "Aligning clusters with MUSCLE..." + color.done)
-    alignment_files = alignments.align_clusters(cluster_builder.cluster_files)
-    print_region_data(alignment_files)
+    alignments = Alignments(cluster_builder.cluster_files)
+    alignments.print_region_data()
 
     # concatenate alignments
     print(color.purple + "Concatenating alignments..." + color.done)
-    final_alignment = alignments.concatenate(alignment_files)
-    print(color.yellow + "Final alignment: " + color.red + "alignments/final.fasta" + color.done)
+    alignments.concatenate()
+    print(color.yellow + "Final alignment: " + color.red + "alignments/combined.fasta" + color.done)
 
     # TODO:
     # reduce the number of outgroup taxa, make graphs, etc
