@@ -7,12 +7,12 @@ from Bio import SeqIO
 from Bio.Blast.Applications import NcbiblastnCommandline
 from Bio.Blast import NCBIXML
 
-class DistanceMatrix:
+class DistanceMatrixBuilder:
     """
     Builds distance matrix
     """
     
-    dist_matrix = []
+    distance_matrix = []
 
     def __init__(self, gb, seq_keys, length_threshold, gb_dir):
         """
@@ -47,7 +47,7 @@ class DistanceMatrix:
 
         sys.stdout.write("\n")
         sys.stdout.flush()
-        self.dist_matrix = dist_matrix
+        self.distance_matrix = dist_matrix
 
 
     def distance_matrix_worker(self, seq_keys, length_threshold, dist_matrix, already_compared, lock, process_num, gb_dir):

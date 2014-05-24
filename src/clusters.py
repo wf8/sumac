@@ -11,29 +11,79 @@ from Bio.Blast import NCBIXML
 from util import Color
 
 
-class Clusters(object):
+class ClusterBuilder(object):
     """
-    Class responsible for managing clusters of homologous sequences.
+    Class responsible for assembling clusters of homologous sequences.
     """
 
     clusters = []
     seq_keys = []
+    cluster_files = []
+
 
     def __init__(self, seq_keys):
         self.seq_keys = seq_keys
+
 
     def write_fasta(self):
         return True
 
 
-class DistanceMatrixClusters(Clusters):
+    def assemble_fasta(self, gb):
+        """
+        Inputs the dictionary of all GenBank sequence.
+        Only make fasta files of clusters containing 4 taxa or more,
+        and delete those clusters with less than 4.
+        Generates a list of FASTA files, each file containing an unaligned sequence cluster.
+        """
+        cluster_files = []
+        if not os.path.exists("clusters"):
+            os.makedirs("clusters")
+        i = 0
+        to_delete = []
+        for cluster in self.clusters:
+            # get all OTUs in cluster
+            otus = []
+            for seq_key in cluster:
+                descriptors = gb[seq_key].description.split(" ")
+                otu = descriptors[0] + " " + descriptors[1]
+                if otu not in otus:
+                    otus.append(otu)
+            # make fasta file if > 3 OTUs in cluster
+            otus_in_cluster = []
+            if len(otus) > 3:
+                sequences = []
+                for seq_key in cluster:
+                    descriptors = gb[seq_key].description.split(" ")
+                    otu = descriptors[0] + " " + descriptors[1]
+                    # do not allow duplicate OTUs in cluster
+                    if otu not in otus_in_cluster:
+                        sequences.append(gb[seq_key])
+                        otus_in_cluster.append(otu)
+                file_name = "clusters/" + str(i) + ".fasta"
+                file = open(file_name, "wb")
+                SeqIO.write(sequences, file, 'fasta')
+                file.close()
+                cluster_files.append(file_name)
+                i += 1
+            else:
+                to_delete.append(cluster)
+        for cluster in to_delete:
+            del self.clusters[clusters.index(cluster)]
+        self.cluster_files = cluster_files
+
+
+
+class DistanceMatrixClusterBuilder(ClusterBuilder):
     """
     Builds clusters from a distance matrix.
-    Inherits from Clusters.
+    Inherits from ClusterBuilder.
     """
+
 
     distance_matrix = []
     threshold = (1.0/10**10)
+
 
     def __init__(self, seq_keys, distance_matrix, threshold=(1.0/10**10)):
         """
@@ -41,7 +91,7 @@ class DistanceMatrixClusters(Clusters):
         Output: a list of clusters (each cluster is itself a list of keys to sequences)
         This function is a wrapper around the recursive function merge_closest_clusters.
         """
-        Clusters.__init__(self, seq_keys)
+        ClusterBuilder.__init__(self, seq_keys)
         self.distance_matrix = distance_matrix
         self.seq_keys = seq_keys
         self.threshold = threshold
@@ -50,6 +100,7 @@ class DistanceMatrixClusters(Clusters):
         for seq in seq_keys:
             self.clusters.append([seq])
         self.merge_closest_clusters(self.clusters, distance_matrix)
+
 
     def merge_closest_clusters(self, clusters, distance_matrix):
         """
@@ -106,11 +157,13 @@ class DistanceMatrixClusters(Clusters):
         self.merge_closest_clusters(clusters, distance_matrix)
 
 
-class GuidedClusters(Clusters):
+
+class GuidedClusterBuilder(ClusterBuilder):
     """
     Builds clusters from guide sequences.
-    Inherits from Clusters.
+    Inherits from ClusterBuilder.
     """
+
 
     def __init__(self, guide_seq, all_seq_keys, length_threshold, evalue_threshold, gb_dir):
         """
@@ -120,7 +173,7 @@ class GuidedClusters(Clusters):
         and the GenBank directory.
         Generates a list of clusters (each cluster is itself a list of keys to sequences).
         """
-        Clusters.__init__(self, all_seq_keys)
+        ClusterBuilder.__init__(self, all_seq_keys)
         
         lock = multiprocessing.Lock()
         manager = multiprocessing.Manager()

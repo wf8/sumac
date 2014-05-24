@@ -77,9 +77,9 @@ import argparse
 from util import Color
 from genbank import GenBankSetup
 from genbank import GenBankSearch
-from distancematrix import DistanceMatrix
-from clusters import DistanceMatrixClusters
-from clusters import GuidedClusters
+from distancematrix import DistanceMatrixBuilder
+from clusters import DistanceMatrixClusterBuilder
+from clusters import GuidedClusterBuilder
 import alignments
 
 
@@ -154,32 +154,32 @@ def main():
     if args.guide:
         # use FASTA file of guide sequences
         print(color.blue + "Building clusters using the guide sequences..." + color.done)
-        clusters = GuidedClusters(args.guide, all_seq_keys, length_threshold, evalue_threshold, gb_dir).clusters
+        cluster_builder = GuidedClusterBuilder(args.guide, all_seq_keys, length_threshold, evalue_threshold, gb_dir)
     else:
         # make distance matrix
         print(color.blue + "Making distance matrix for all sequences..." + color.done)
-        distance_matrix = DistanceMatrix(gb, all_seq_keys, length_threshold, gb_dir).dist_matrix
+        distance_matrix = DistanceMatrixBuilder(gb, all_seq_keys, length_threshold, gb_dir).distance_matrix
 
         # cluster sequences
         print(color.purple + "Clustering sequences..." + color.done)
-        clusters = DistanceMatrixClusters(all_seq_keys, distance_matrix, evalue_threshold).clusters
+        cluster_builder = DistanceMatrixClusterBuilder(all_seq_keys, distance_matrix, evalue_threshold)
 
-    print(color.purple + "Found " + color.red + str(len(clusters)) + color.purple + " clusters." + color.done)
-    if len(clusters) == 0:
+    print(color.purple + "Found " + color.red + str(len(cluster_builder.clusters)) + color.purple + " clusters." + color.done)
+    if len(cluster_builder.clusters) == 0:
         print(color.red + "No clusters found." + color.done)
         sys.exit(0)
 
     # filter clusters, make FASTA files
     print(color.yellow + "Building sequence matrices for each cluster." + color.done)
-    cluster_files, clusters = alignments.assemble_fasta_clusters(gb, clusters)
-    print(color.purple + "Kept " + color.red + str(len(clusters)) + color.purple + " clusters, discarded those with < 4 taxa." + color.done)
-    if len(clusters) == 0:
+    cluster_builder.assemble_fasta(gb)
+    print(color.purple + "Kept " + color.red + str(len(cluster_builder.clusters)) + color.purple + " clusters, discarded those with < 4 taxa." + color.done)
+    if len(cluster_builder.clusters) == 0:
         print(color.red + "No clusters left to align." + color.done)
         sys.exit(0)
 
     # now align each cluster with MUSCLE
     print(color.blue + "Aligning clusters with MUSCLE..." + color.done)
-    alignment_files = alignments.align_clusters(cluster_files)
+    alignment_files = alignments.align_clusters(cluster_builder.cluster_files)
     print_region_data(alignment_files)
 
     # concatenate alignments

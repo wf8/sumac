@@ -13,49 +13,6 @@ from util import Color
 
 
 
-def assemble_fasta_clusters(gb, clusters):
-    """
-    Inputs the dictionary of all GenBank sequences and a list of clustered accessions.
-    Only make fasta files of clusters containing 4 taxa or more.
-    Outputs a list of FASTA files, each file containing an unaligned sequence cluster,
-    and an updated list of clustered accessions.
-    """
-    cluster_files = []
-    if not os.path.exists("clusters"):
-        os.makedirs("clusters")
-    i = 0
-    to_delete = []
-    for cluster in clusters:
-        # get all OTUs in cluster
-        otus = []
-        for seq_key in cluster:
-            descriptors = gb[seq_key].description.split(" ")
-            otu = descriptors[0] + " " + descriptors[1]
-            if otu not in otus:
-                otus.append(otu)
-        # make fasta file if > 3 OTUs in cluster
-        otus_in_cluster = []
-        if len(otus) > 3:
-            sequences = []
-            for seq_key in cluster:
-                descriptors = gb[seq_key].description.split(" ")
-                otu = descriptors[0] + " " + descriptors[1]
-                # do not allow duplicate OTUs in cluster
-                if otu not in otus_in_cluster:
-                    sequences.append(gb[seq_key])
-                    otus_in_cluster.append(otu)
-            file_name = "clusters/" + str(i) + ".fasta"
-            file = open(file_name, "wb")
-            SeqIO.write(sequences, file, 'fasta')
-            file.close()
-            cluster_files.append(file_name)
-            i += 1
-        else:
-            to_delete.append(cluster)
-    for cluster in to_delete:
-        del clusters[clusters.index(cluster)]
-    return cluster_files, clusters
-
 
 
 def align_clusters(cluster_files):
