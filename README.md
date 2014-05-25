@@ -5,13 +5,13 @@
 Python package that:   
 
 1. Downloads GenBank database of the specified GB division (PLN, MAM, etc)  
-2. Perform exhaustive all-by-all BLAST comparisons of each ingroup and outgroup sequence.  
-3. Alternatively (much faster) uses a FASTA file of guide sequences to define each cluster. 
+2. Performs an exhaustive all-by-all BLAST comparisons of each ingroup and outgroup sequence, or  
+3. alternatively (much faster) uses a FASTA file of guide sequences to define each cluster. 
 Each ingroup/outgroup sequence is BLASTed against the guide sequences.  
-4. Build clusters of sequences:  
-    - use single-linkage hierarchical clustering algorithm  
+4. Builds clusters of sequences:  
+    - uses single-linkage hierarchical clustering algorithm  
     - distance threshold default BLASTn e-value 1.0e-10  
-        - uses sequence length percent similarity cutoff default 0.5  
+    - sequence length percent similarity cutoff default 0.5  
     - discards clusters that are not phylogenetically informative (< 4 taxa)  
 5. Aligns each cluster of sequences using MUSCLE.  
 6. Concatenates the clusters creating a supermatrix.  
@@ -35,19 +35,20 @@ A basic example:
 
     python -m sumac -d pln -i Onagraceae -o Lythraceae
 
-If you already downloaded the GB database:
+If you already downloaded the GenBank database:
 
     python -m sumac -i Onagraceae -o Lythraceae
 
-Using guide sequences to build clusters:
+Instead of doing an all-by-all BLAST comparison, use guide sequences to build clusters:
 
     python -m sumac -i Onagraceae -o Lythraceae -g guides.fasta
 
 ### Usuage arguments:
 
     python -m sumac [-h] [--download_gb DOWNLOAD_GB] [--ingroup INGROUP]
-                          [--outgroup OUTGROUP] [--max_outgroup MAX_OUTGROUP]
-                          [--evalue EVALUE] [--length LENGTH] [--guide GUIDE]
+                         [--outgroup OUTGROUP] [--max_outgroup MAX_OUTGROUP]
+                         [--evalue EVALUE] [--length LENGTH] [--guide GUIDE]
+                         [--path PATH]
 
 ### Argument details:
 
@@ -67,15 +68,19 @@ Using guide sequences to build clusters:
                             0.1
       --length LENGTH, -l LENGTH
                             Threshold of sequence length percent similarity to
-                cluster taxa. Defaults to 0.5
+                            cluster taxa. Defaults to 0.5
       --guide GUIDE, -g GUIDE
                             FASTA file containing sequences to guide cluster
-                construction. If this option is selected then
-                all-by-all BLAST comparisons are not performed.
+                            construction. If this option is selected then
+                            all-by-all BLAST comparisons are not performed.
+      --path PATH, -p PATH  Absolute path to download GenBank files to. Defaults
+                            to ./genbank/
 
 ### Citation:
+
 Freyman, W.A. 2014. Supermatrix Constructor (SUMAC): a Python package for data mining GenBank and building phylogenetic supermatrices.
 
+### Other stuff:
 
 Copyright 2014 Will Freyman - freyman@berkeley.edu  
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
