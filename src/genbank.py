@@ -150,6 +150,7 @@ class GenBankSearch(object):
             if max_ingroup is not None and len(self.ingroup_keys) == max_ingroup:
                 sys.stdout.write("\n")
                 sys.stdout.flush()  
+                self.write_file()
                 return 
         sys.stdout.write("\n")
         sys.stdout.flush()
@@ -172,8 +173,8 @@ class GenBankSearch(object):
         """
         Saves results of GB search to file.
         """
-        data = {"ingroup": self.ingroup, "outgroup": self.outgroup, "ingroup_keys": self.ingroup_keys, "outgroup_keys": self.outgroup.keys}
-        pickle.dump(data, open( "gb_search_results", "rb" ))
+        data = {"ingroup": self.ingroup, "outgroup": self.outgroup, "ingroup_keys": self.ingroup_keys, "outgroup_keys": self.outgroup_keys}
+        pickle.dump(data, open( "gb_search_results", "w" ))
 
 
     def read_file(self):
@@ -185,6 +186,7 @@ class GenBankSearch(object):
         self.outgroup = groups["outgroup"]
         self.ingroup_keys = groups["ingroup_keys"]
         self.outgroup_keys = groups["outgroup_keys"]
+        color = Color()
         print(color.yellow + 'This search was already performed. Loading previous results...' + color.done)
         print(color.yellow + 'Ingroup sequences found: ' \
               + color.red + str(len(self.ingroup_keys)) + color.yellow \

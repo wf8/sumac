@@ -16,7 +16,7 @@ from genbank import GenBankSearch
 from distancematrix import DistanceMatrixBuilder
 from clusters import DistanceMatrixClusterBuilder
 from clusters import GuidedClusterBuilder
-import alignments
+from alignments import Alignments
 
 
 def main():
@@ -125,7 +125,8 @@ def main():
     # concatenate alignments
     print(color.purple + "Concatenating alignments..." + color.done)
     alignments.concatenate()
-    print(color.yellow + "Final alignment: " + color.red + "alignments/combined.fasta" + color.done)
+    alignments.print_supermatrix_attributes()
+    print(color.yellow + "Final supermatrix: " + color.red + "alignments/combined.fasta" + color.done)
 
     # TODO:
     # reduce the number of outgroup taxa, make graphs, etc

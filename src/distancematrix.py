@@ -2,10 +2,12 @@
 
 import os
 import sys
+import multiprocessing
 from Bio import Entrez
 from Bio import SeqIO
 from Bio.Blast.Applications import NcbiblastnCommandline
 from Bio.Blast import NCBIXML
+from util import Color
 
 class DistanceMatrixBuilder:
     """

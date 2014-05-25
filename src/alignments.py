@@ -5,6 +5,8 @@ import os
 import sys
 import argparse
 import multiprocessing
+import copy_reg
+import types
 from Bio import Entrez
 from Bio import SeqIO
 from Bio.Align.Applications import MuscleCommandline
@@ -55,6 +57,7 @@ class Alignments(object):
         print(color.red + str(muscle_cline) + color.done)
         sys.stdout.flush()
         stdout, stderr = muscle_cline()
+        return alignment_file
 
 
 
@@ -82,7 +85,7 @@ class Alignments(object):
             descriptors = records[0].description.split(" ")
             print(color.blue + "Aligned cluster #: " + color.red + str(i) + color.done)
             print(color.yellow + "DNA region: " + color.red + " ".join(descriptors[3:]) + color.done)
-            print(color.yellow + "Taxa: " + color.red + str(len(records)) + color.done)
+            print(color.yellow + "OTUs: " + color.red + str(len(records)) + color.done)
             print(color.yellow + "Aligned length: " + color.red + str(len(records[0].seq)) + color.done)
             print(color.yellow + "Missing data (%): " + color.red + str(round(100 - (100 * len(records)/float(len(taxa))), 1)) + color.done)
             print(color.yellow + "Taxon coverage density: "  + color.red + str(round(len(records)/float(len(taxa)), 2)) + color.done)
@@ -153,11 +156,13 @@ class Alignments(object):
 
 
 
-    def calculate_supermatrix_attributes(self):
+    def print_supermatrix_attributes(self):
         """
         Prints out details on the final aligned super matrix.
         """
         # TODO: make the output of this more useful
+        color = Color()
+        print(color.blue + "Supermatrix attributes:")
         records = SeqIO.parse("alignments/combined.fasta", "fasta")
         num_records = 0
         total_gap = 0
@@ -168,11 +173,33 @@ class Alignments(object):
                 if letter == '-':
                     gap += 1
                     total_gap += 1
-            print("Taxa: " + otu + " % gaps = " + str(round(gap/float(len(record.seq)), 2)))
+            print(color.yellow + "OTU: " + color.red + otu + color.yellow + " % gaps = " + color.red + str(round(gap/float(len(record.seq)), 2)))
             num_records += 1
             matrix_length = len(record.seq)
-        print("Total number of taxa = " + str(num_records))
-        print("Total length of matrix = " + str(matrix_length))
-        print("Total % gaps = " + str(round(total_gap/float(matrix_length * num_records), 2)))
+        print(color.blue + "Total number of OTUs = " + color.red + str(num_records))
+        print(color.blue + "Total length of matrix = " + color.red + str(matrix_length))
+        print(color.blue + "Total % gaps = " + color.red + str(round(total_gap/float(matrix_length * num_records), 2)) + color.done)
 
 
+
+# pickle method recipe by Steven Bethard
+# see http://stackoverflow.com/questions/1816958/cant-pickle-type-instancemethod-when-using-pythons-multiprocessing-pool-ma/
+def _pickle_method(method):
+    func_name = method.im_func.__name__
+    obj = method.im_self
+    cls = method.im_class
+    return _unpickle_method, (func_name, obj, cls)
+
+
+def _unpickle_method(func_name, obj, cls):
+    for cls in cls.mro():
+        try:
+            func = cls.__dict__[func_name]
+        except KeyError:
+            pass
+        else:
+            break
+    return func.__get__(obj, cls)
+
+
+copy_reg.pickle(types.MethodType, _pickle_method, _unpickle_method)

@@ -69,7 +69,7 @@ class ClusterBuilder(object):
             else:
                 to_delete.append(cluster)
         for cluster in to_delete:
-            del self.clusters[clusters.index(cluster)]
+            del self.clusters[self.clusters.index(cluster)]
         self.cluster_files = cluster_files
 
 
