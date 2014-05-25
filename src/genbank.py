@@ -114,7 +114,7 @@ class GenBankSearch(object):
     outgroup_keys = []
     path = ''
 
-    def __init__(self, gb, ingroup, outgroup):
+    def __init__(self, gb, ingroup, outgroup, max_ingroup=None):
         """
         Takes as input a dictionary of SeqRecords gb and the names of ingroup 
         and outgroup clades. Option parameter location of directory to save GB files.
@@ -129,10 +129,10 @@ class GenBankSearch(object):
         if self.check_for_results(): 
             self.read_file()
         else:
-            self.search(gb)
+            self.search(gb, max_ingroup)
 
 
-    def search(self, gb):
+    def search(self, gb, max_ingroup):
         """
         Perform search of all GB SeqRecords for ingroup/outgroup,
         and save results of search to file.
@@ -147,13 +147,10 @@ class GenBankSearch(object):
                 self.outgroup_keys.append(key)
             self.print_search_status(i, total)
             i += 1
-            ## FOR TESTING ONLY
-            #if len(ingroup_keys) == 50:  ##
-            #    sys.stdout.write("\n")   ## FOR TESTING ONLY
-            #    sys.stdout.flush()       ## # FOR TESTING ONLY
-            #    return ingroup_keys, outgroup_keys    # FOR TESTING ONLY
-            ## FOR TESTING ONLY
-            ## remove above
+            if max_ingroup is not None and len(self.ingroup_keys) == max_ingroup:
+                sys.stdout.write("\n")
+                sys.stdout.flush()  
+                return 
         sys.stdout.write("\n")
         sys.stdout.flush()
         self.write_file()
