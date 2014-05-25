@@ -56,6 +56,7 @@ class GenBankSetup(object):
         file_name = "gb" + division + str(i) + ".seq.gz"
         if not os.path.exists(path):
             os.makedirs(path)
+        path = path + "/"
         while file_name in file_list:
             print(color.red + "Downloading file " + file_name + color.done)
             file = open(path + file_name, "wb")
@@ -88,12 +89,14 @@ class GenBankSetup(object):
         Path is the absolute path of the GB files.
         Returns a dictionary of SeqRecord objects.
         """
-        files = os.listdir(path)
-        path_files = []
-        for file in files:
-            path_files.append(path + "/" + file)
-        gb = SeqIO.index_db(path + "/gb.idx", path_files, "genbank")
-        return gb
+        if os.path.exists(path + "/gb.idx"):
+            return SeqIO.index_db(path + "/gb.idx")
+        else:
+            files = os.listdir(path)
+            path_files = []
+            for file in files:
+                path_files.append(path + "/" + file)
+            return SeqIO.index_db(path + "/gb.idx", path_files, "genbank")
 
 
 
@@ -138,9 +141,9 @@ class GenBankSearch(object):
         total = len(keys)
         i = 0
         for key in keys:
-            if ingroup in gb[key].annotations['taxonomy']:
+            if self.ingroup in gb[key].annotations['taxonomy']:
                 self.ingroup_keys.append(key)
-            elif outgroup in gb[key].annotations['taxonomy']:
+            elif self.outgroup in gb[key].annotations['taxonomy']:
                 self.outgroup_keys.append(key)
             self.print_search_status(i, total)
             i += 1
