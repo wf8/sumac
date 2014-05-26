@@ -9,6 +9,8 @@ from Bio.Blast.Applications import NcbiblastnCommandline
 from Bio.Blast import NCBIXML
 from util import Color
 
+
+
 class DistanceMatrixBuilder:
     """
     Builds distance matrix
@@ -36,7 +38,9 @@ class DistanceMatrixBuilder:
             dist_matrix.append(row)
 
         num_cores = multiprocessing.cpu_count()
-        print(Color.blue + "Spawning " + Color.red + str(num_cores) + Color.blue + " processes to make distance matrix." + Color.done)
+        
+        color = Color()
+        print(color.blue + "Spawning " + color.red + str(num_cores) + color.blue + " processes to make distance matrix." + color.done)
         processes = []
 
         for i in range(num_cores):
@@ -62,6 +66,7 @@ class DistanceMatrixBuilder:
         gb = SeqIO.index_db(gb_dir + "/gb.idx")
         process_num = str(process_num)
         i = 0
+        color = Color()
         for key in seq_keys:
             # check whether another process is already comparing this row
             compare_row = False
@@ -132,7 +137,7 @@ class DistanceMatrixBuilder:
             i += 1
             # update status
             percent = str(round(100 * len(already_compared)/float(len(seq_keys)), 2))
-            sys.stdout.write('\r' + Color.blue + 'Completed: ' + Color.red + str(len(already_compared)) + '/' + str(len(seq_keys)) + ' (' + percent + '%)' + Color.done)
+            sys.stdout.write('\r' + color.blue + 'Completed: ' + color.red + str(len(already_compared)) + '/' + str(len(seq_keys)) + ' (' + percent + '%)' + color.done)
             sys.stdout.flush()
         # done looping through all keys, now clean up
         os.remove("blast" + process_num + ".xml")

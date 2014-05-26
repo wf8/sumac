@@ -11,6 +11,7 @@ import sys
 import argparse
 
 from util import Color
+from util import Logger
 from genbank import GenBankSetup
 from genbank import GenBankSearch
 from distancematrix import DistanceMatrixBuilder
@@ -34,6 +35,7 @@ def main():
                                                  selected then all-by-all BLAST comparisons are not performed.""")
     args = parser.parse_args()
  
+    sys.stdout = Logger()
     color = Color()
 
     print("")
