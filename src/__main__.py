@@ -6,10 +6,10 @@ Copyright 2014 Will Freyman - freyman@berkeley.edu
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
+
 import os
 import sys
 import argparse
-
 from util import Color
 from util import Logger
 from genbank import GenBankSetup

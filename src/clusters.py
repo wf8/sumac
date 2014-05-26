@@ -1,4 +1,10 @@
-#! /usr/bin/python
+"""
+SUMAC: supermatrix constructor
+
+Copyright 2014 Will Freyman - freyman@berkeley.edu
+License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
+"""
+
 
 import os
 import sys
@@ -7,7 +13,6 @@ from Bio import Entrez
 from Bio import SeqIO
 from Bio.Blast.Applications import NcbiblastnCommandline
 from Bio.Blast import NCBIXML
-
 from util import Color
 
 

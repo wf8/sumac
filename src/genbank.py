@@ -1,4 +1,9 @@
-#! /usr/bin/python
+"""
+SUMAC: supermatrix constructor
+
+Copyright 2014 Will Freyman - freyman@berkeley.edu
+License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
+"""
 
 
 import os
@@ -9,7 +14,6 @@ from Bio import Entrez
 from Bio import SeqIO
 from ftplib import FTP
 from util import Color
-
 
 
 class GenBankSetup(object):
