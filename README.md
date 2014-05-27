@@ -78,7 +78,7 @@ Instead of doing an all-by-all BLAST comparison, use guide sequences to build cl
 
 ### Citation:
 
-Freyman, W.A. 2014. Supermatrix Constructor (SUMAC): a Python package for data mining GenBank and building phylogenetic supermatrices.
+Freyman, W.A. 2014. SUMAC: GenBank data miner and phylogenetic supermatrix constructor
 
 ### Other stuff:
 
