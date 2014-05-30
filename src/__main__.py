@@ -18,6 +18,8 @@ from distancematrix import DistanceMatrixBuilder
 from clusters import DistanceMatrixClusterBuilder
 from clusters import GuidedClusterBuilder
 from alignments import Alignments
+from supermatrix import Supermatrix
+
 
 
 def main():
@@ -122,12 +124,12 @@ def main():
     # now align each cluster with MUSCLE
     print(color.blue + "Aligning clusters with MUSCLE..." + color.done)
     alignments = Alignments(cluster_builder.cluster_files)
-    alignments.print_region_data()
+    alignments.print_data()
 
     # concatenate alignments
     print(color.purple + "Concatenating alignments..." + color.done)
-    alignments.concatenate()
-    alignments.print_supermatrix_attributes()
+    supermatrix = Supermatrix(alignments)
+    supermatrix.print_data()
     print(color.yellow + "Final supermatrix: " + color.red + "alignments/combined.fasta" + color.done)
 
     # TODO:
