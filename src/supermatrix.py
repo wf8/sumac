@@ -128,6 +128,66 @@ class Supermatrix(object):
 
 
 
+    def make_figure(self):
+        import numpy as np
+        import matplotlib.pyplot as plt
+
+        data = []
+        otu_names = []
+        genes = []
+        i = 1
+        for otu in self.otus:
+            data.append(self.otus[otu].sequence_lengths)
+            otu_names.append(otu)
+            genes.append(str(i))
+            i += 1
+
+        supermatrix = np.array(data)
+
+        # set up figure
+        fig, ax = plt.subplots()
+        ax.set_position([0.4, 0.1, .3, .7])
+        # fig.set_size_inches(8.5, 11)
+
+        # add data
+        heatmap = ax.pcolor(supermatrix, cmap=plt.cm.Blues, alpha=0.8)
+
+        # put the labels in the middle of each cell
+        ax.set_yticks(np.arange(supermatrix.shape[0]) + 0.5, minor=False)
+        ax.set_xticks(np.arange(supermatrix.shape[1]) + 0.5, minor=False)
+
+        # move x axis label stuff to top
+        ax.invert_yaxis()
+        ax.xaxis.tick_top()
+
+        # add the labels
+        ax.set_xticklabels(genes, minor=False, family="Arial", size=10)
+        ax.set_yticklabels(otu_names, minor=False, family="Arial", size=8)
+
+        # rotate the gene names
+        #plt.xticks(rotation=90)
+
+        # remove junk from axes
+        ax.grid(False)
+        ax.set_frame_on(False)
+
+        # turn off all the ticks
+        for t in ax.xaxis.get_major_ticks():
+            t.tick1On = False
+            t.tick2On = False
+        for t in ax.yaxis.get_major_ticks():
+            t.tick1On = False
+            t.tick2On = False
+
+        # add color legend
+        axcolor = fig.add_axes([0.425, .90, 0.25, 0.015])
+        cbar = fig.colorbar(heatmap, cax=axcolor, ticks=[0,50, 100], orientation='horizontal')
+        cbar.ax.set_xticklabels(['0%', '50%', '100%'], family="Arial", size=10)
+
+        plt.savefig("plot.pdf")
+
+
+
 class Otu(object):
     """
     Class responsible for managing the data of each OTU in the supermatrix

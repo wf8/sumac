@@ -132,6 +132,9 @@ def main():
     supermatrix.print_data()
     print(color.yellow + "Final supermatrix: " + color.red + "alignments/combined.fasta" + color.done)
 
+    supermatrix.make_figure()
+
+
     # TODO:
     # reduce the number of outgroup taxa, make graphs, etc
 
