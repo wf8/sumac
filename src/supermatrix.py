@@ -128,16 +128,45 @@ class Supermatrix(object):
 
 
 
+    def normalize(self):
+        """
+        function to normalize the sequence length data - this is necessary for plotting the data
+        """
+        # initialize the list
+        longest_sequences = []
+        for length in self.otus[self.otus.keys()[0]].sequence_lengths:
+            longest_sequences.append(length)
+
+        # now get maximum values
+        for otu in self.otus:
+            i = 0
+            for length in self.otus[otu].sequence_lengths:
+                if length > longest_sequences[i]:
+                    longest_sequences[i] = length
+                i += 1
+
+        # save the normalized data in each OTU object
+        for otu in self.otus:
+            i = 0
+            self.otus[otu].normalized_sequence_lengths = []
+            for length in self.otus[otu].sequence_lengths:
+                self.otus[otu].normalized_sequence_lengths.append((100 * length) / longest_sequences[i])
+                i += 1
+
+
+
     def make_figure(self):
         import numpy as np
         import matplotlib.pyplot as plt
+
+        self.normalize()
 
         data = []
         otu_names = []
         genes = []
         i = 1
         for otu in self.otus:
-            data.append(self.otus[otu].sequence_lengths)
+            data.append(self.otus[otu].normalized_sequence_lengths)
             otu_names.append(otu)
             genes.append(str(i))
             i += 1
