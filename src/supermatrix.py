@@ -123,6 +123,7 @@ class Supermatrix(object):
         print(color.blue + "Total number of OTUs = " + color.red + str(num_records))
         print(color.blue + "Total length of matrix = " + color.red + str(matrix_length))
         print(color.blue + "Total % gaps = " + color.red + str(round(total_gap/float(matrix_length * num_records), 2)) + color.done)
+        print(color.blue + "Partial Decisiveness = " + color.red + str(self.calculate_PD()) + color.done) 
         #for otu in self.otus: 
         #    self.otus[otu].print_data()
 
@@ -156,6 +157,9 @@ class Supermatrix(object):
 
 
     def make_figure(self):
+        
+        # TODO:
+        # test for numpy and matplotlib, show message if not present
         import numpy as np
         import matplotlib.pyplot as plt
 
@@ -214,6 +218,52 @@ class Supermatrix(object):
         cbar.ax.set_xticklabels(['0%', '50%', '100%'], family="Arial", size=10)
 
         plt.savefig("plot.pdf")
+
+
+
+    def calculate_PD(self):
+        """
+        Method to calculate partial decisiveness (PD)
+        """
+        triplets = []
+        i = 0
+        for otu1 in self.otus:
+            if i < (len(self.otus) - 2):
+                j = 0
+                for otu2 in self.otus:
+                    if i < j:
+                        k = 0
+                        for otu3 in self.otus:
+                            if j < k:
+                                triplet = [otu1, otu2, otu3]
+                                triplets.append(triplet)
+                            k += 1
+                    j += 1
+            i += 1
+
+        decisive_triples = 0
+        total_triples = len(triplets)
+        for triplet in triplets:
+            i = 0
+            for seq_length in self.otus[triplet[0]].sequence_lengths:
+                if seq_length == 0:
+                    s1 = 0
+                else:
+                    s1 = 1
+                if self.otus[triplet[1]].sequence_lengths[i] == 0:
+                    s2 = 0
+                else:
+                    s2 = 1
+                if self.otus[triplet[2]].sequence_lengths[i] == 0:
+                    s3 = 0
+                else:
+                    s3 = 1
+                if (s1 * s2 * s3) == 1:
+                    decisive_triples += 1
+                    break
+                i += 1
+        return round(decisive_triples/float(total_triples), 2)
+
 
 
 
