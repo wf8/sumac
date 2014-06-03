@@ -25,7 +25,18 @@ class Supermatrix(object):
 
 
 
-    def __init__(self, alignments):
+    def __init__(self, alignments=None):
+        """
+        Optionally accept an Alignment object.
+        """
+        file = ""
+        self.otus = {}
+        if alignments is not None:
+            self.concatenate(alignments)
+
+
+
+    def concatenate(self, alignments):
         """
         Builds a supermatrix from a set of alignments.
         """
