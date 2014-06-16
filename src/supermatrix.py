@@ -21,19 +21,20 @@ class Supermatrix(object):
     """
 
 
-    file = ""   # FASTA file of final supermatrix
-    otus = {}   # dictionary of Otu objects
-    pd = None   # partial decisiveness of supermatrix
-
+    file = ""           # FASTA file of final supermatrix
+    otus = {}           # dictionary of Otu objects
+    pd = None           # partial decisiveness of supermatrix
+    missing_data = None # % of sequence data missing
 
 
     def __init__(self, alignments=None):
         """
         Optionally accept an Alignment object.
         """
-        file = ""
+        self.file = ""
         self.otus = {}
-        pd = None
+        self.pd = None
+        self.missing_data = None
         if alignments is not None:
             self.concatenate(alignments)
 
@@ -137,9 +138,29 @@ class Supermatrix(object):
         print(color.blue + "Total number of OTUs = " + color.red + str(num_records))
         print(color.blue + "Total length of matrix = " + color.red + str(matrix_length))
         print(color.blue + "Total % gaps = " + color.red + str(round(total_gap/float(matrix_length * num_records), 2)) + color.done)
+        print(color.blue + "Total % missing data = " + color.red + str(self.get_missing_data()) + color.done)
         print(color.blue + "Partial Decisiveness = " + color.red + str(self.get_PD()) + color.done) 
         #for otu in self.otus: 
         #    self.otus[otu].print_data()
+
+
+
+    def get_missing_data(self):
+        """
+        Method to calculate the percent of sequence data missing from the supermatrix.
+        """
+        if self.missing_data != None:
+            return self.missing_data
+        else:
+            total_seq = 0
+            missing_seq = 0
+            for otu in self.otus:
+                for accession in self.otus[otu].accessions:
+                    total_seq += 1
+                    if accession == "-":
+                        missing_seq += 1
+            self.missing_data = round(missing_seq/float(total_seq), 2)
+            return self.missing_data
 
 
 
