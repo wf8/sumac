@@ -44,7 +44,7 @@ class ClusterBuilder(object):
         cluster_files = []
         if not os.path.exists("clusters"):
             os.makedirs("clusters")
-        i = 0
+        i = 1
         to_delete = []
         for cluster in self.clusters:
             # get all OTUs in cluster
