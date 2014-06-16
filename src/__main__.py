@@ -125,6 +125,7 @@ def main():
     print(color.blue + "Aligning clusters with MUSCLE..." + color.done)
     alignments = Alignments(cluster_builder.cluster_files)
     alignments.print_data()
+    alignments.make_gene_region_csv()
 
     # concatenate alignments
     print(color.purple + "Concatenating alignments..." + color.done)
