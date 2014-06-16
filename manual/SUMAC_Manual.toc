@@ -1,0 +1,14 @@
+\contentsline {chapter}{\numberline {1}Introduction}{2}{chapter.1}
+\contentsline {section}{\numberline {1.1}About SUMAC}{2}{section.1.1}
+\contentsline {section}{\numberline {1.2}Installation}{2}{section.1.2}
+\contentsline {chapter}{\numberline {2}Quick Start Tutorial}{3}{chapter.2}
+\contentsline {section}{\numberline {2.1}Construct a Simple Supermatrix}{3}{section.2.1}
+\contentsline {section}{\numberline {2.2}Explanation of the Output Files}{3}{section.2.2}
+\contentsline {chapter}{\numberline {3}SUMAC in Detail}{4}{chapter.3}
+\contentsline {section}{\numberline {3.1}Downloading GenBank}{4}{section.3.1}
+\contentsline {subsection}{\numberline {3.1.1}GenBank Division}{4}{subsection.3.1.1}
+\contentsline {subsection}{\numberline {3.1.2}GenBank File Path}{4}{subsection.3.1.2}
+\contentsline {section}{\numberline {3.2}Specifying Ingroup and Outgroup}{4}{section.3.2}
+\contentsline {section}{\numberline {3.3}Using Guide Sequences}{4}{section.3.3}
+\contentsline {section}{\numberline {3.4}Partial Decisiveness}{5}{section.3.4}
+\contentsline {section}{\numberline {3.5}Supermatrix Figure}{5}{section.3.5}

@@ -46,7 +46,7 @@ Instead of doing an all-by-all BLAST comparison, use guide sequences to build cl
 ### Usuage arguments:
 
     python -m sumac [-h] [--download_gb DOWNLOAD_GB] [--ingroup INGROUP]
-                         [--outgroup OUTGROUP] [--max_outgroup MAX_OUTGROUP]
+                         [--outgroup OUTGROUP] 
                          [--evalue EVALUE] [--length LENGTH] [--guide GUIDE]
                          [--path PATH]
 
@@ -60,9 +60,6 @@ Instead of doing an all-by-all BLAST comparison, use guide sequences to build cl
                             Ingroup clade to build supermatrix.
       --outgroup OUTGROUP, -o OUTGROUP
                             Outgroup clade to build supermatrix.
-      --max_outgroup MAX_OUTGROUP, -m MAX_OUTGROUP
-                            Maximum number of taxa to include in outgroup.
-                            Defaults to 10.
       --evalue EVALUE, -e EVALUE
                             BLAST E-value threshold to cluster taxa. Defaults to
                             0.1

@@ -31,7 +31,7 @@ def main():
     parser.add_argument("--outgroup", "-o", help="Outgroup clade to build supermatrix.")
     parser.add_argument("--evalue", "-e", help="BLAST E-value threshold to cluster taxa. Defaults to 0.1")
     parser.add_argument("--length", "-l", help="Threshold of sequence length percent similarity to cluster taxa. Defaults to 0.5")
-    parser.add_argument("--max_ingroup", "-m", help="Maximum number of taxa to include in ingroup. Used for testing. Default is None.") 
+    parser.add_argument("--max_ingroup", "-m", help="Maximum number of taxa to include in ingroup. Use only for testing. Default is None.") 
     parser.add_argument("--guide", "-g", help="""FASTA file containing sequences to guide cluster construction. If this option is 
                                                  selected then all-by-all BLAST comparisons are not performed.""")
     args = parser.parse_args()
