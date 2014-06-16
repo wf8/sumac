@@ -131,7 +131,8 @@ def main():
     supermatrix = Supermatrix(alignments)
     supermatrix.print_data()
     print(color.yellow + "Final supermatrix: " + color.red + "alignments/combined.fasta" + color.done)
-
+    
+    supermatrix.make_genbank_csv()
     supermatrix.make_figure()
 
 

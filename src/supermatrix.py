@@ -8,6 +8,7 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 
 import os
 import sys
+import csv
 from Bio import Entrez
 from Bio import SeqIO
 from util import Color
@@ -22,6 +23,7 @@ class Supermatrix(object):
 
     file = ""   # FASTA file of final supermatrix
     otus = {}   # dictionary of Otu objects
+    pd = None   # partial decisiveness of supermatrix
 
 
 
@@ -31,6 +33,7 @@ class Supermatrix(object):
         """
         file = ""
         self.otus = {}
+        pd = None
         if alignments is not None:
             self.concatenate(alignments)
 
@@ -134,9 +137,29 @@ class Supermatrix(object):
         print(color.blue + "Total number of OTUs = " + color.red + str(num_records))
         print(color.blue + "Total length of matrix = " + color.red + str(matrix_length))
         print(color.blue + "Total % gaps = " + color.red + str(round(total_gap/float(matrix_length * num_records), 2)) + color.done)
-        print(color.blue + "Partial Decisiveness = " + color.red + str(self.calculate_PD()) + color.done) 
+        print(color.blue + "Partial Decisiveness = " + color.red + str(self.get_PD()) + color.done) 
         #for otu in self.otus: 
         #    self.otus[otu].print_data()
+
+
+
+    def make_genbank_csv(self):
+        """
+        Method to generate a CSV file with all GenBank accessions used in supermatrix.
+        """
+        with open('genbank_accessions.csv', 'wb') as csv_output:
+            csvwriter = csv.writer(csv_output)
+            header = ["Taxa"]
+            i = 1
+            for accession in self.otus[self.otus.keys()[0]].accessions:
+                header.append("Gene Region " + str(i))
+                i += 1
+            csvwriter.writerow(header)
+            for otu in self.otus:
+                row = [self.otus[otu].name]
+                for accession in self.otus[otu].accessions:
+                    row.append(accession)
+                csvwriter.writerow(row)
 
 
 
@@ -229,6 +252,16 @@ class Supermatrix(object):
         cbar.ax.set_xticklabels(['0%', '50%', '100%'], family="Arial", size=10)
 
         plt.savefig("plot.pdf")
+
+
+
+    def get_PD(self):
+        """
+        method to get pd of supermatrix, calculating it if need be.
+        """
+        if self.pd == None:
+            self.pd = self.calculate_PD()
+        return self.pd
 
 
 
