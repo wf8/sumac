@@ -29,10 +29,9 @@ def main():
     parser.add_argument("--path", "-p", help="Absolute path to download GenBank files to. Defaults to ./genbank/")
     parser.add_argument("--ingroup", "-i", help="Ingroup clade to build supermatrix.")
     parser.add_argument("--outgroup", "-o", help="Outgroup clade to build supermatrix.")
-    parser.add_argument("--max_outgroup", "-m", help="Maximum number of taxa to include in outgroup. Defaults to 10.")
     parser.add_argument("--evalue", "-e", help="BLAST E-value threshold to cluster taxa. Defaults to 0.1")
     parser.add_argument("--length", "-l", help="Threshold of sequence length percent similarity to cluster taxa. Defaults to 0.5")
-    parser.add_argument("--max_ingroup", "-s", help="Maximum number of taxa to include in ingroup. Used for testing. Default is None.") 
+    parser.add_argument("--max_ingroup", "-m", help="Maximum number of taxa to include in ingroup. Used for testing. Default is None.") 
     parser.add_argument("--guide", "-g", help="""FASTA file containing sequences to guide cluster construction. If this option is 
                                                  selected then all-by-all BLAST comparisons are not performed.""")
     args = parser.parse_args()
@@ -135,10 +134,6 @@ def main():
     
     supermatrix.make_genbank_csv()
     supermatrix.make_figure()
-
-
-    # TODO:
-    # reduce the number of outgroup taxa, make graphs, etc
 
 
 
