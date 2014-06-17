@@ -13,7 +13,10 @@
 \contentsline {section}{\numberline {3.1}Downloading GenBank}{9}{section.3.1}
 \contentsline {subsection}{\numberline {3.1.1}GenBank Division}{9}{subsection.3.1.1}
 \contentsline {subsection}{\numberline {3.1.2}GenBank File Path}{9}{subsection.3.1.2}
-\contentsline {section}{\numberline {3.2}Specifying Ingroup and Outgroup}{9}{section.3.2}
-\contentsline {section}{\numberline {3.3}Using Guide Sequences}{9}{section.3.3}
-\contentsline {section}{\numberline {3.4}Partial Decisiveness}{10}{section.3.4}
-\contentsline {section}{\numberline {3.5}Supermatrix Figure}{10}{section.3.5}
+\contentsline {section}{\numberline {3.2}Specifying Ingroup and Outgroup}{10}{section.3.2}
+\contentsline {section}{\numberline {3.3}Using Guide Sequences}{10}{section.3.3}
+\contentsline {section}{\numberline {3.4}Homologous Sequence Thresholds}{10}{section.3.4}
+\contentsline {subsection}{\numberline {3.4.1}BLAST E-value}{10}{subsection.3.4.1}
+\contentsline {subsection}{\numberline {3.4.2}Sequence Length Similarity}{10}{subsection.3.4.2}
+\contentsline {section}{\numberline {3.5}Partial Decisiveness}{11}{section.3.5}
+\contentsline {section}{\numberline {3.6}Supermatrix Figure}{11}{section.3.6}

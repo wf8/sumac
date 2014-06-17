@@ -40,9 +40,10 @@
 
 \section{About SUMAC}
 
-SUMAC (Supermatrix Constructor) is a Python package to facilitate the construction 
-and evaluation of
-phylogenetic supermatrices. It is designed to be run as a command-line program, though
+SUMAC (Supermatrix Constructor) is a Python package to 
+data mine GenBank and construct
+and evaluate phylogenetic supermatrices. 
+It is designed to be run as a command-line program, though
 the modules can also be imported and used in other Python scripts.
 SUMAC will assemble
 supermatrices for any taxonomic group recognized in GenBank,
@@ -132,7 +133,7 @@ command:
 python -m sumac -d pln -i Onagraceae -o Lythraceae
 \end{verbatim}
 
-This command will download the \verb|PLN|
+This command will download the PLN
 (Plant) GenBank division and search it for all sequences within
 the taxonomic groups Onagraceae (the ingroup) and Lythraceae (the outgroup).
 SUMAC will then perform all-by-all BLAST comparisons of each sequence, 
@@ -184,7 +185,7 @@ Similarly, \verb|clusters/N.fasta| is the unaligned raw sequence cluster of gene
 The \verb|gb_search_results| file is used by SUMAC to save the results of the GenBank
 sequence search in case the search is re-run. This file is not human readable.
 
-The two \verb|CSV| (comma-separated values) files contain tables that provide useful
+The two CSV (comma-separated values) files contain tables that provide useful
 summary information about the supermatrix. \verb|genbank_accessions.csv| is a table
 with each GenBank accession used, ordered by gene region and taxon (like the
 appendices found in most systematics papers). The \verb|gene_regions.csv|
@@ -208,16 +209,49 @@ decisiveness (PD) of the supermatrix.
 \section{Downloading GenBank}
 
 \subsection{GenBank Division}
-blah blah
+
+The first time you run SUMAC you must specify which GenBank division
+to download with the \verb|-d div| option, where \verb|div| is the
+GenBank designated three letter code of the division (PLN, MAM, etc).
+Once SUMAC has downloaded the GenBank division, future SUMAC runs
+may leave out the \verb|-d div| option to avoid repeatedly
+download the same files.
+
 \subsection{GenBank File Path}
-blah
+
+By default, each SUMAC run searches for the downloaded GenBank files
+in \verb|./genbank/|, a subdirectory of the current run's directory.
+It may be useful to save the GenBank files outside of the current working
+directory, in which case 
+you can specifiy the absolute path of the GenBank files with the \verb|-p path| option.
+For example, if you want to build
+multiple supermatrices (or different versions of the same one) each in a different working directory
+it is helpful
+to use \verb|-p /genbank| so that all SUMAC runs use the same copy of the GenBank files.
 
 \section{Specifying Ingroup and Outgroup}
 
-blah b
+The \verb|-i| and \verb|-o| options must be used to specify which ingroup and
+outgroup to search for. The taxonomic names must be those used by GenBank.
+If a SUMAC run is repeated with the same ingroup and outgroup, SUMAC
+will load the previous search results to save time.
 
 \section{Using Guide Sequences}
-blah blah
+
+Guide sequences should be in a single standard FASTA file specified
+using the \verb|-g| option. The names of the
+guide sequences will be ignored, and each of the ingroup and outgroup 
+sequences will be BLASTed against the guide sequences.
+
+\section{Homologous Sequence Thresholds}
+
+\subsection{BLAST E-value}
+By default, SUMAC uses a threshold default BLASTn e-value $1.0e-10$.
+This can be changed with the \verb|-e| option.
+
+\subsection{Sequence Length Similarity}
+SUMAC uses a default threshold of sequence length percent similarity
+of 0.5. This can be changed with the \verb|-l| option.
 
 \section{Partial Decisiveness}
 blah blah
