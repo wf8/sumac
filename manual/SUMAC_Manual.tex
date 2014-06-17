@@ -40,11 +40,78 @@
 
 \section{About SUMAC}
 
-blah blah
+SUMAC (Supermatrix Constructor) is a Python package to facilitate the construction 
+and evaluation of
+phylogenetic supermatrices. It is designed to be run as a command-line program, though
+the modules can also be imported and used in other Python scripts.
+SUMAC will assemble
+supermatrices for any taxonomic group recognized in GenBank,
+and is optimized to run on multicore processors and clusters by utilizing multiple parallel processes.
+
+When run from the command-line, SUMAC will perform a number of steps to create
+the phylogenetic supermatrix. 
+First, SUMAC will download the GenBank database for the specified GenBank division (PLN, MAM, etc).
+SUMAC will then build clusters of homologous sequences in one of two ways:
+(1) perform exhaustive all-by-all BLAST comparisons of each ingroup and outgroup sequence
+and use a single-linkage hierarchical clustering algorithm, or
+(2) BLAST each ingroup and outgroup sequence against user provided guide sequences
+that define each cluster.
+SUMAC then discards clusters that are not phylogenetically informative ($< 4$ taxa), 
+and then aligns each cluster of sequences using MUSCLE.
+Finally, the alignments are concatenated by species name (using the GenBank taxonomy) 
+creating a supermatrix. A number of metrics are then calculated on the supermatrix, 
+a graph indicating taxon coverage density is generated, and spreadsheets (in CSV format)
+are produced with information about each DNA region and GenBank accession used in 
+the supermatrix. 
+There are many options described in
+detail in later chapters of this manual. 
+
 
 \section{Installation}
 
-blah blah
+\subsection{Requirements}
+
+The following requirements must be installed to run SUMAC:
+
+\begin{verbatim}
+Python 2.7
+Biopython
+MUSCLE
+BLAST+
+\end{verbatim}
+
+\subsection{Installing Requirements on Linux}
+
+The following commands install the requirements for Debian GNU/Ubuntu Linux systems:
+
+\begin{verbatim}
+git clone https://github.com/biopython/biopython.git
+cd biopython
+python setup.py build
+python setup.py test
+sudo python setup.py install
+sudo apt-get install ncbi-blast+
+sudo apt-get install muscle
+\end{verbatim}
+
+TODO: use pip to install Biopython??
+
+\subsection{Installing Requirements on Mac}
+
+TODO!
+
+\subsection{Installing SUMAC}
+
+TODO: use pip to install...
+
+\begin{verbatim}
+python setup.py install
+\end{verbatim}
+
+\section{License and Warranty}
+SUMAC is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
+
+The program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details (http://www.gnu.org/copyleft/gpl.html).
 
 %----------------------------------------
 % Quick Start Tutorial
@@ -52,13 +119,84 @@ blah blah
 
 \chapter{Quick Start Tutorial}
 
-\section{Construct a Simple Supermatrix}
+This chapter provides the quick way to get started using SUMAC. 
+There are many details described in Chapter 3 that
+would likely be helpful.
 
-blah blah
+\section{Construct a Supermatrix}
+
+The most basic usuage of SUMAC is to build a supermatrix with the following
+command:
+
+\begin{verbatim}
+python -m sumac -d pln -i Onagraceae -o Lythraceae
+\end{verbatim}
+
+This command will download the \verb|PLN|
+(Plant) GenBank division and search it for all sequences within
+the taxonomic groups Onagraceae (the ingroup) and Lythraceae (the outgroup).
+SUMAC will then perform all-by-all BLAST comparisons of each sequence, 
+build clusters of putatively homologous sequences, and 
+construct a supermatrix. 
+
+Unless you are on a large multi-core system, the all-by-all BLAST comparisons
+will take a very long time to be performed since well over 5000 sequences
+will be found.
+To speed up the supermatrix construction, you could make a FASTA file
+of guide sequences to define each cluster. Each guide
+sequence could be an example of a sequence commonly used for phylogenetic
+analysis. 
+You could then use this command:
+
+\begin{verbatim}
+python -m sumac -d pln -i Onagraceae -o Lythraceae -g guides.fasta
+\end{verbatim}
+
+Which approach is better for constructing supermatrices?
+Using guide sequences makes supermatrix construction much faster, however
+it requires a priori knowledge of which DNA regions will be used
+in the supermatrix.
+Performing all-by-all BLAST comparisons is computationally
+more expensive, but it effectively data-mines GenBank in an exploratory
+fashion, so that sequence data not necessarily used in previous systematic
+studies can also be incorporated into the supermatrix.
+The decision will depend on the size of the taxonomic group being
+analyzed and the computational resources available.
 
 \section{Explanation of the Output Files}
 
-blah blah
+SUMAC will output the following files:
+
+\begin{verbatim}
+alignments/combined.fasta
+alignments/N.fasta
+clusters/N.fasta
+gb_search_results
+genbank_accessions.csv
+gene_regions.csv
+plot.pdf
+sumac_log
+\end{verbatim}
+
+The \verb|alignments/combined.fasta| is the final aligned supermatrix in FASTA format.
+\verb|alignments/N.fasta|, where $N$ is an integer $> 0$, is the alignment of gene region $N$.
+Similarly, \verb|clusters/N.fasta| is the unaligned raw sequence cluster of gene region $N$.
+The \verb|gb_search_results| file is used by SUMAC to save the results of the GenBank
+sequence search in case the search is re-run. This file is not human readable.
+
+The two \verb|CSV| (comma-separated values) files contain tables that provide useful
+summary information about the supermatrix. \verb|genbank_accessions.csv| is a table
+with each GenBank accession used, ordered by gene region and taxon (like the
+appendices found in most systematics papers). The \verb|gene_regions.csv|
+file contains the number of taxa, the aligned length, the percent missing data,
+and the taxon coverage density of each gene region used in the supermatrix.
+
+The \verb|plot.pdf| file is a figure that shows how much sequence data was available for
+each taxon for each gene region.
+\verb|sumac_log| is a log of the SUMAC run, and contains a great deal of information
+about the supermatrix construction, including final metrics such as the partical
+decisiveness (PD) of the supermatrix.
+
 
 
 %----------------------------------------

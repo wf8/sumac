@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012) (format=pdflatex 2012.6.30)  15 JUN 2014 21:21
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012) (format=pdflatex 2012.6.30)  16 JUN 2014 21:22
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -472,46 +472,48 @@ been already used, duplicate ignored
 l.39 \chapter
              {Introduction} [1
 
-]
+] [2]
 Chapter 1.
-[2
-
-]
-Chapter 2.
 [3
 
-]
+] [4] [5]
+Chapter 2.
+[6
+
+] [7] [8]
 Chapter 3.
-[4
+[9
 
 ]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 93.
- [5]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 93.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 231.
+ [10]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 231.
  (./SUMAC_Manual.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 93.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 93.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 231.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 231.
 Package rerunfilecheck Info: File `SUMAC_Manual.out' has not changed.
-(rerunfilecheck)             Checksum: 036025D0C5D4ACC6184E793EF0BAC26E;903.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 93.
+(rerunfilecheck)             Checksum: 98301A7DD0961511D664EF399EB5FBB4;1269.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 231.
  ) 
 Here is how much of TeX's memory you used:
- 8124 strings out of 493488
- 122028 string characters out of 3141326
- 217190 words of memory out of 3000000
- 11326 multiletter control sequences out of 15000+200000
- 11679 words of font info for 42 fonts, out of 3000000 for 9000
+ 8141 strings out of 493488
+ 122240 string characters out of 3141326
+ 219194 words of memory out of 3000000
+ 11332 multiletter control sequences out of 15000+200000
+ 11848 words of font info for 43 fonts, out of 3000000 for 9000
  957 hyphenation exceptions out of 8191
- 36i,7n,38p,263b,376s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 36i,7n,38p,289b,376s stack positions out of 5000i,500n,10000p,200000b,50000s
 </usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb
-></usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb><
-/usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></u
-sr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr
-/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb>
-Output written on SUMAC_Manual.pdf (6 pages, 68004 bytes).
+></usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb>
+</usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></
+usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></us
+r/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/
+local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/loc
+al/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt12.pfb>
+Output written on SUMAC_Manual.pdf (11 pages, 96574 bytes).
 PDF statistics:
- 129 PDF objects out of 1000 (max. 8388607)
- 114 compressed objects within 2 object streams
- 21 named destinations out of 1000 (max. 500000)
- 113 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 186 PDF objects out of 1000 (max. 8388607)
+ 164 compressed objects within 2 object streams
+ 31 named destinations out of 1000 (max. 500000)
+ 153 words of extra memory for PDF output out of 10000 (max. 10000000)
 
