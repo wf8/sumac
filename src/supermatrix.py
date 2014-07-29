@@ -23,7 +23,7 @@ class Supermatrix(object):
 
     file = ""           # FASTA file of final supermatrix
     otus = {}           # dictionary of Otu objects
-    pd = None           # partial decisiveness of supermatrix
+    pd = None           # fraction of triples, a measure of the partial decisiveness of a supermatrix
     missing_data = None # % of sequence data missing
 
 
@@ -139,7 +139,7 @@ class Supermatrix(object):
         print(color.blue + "Total length of matrix = " + color.red + str(matrix_length))
         print(color.blue + "Total % gaps = " + color.red + str(round(total_gap/float(matrix_length * num_records), 2)) + color.done)
         print(color.blue + "Total % missing data = " + color.red + str(self.get_missing_data()) + color.done)
-        print(color.blue + "Partial Decisiveness = " + color.red + str(self.get_PD()) + color.done) 
+        print(color.blue + "Partial decisiveness (fraction of triples) = " + color.red + str(self.get_PD()) + color.done) 
         #for otu in self.otus: 
         #    self.otus[otu].print_data()
 
@@ -288,7 +288,8 @@ class Supermatrix(object):
 
     def calculate_PD(self):
         """
-        Method to calculate partial decisiveness (PD)
+        Method to calculate the fraction of triples, a measure of partial decisiveness (PD).
+        See: Sanderson, M.J., McMahon, M.M. & Steel, M., 2010. BMC evolutionary biology, 10. 
         """
         triplets = []
         i = 0
