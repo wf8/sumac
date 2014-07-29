@@ -65,14 +65,14 @@ a graph indicating taxon coverage density is generated, and spreadsheets (in CSV
 are produced with information about each DNA region and GenBank accession used in 
 the supermatrix. 
 There are many options described in
-detail in later chapters of this manual. 
+detail later in this manual. 
 
 
 \section{Installation}
 
-\subsection{Requirements}
+\subsection{Dependencies}
 
-The following requirements must be installed to run SUMAC:
+The following dependencies must be installed to run SUMAC:
 
 \begin{verbatim}
 Python 2.7
@@ -81,21 +81,31 @@ MUSCLE
 BLAST+
 \end{verbatim}
 
-\subsection{Installing Requirements on Linux}
+The following are optional if you would like to generate graphs:
+
+\begin{verbatim}
+NumPy
+matplotlib
+\end{verbatim}
+
+\subsection{Installing Dependencies on Linux}
 
 The following commands install the requirements for Debian GNU/Ubuntu Linux systems:
 
 \begin{verbatim}
-git clone https://github.com/biopython/biopython.git
-cd biopython
-python setup.py build
-python setup.py test
-sudo python setup.py install
+sudo pip install numpy
+sudo pip install matplotlib
+sudo pip install biopython
 sudo apt-get install ncbi-blast+
 sudo apt-get install muscle
 \end{verbatim}
+%git clone https://github.com/biopython/biopython.git
+%cd biopython
+%python setup.py build
+%python setup.py test
+%sudo python setup.py install
 
-TODO: use pip to install Biopython??
+TODO: test installation!!
 
 \subsection{Installing Requirements on Mac}
 
@@ -103,7 +113,7 @@ TODO!
 
 \subsection{Installing SUMAC}
 
-TODO: use pip to install...
+TODO: test pip to install...
 
 \begin{verbatim}
 python setup.py install
@@ -133,8 +143,12 @@ command:
 python -m sumac -d pln -i Onagraceae -o Lythraceae
 \end{verbatim}
 
-This command will download the PLN
-(Plant) GenBank division and search it for all sequences within
+This command is an example of the minimum amount of input required
+to run SUMAC. The first part of the command \texttt{python -m sumac}
+runs the SUMAC module. The \texttt{-d pln}
+tell SUAMC to download the PLN (Plant) GenBank division. The
+\texttt{-i Onagraceae} and \texttt{-o Lythraceae}
+tells SUMAC to search the PLN division for all sequences within
 the taxonomic groups Onagraceae (the ingroup) and Lythraceae (the outgroup).
 SUMAC will then perform all-by-all BLAST comparisons of each sequence, 
 build clusters of putatively homologous sequences, and 
