@@ -27,11 +27,14 @@ class Alignments(object):
 
     files = []
     taxa = None
+    user_provided = False
 
-
-    def __init__(self, cluster_files):
+    def __init__(self, cluster_files, aligned):
         """
-        Inputs a list of FASTA files, each file containing an unaligned sequence cluster.
+        Input parameters: 
+        cluster_files: a list of FASTA files 
+        aligned: a string that indicated whether each file contains an 
+            unaligned sequence cluster or one already aligned.
         Creates new processes to align each sequence cluster.
         Generates a list of aligned FASTA files.
         """
@@ -40,12 +43,18 @@ class Alignments(object):
         if not os.path.exists("alignments"):
             os.makedirs("alignments")
         color = Color()
-        print(color.blue + "Spawning " + color.red + str(multiprocessing.cpu_count()) + color.blue + " processes to align clusters." + color.done)
-        pool = multiprocessing.Pool(multiprocessing.cpu_count())
-        alignment_files = pool.map(self.align_cluster, cluster_files)
-        pool.close()
-        pool.join()
-        self.files = alignment_files
+        if aligned == "unaligned":
+            self.user_provided = False
+            print(color.blue + "Spawning " + color.red + str(multiprocessing.cpu_count()) + color.blue + " processes to align clusters." + color.done)
+            pool = multiprocessing.Pool(multiprocessing.cpu_count())
+            alignment_files = pool.map(self.align_cluster, cluster_files)
+            pool.close()
+            pool.join()
+            self.files = alignment_files
+        else:
+            print(color.purple + "Loading user-provided alignments..." + color.done)
+            self.user_provided = True
+            self.files = cluster_files
 
 
 
@@ -80,9 +89,13 @@ class Alignments(object):
         color = Color()
         for alignment in self.files:
             records = list(SeqIO.parse(alignment, "fasta"))
-            descriptors = records[0].description.split(" ")
+            if self.user_provided:
+                region_name = alignment
+            else:
+                descriptors = records[0].description.split(" ")
+                region_name = " ".join(descriptors[3:])
             print(color.blue + "Aligned cluster #: " + color.red + str(i) + color.done)
-            print(color.yellow + "DNA region: " + color.red + " ".join(descriptors[3:]) + color.done)
+            print(color.yellow + "DNA region: " + color.red + region_name + color.done)
             print(color.yellow + "OTUs: " + color.red + str(len(records)) + color.done)
             print(color.yellow + "Aligned length: " + color.red + str(len(records[0].seq)) + color.done)
             print(color.yellow + "Missing data (%): " + color.red + str(round(100 - (100 * len(records)/float(len(taxa))), 1)) + color.done)
@@ -104,9 +117,13 @@ class Alignments(object):
             for alignment in self.files:
                 row = []
                 records = list(SeqIO.parse(alignment, "fasta"))
-                descriptors = records[0].description.split(" ")
+                if self.user_provided:
+                    region_name = alignment
+                else:
+                    descriptors = records[0].description.split(" ")
+                    region_name = " ".join(descriptors[3:])
                 row.append(str(i))
-                row.append(" ".join(descriptors[3:]))
+                row.append(region_name)
                 row.append(str(len(records)))
                 row.append(str(len(records[0].seq)))
                 row.append(str(round(100 - (100 * len(records)/float(len(taxa))), 1)))
@@ -128,8 +145,11 @@ class Alignments(object):
             for alignment in self.files:
                 records = SeqIO.parse(alignment, "fasta")
                 for record in records:
-                    descriptors = record.description.split(" ")
-                    taxon = descriptors[1] + " " + descriptors[2]
+                    if self.user_provided:
+                        taxon = record.description
+                    else:
+                        descriptors = record.description.split(" ")
+                        taxon = descriptors[1] + " " + descriptors[2]
                     if taxon not in taxa:
                         taxa.append(taxon)
             self.taxa = taxa

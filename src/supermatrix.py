@@ -34,7 +34,7 @@ class Supermatrix(object):
         self.file = ""
         self.otus = {}
         self.pd = None
-        self.missing_data = None
+        self.coverage_density = None
         if alignments is not None:
             self.concatenate(alignments)
 
@@ -48,10 +48,13 @@ class Supermatrix(object):
         for alignment in alignments.files:
             records = SeqIO.parse(alignment, "fasta")
             for record in records:
-                # sample record.description:
-                # AF495760.1 Lythrum salicaria chloroplast ribulose 1,5-bisphosphate carboxylase/oxygenase large subunit-like mRNA, partial sequence
-                descriptors = record.description.split(" ")
-                otu = descriptors[1] + " " + descriptors[2]
+                if alignments.user_provided:
+                    otu = record.description
+                else:
+                    # sample record.description:
+                    # AF495760.1 Lythrum salicaria chloroplast ribulose 1,5-bisphosphate carboxylase/oxygenase large subunit-like mRNA, partial sequence
+                    descriptors = record.description.split(" ")
+                    otu = descriptors[1] + " " + descriptors[2]
                 if otu not in otus.keys():
                     otus[otu] = Otu(otu)
 
@@ -62,10 +65,16 @@ class Supermatrix(object):
             # make sure to only add 1 sequence per cluster for each otu
             already_added = []
             for record in records:
-                descriptors = record.description.split(" ")
-                otu = descriptors[1] + " " + descriptors[2]
+                if alignments.user_provided:
+                    otu = record.description
+                else:
+                    descriptors = record.description.split(" ")
+                    otu = descriptors[1] + " " + descriptors[2]
                 if otu not in already_added:
-                    otus[otu].update(record.seq, descriptors[0], self.get_ungapped_length(record.seq))
+                    if alignments.user_provided:
+                        otus[otu].update(record.seq, alignment, self.get_ungapped_length(record.seq))
+                    else:
+                        otus[otu].update(record.seq, descriptors[0], self.get_ungapped_length(record.seq))
                     already_added.append(otu)
                 loci_length = len(record.seq)
             total_length += loci_length
@@ -137,20 +146,20 @@ class Supermatrix(object):
             matrix_length = len(record.seq)
         print(color.blue + "Total number of OTUs = " + color.red + str(num_records))
         print(color.blue + "Total length of matrix = " + color.red + str(matrix_length))
+        print(color.blue + "Taxon coverage density = " + color.red + str(self.get_coverage_density()))
         print(color.blue + "Total % gaps = " + color.red + str(round(total_gap/float(matrix_length * num_records), 2)) + color.done)
-        print(color.blue + "Total % missing data = " + color.red + str(self.get_missing_data()) + color.done)
         print(color.blue + "Partial decisiveness (fraction of triples) = " + color.red + str(self.get_PD()) + color.done) 
         #for otu in self.otus: 
         #    self.otus[otu].print_data()
 
 
 
-    def get_missing_data(self):
+    def get_coverage_density(self):
         """
-        Method to calculate the percent of sequence data missing from the supermatrix.
+        Method to calculate the taxon coverage density.
         """
-        if self.missing_data != None:
-            return self.missing_data
+        if self.coverage_density != None:
+            return self.coverage_density
         else:
             total_seq = 0
             missing_seq = 0
@@ -159,8 +168,8 @@ class Supermatrix(object):
                     total_seq += 1
                     if accession == "-":
                         missing_seq += 1
-            self.missing_data = round(missing_seq/float(total_seq), 2)
-            return self.missing_data
+            self.coverage_density = round((total_seq - missing_seq)/float(total_seq), 2)
+            return self.coverage_density
 
 
 
@@ -229,6 +238,15 @@ class Supermatrix(object):
             otu_names.append(otu)
             genes.append(str(i))
             i += 1
+        
+        # set font size to scale with number of otus
+        n = len(self.otus)
+        if n < 25:
+            font_size = 10
+        else:
+            font_size = round(11.8-(0.073*n), 1)
+            if font_size < 0:
+                font_size = 0
 
         supermatrix = np.array(data)
 
@@ -249,8 +267,8 @@ class Supermatrix(object):
         ax.xaxis.tick_top()
 
         # add the labels
-        ax.set_xticklabels(genes, minor=False, family="Arial", size=10)
-        ax.set_yticklabels(otu_names, minor=False, family="Arial", size=8)
+        ax.set_xticklabels(genes, minor=False, family="Arial", size=6)
+        ax.set_yticklabels(otu_names, minor=False, family="Arial", size=font_size)
 
         # rotate the gene names
         #plt.xticks(rotation=90)

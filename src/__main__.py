@@ -34,6 +34,7 @@ def main():
     parser.add_argument("--max_ingroup", "-m", help="Maximum number of taxa to include in ingroup. Use only for testing. Default is None.") 
     parser.add_argument("--guide", "-g", help="""FASTA file containing sequences to guide cluster construction. If this option is 
                                                  selected then all-by-all BLAST comparisons are not performed.""")
+    parser.add_argument("--alignments", "-a", nargs='+', help="List of aligned FASTA files to build supermatrix instead of mining GenBank.")
     args = parser.parse_args()
  
     sys.stdout = Logger()
@@ -43,86 +44,93 @@ def main():
     print(color.blue + "SUMAC: supermatrix constructor" + color.done)
     print("")
 
-    # download and set up sqllite db
-    if args.path:
-        gb_dir = args.path
+    if args.alignments:
+        # if the user provides alignments:
+        alignment_files = args.alignments
+        alignments = Alignments(alignment_files, "aligned")
     else:
-        gb_dir = os.path.abspath("genbank/")
-    if args.download_gb:
-        GenBankSetup.download(args.download_gb, gb_dir)
-        print(color.yellow + "Setting up SQLite database..." + color.done)
-        gb = GenBankSetup.sqlite(gb_dir)
-    elif not os.path.exists(gb_dir + "/gb.idx"):
-        print(color.red + "GenBank database not downloaded. Re-run with the -d option. See --help for more details." + color.done)
-        sys.exit(0)
-    else:
-        print(color.purple + "Genbank database already downloaded. Indexing sequences..." + color.done)
-        gb = GenBankSetup.sqlite(gb_dir)
-    print(color.purple + "%i sequences indexed!" % len(gb) + color.done)
+        # if the user is generating alignments:
+        # first download and set up sqllite db if necessary
+        if args.path:
+            gb_dir = args.path
+        else:
+            gb_dir = os.path.abspath("genbank/")
+        if args.download_gb:
+            GenBankSetup.download(args.download_gb, gb_dir)
+            print(color.yellow + "Setting up SQLite database..." + color.done)
+            gb = GenBankSetup.sqlite(gb_dir)
+        elif not os.path.exists(gb_dir + "/gb.idx"):
+            print(color.red + "GenBank database not downloaded. Re-run with the -d option. See --help for more details." + color.done)
+            sys.exit(0)
+        else:
+            print(color.purple + "Genbank database already downloaded. Indexing sequences..." + color.done)
+            gb = GenBankSetup.sqlite(gb_dir)
+        print(color.purple + "%i sequences indexed!" % len(gb) + color.done)
 
-    # check for ingroup and outgroup
-    if args.ingroup and args.outgroup:
-        ingroup = args.ingroup
-        outgroup = args.outgroup
-    else:
-        print(color.red + "Please specify ingroup and outgroup. See --help for details." + color.done)
-        sys.exit(0)
+        # check for ingroup and outgroup
+        if args.ingroup and args.outgroup:
+            ingroup = args.ingroup
+            outgroup = args.outgroup
+        else:
+            print(color.red + "Please specify ingroup and outgroup. See --help for details." + color.done)
+            sys.exit(0)
+        
+        # search db for ingroup and outgroup sequences
+        print(color.blue + "Outgroup = " + outgroup)
+        print("Ingroup = " + ingroup + color.done)
+        print(color.blue + "Searching for ingroup and outgroup sequences..." + color.done)
+        if args.max_ingroup:
+            search_results = GenBankSearch(gb, ingroup, outgroup, int(args.max_ingroup))
+        else:
+            search_results = GenBankSearch(gb, ingroup, outgroup)
+        ingroup_keys = search_results.ingroup_keys
+        outgroup_keys = search_results.outgroup_keys
+        all_seq_keys = ingroup_keys + outgroup_keys
+
+        # determine sequence length similarity threshold
+        length_threshold = 0.5
+        if args.length:
+            length_threshold = args.length
+        print(color.blue + "Using sequence length similarity threshold " + color.red + str(length_threshold) + color.done)
+
+        # determine e-value threshold
+        evalue_threshold = (1.0/10**10)
+        if args.evalue:
+            evalue_threshold = float(args.evalue)
+        print(color.blue + "Using BLAST e-value threshold " + color.red + str(evalue_threshold) + color.done)
+
+        # now build clusters, first checking whether we are using FASTA file of guide sequences
+        # or doing all-by-all comparisons
+        if args.guide:
+            # use FASTA file of guide sequences
+            print(color.blue + "Building clusters using the guide sequences..." + color.done)
+            cluster_builder = GuidedClusterBuilder(args.guide, all_seq_keys, length_threshold, evalue_threshold, gb_dir)
+        else:
+            # make distance matrix
+            print(color.blue + "Making distance matrix for all sequences..." + color.done)
+            distance_matrix = DistanceMatrixBuilder(gb, all_seq_keys, length_threshold, gb_dir).distance_matrix
+
+            # cluster sequences
+            print(color.purple + "Clustering sequences..." + color.done)
+            cluster_builder = DistanceMatrixClusterBuilder(all_seq_keys, distance_matrix, evalue_threshold)
+
+        print(color.purple + "Found " + color.red + str(len(cluster_builder.clusters)) + color.purple + " clusters." + color.done)
+        if len(cluster_builder.clusters) == 0:
+            print(color.red + "No clusters found." + color.done)
+            sys.exit(0)
+
+        # filter clusters, make FASTA files
+        print(color.yellow + "Building sequence matrices for each cluster." + color.done)
+        cluster_builder.assemble_fasta(gb)
+        print(color.purple + "Kept " + color.red + str(len(cluster_builder.clusters)) + color.purple + " clusters, discarded those with < 4 taxa." + color.done)
+        if len(cluster_builder.clusters) == 0:
+            print(color.red + "No clusters left to align." + color.done)
+            sys.exit(0)
+
+        # now align each cluster with MUSCLE
+        print(color.blue + "Aligning clusters with MUSCLE..." + color.done)
+        alignments = Alignments(cluster_builder.cluster_files, "unaligned")
     
-    # search db for ingroup and outgroup sequences
-    print(color.blue + "Outgroup = " + outgroup)
-    print("Ingroup = " + ingroup + color.done)
-    print(color.blue + "Searching for ingroup and outgroup sequences..." + color.done)
-    if args.max_ingroup:
-        search_results = GenBankSearch(gb, ingroup, outgroup, int(args.max_ingroup))
-    else:
-        search_results = GenBankSearch(gb, ingroup, outgroup)
-    ingroup_keys = search_results.ingroup_keys
-    outgroup_keys = search_results.outgroup_keys
-    all_seq_keys = ingroup_keys + outgroup_keys
-
-    # determine sequence length similarity threshold
-    length_threshold = 0.5
-    if args.length:
-        length_threshold = args.length
-    print(color.blue + "Using sequence length similarity threshold " + color.red + str(length_threshold) + color.done)
-
-    # determine e-value threshold
-    evalue_threshold = (1.0/10**10)
-    if args.evalue:
-        evalue_threshold = float(args.evalue)
-    print(color.blue + "Using BLAST e-value threshold " + color.red + str(evalue_threshold) + color.done)
-
-    # now build clusters, first checking whether we are using FASTA file of guide sequences
-    # or doing all-by-all comparisons
-    if args.guide:
-        # use FASTA file of guide sequences
-        print(color.blue + "Building clusters using the guide sequences..." + color.done)
-        cluster_builder = GuidedClusterBuilder(args.guide, all_seq_keys, length_threshold, evalue_threshold, gb_dir)
-    else:
-        # make distance matrix
-        print(color.blue + "Making distance matrix for all sequences..." + color.done)
-        distance_matrix = DistanceMatrixBuilder(gb, all_seq_keys, length_threshold, gb_dir).distance_matrix
-
-        # cluster sequences
-        print(color.purple + "Clustering sequences..." + color.done)
-        cluster_builder = DistanceMatrixClusterBuilder(all_seq_keys, distance_matrix, evalue_threshold)
-
-    print(color.purple + "Found " + color.red + str(len(cluster_builder.clusters)) + color.purple + " clusters." + color.done)
-    if len(cluster_builder.clusters) == 0:
-        print(color.red + "No clusters found." + color.done)
-        sys.exit(0)
-
-    # filter clusters, make FASTA files
-    print(color.yellow + "Building sequence matrices for each cluster." + color.done)
-    cluster_builder.assemble_fasta(gb)
-    print(color.purple + "Kept " + color.red + str(len(cluster_builder.clusters)) + color.purple + " clusters, discarded those with < 4 taxa." + color.done)
-    if len(cluster_builder.clusters) == 0:
-        print(color.red + "No clusters left to align." + color.done)
-        sys.exit(0)
-
-    # now align each cluster with MUSCLE
-    print(color.blue + "Aligning clusters with MUSCLE..." + color.done)
-    alignments = Alignments(cluster_builder.cluster_files)
     alignments.print_data()
     alignments.make_gene_region_csv()
 
@@ -132,7 +140,9 @@ def main():
     supermatrix.print_data()
     print(color.yellow + "Final supermatrix: " + color.red + "alignments/combined.fasta" + color.done)
     
-    supermatrix.make_genbank_csv()
+    if not args.alignments:
+        # only make genbank_csv if the sequences were mined direct from genbank
+        supermatrix.make_genbank_csv()
     supermatrix.make_figure()
 
 
