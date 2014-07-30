@@ -9,6 +9,7 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 import os
 import sys
 import csv
+from collections import OrderedDict
 from Bio import Entrez
 from Bio import SeqIO
 from util import Color
@@ -82,6 +83,9 @@ class Supermatrix(object):
             for otu in otus:
                 if len(otus[otu].sequence) < total_length:
                     otus[otu].update(self.make_gaps(loci_length), "-", 0)
+
+        # order otus
+        otus = OrderedDict(sorted(otus.items(), key=lambda t: t[0]))
 
         # write to FASTA file
         f = open("alignments/combined.fasta", "w")
