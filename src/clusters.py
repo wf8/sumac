@@ -196,6 +196,16 @@ class GuidedClusterBuilder(ClusterBuilder):
             for guide in guide_sequences:
                 clusters.append([])
 
+        # make blast database
+        output_handle = open('blast_db.fasta', 'w')
+        records = []
+        for key in all_seq_keys:
+            record = gb[key]
+            records.append(record)
+        SeqIO.write(records, output_handle, 'fasta')
+        output_handle.close()
+
+        # spawn processes
         num_cores = multiprocessing.cpu_count()
         print(color.blue + "Spawning " + color.red + str(num_cores) + color.blue + " processes to make clusters." + color.done)
         processes = []
@@ -243,36 +253,35 @@ class GuidedClusterBuilder(ClusterBuilder):
                     already_compared.append(guide.id)
                     compare_guide = True
             if compare_guide:
-                # loop through each ingroup/outgroup sequence and blast to guide seq
-                output_handle = open('subject' + process_num + '.fasta', 'w')
+                
+                # set query to be guide sequence 
+                output_handle = open('query' + process_num + '.fasta', 'w')
                 SeqIO.write(guide, output_handle, 'fasta')
                 output_handle.close()
-                for key in all_seq_keys:
-                    record = gb[key]
-                    length1 = len(guide.seq)
-                    length2 = len(record.seq)
-                    # check if length similarity threshold met
-                    if (length1 < length2 * (1 + float(length_threshold))) and (length1 > length2 * (1 - float(length_threshold))):
-                        # do the blast comparison
-                        output_handle = open('query' + process_num + '.fasta', 'w')
-                        SeqIO.write(record, output_handle, 'fasta')
-                        output_handle.close()
 
-                        blastn_cmd = NcbiblastnCommandline(query='query' + process_num + '.fasta', subject='subject' + process_num + \
-                            '.fasta', out='blast' + process_num + '.xml', outfmt=5)
-                        stdout, stderr = blastn_cmd()
-                        blastn_xml = open('blast' + process_num + '.xml', 'r')
-                        blast_records = NCBIXML.parse(blastn_xml)
+                # blast query against blast_db
+                blastn_cmd = NcbiblastnCommandline(query='query' + process_num + '.fasta', subject='blast_db.fasta', \
+                    out='blast' + process_num + '.xml', outfmt=5)
+                stdout, stderr = blastn_cmd()
 
-                        for blast_record in blast_records:
-                            if blast_record.alignments:
-                                if blast_record.alignments[0].hsps:
-                                    # blast hit found, add sequence to cluster
-                                    with lock:
-                                        temp_cluster = clusters[guide_sequences.index(guide)]
-                                        temp_cluster.append(key)
-                                        clusters[guide_sequences.index(guide)] = temp_cluster
-                        blastn_xml.close()
+                # parse blast output
+                blastn_xml = open('blast' + process_num + '.xml', 'r')
+                blast_records = NCBIXML.parse(blastn_xml)
+                for blast_record in blast_records:
+                    for alignment in blast_record.alignments:
+                        # loop through each high-scoring segment pair (HSP)
+                        for hsp in alignment.hsps:
+                            # check to see if evalue_threshold is met
+                            if hsp.expect < evalue_threshold:
+                                # blast hit found, add sequence to cluster
+                                # get accession number from sequence title:
+                                # >gi|583156573|gb|KF875705.1| Rhodiola integrifolia
+                                accession = alignment.title.split("|")[3]
+                                with lock:
+                                    temp_cluster = clusters[guide_sequences.index(guide)]
+                                    temp_cluster.append(accession)
+                                    clusters[guide_sequences.index(guide)] = temp_cluster
+                blastn_xml.close()
             # update status
             percent = str(round(100 * len(already_compared)/float(num_guides), 2))
             sys.stdout.write('\r' + color.blue + 'Completed: ' + color.red + str(len(already_compared)) + '/' + str(num_guides) + ' (' + percent + '%)' + color.done)    
@@ -282,7 +291,5 @@ class GuidedClusterBuilder(ClusterBuilder):
             os.remove("blast" + process_num + ".xml")
         if os.path.isfile("query" + process_num + ".fasta"):
             os.remove("query" + process_num + ".fasta")
-        if os.path.isfile("subject" + process_num + ".fasta"):
-            os.remove("subject" + process_num + ".fasta")
 
 
