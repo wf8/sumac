@@ -270,8 +270,12 @@ class GuidedClusterBuilder(ClusterBuilder):
                     for alignment in blast_record.alignments:
                         # loop through each high-scoring segment pair (HSP)
                         for hsp in alignment.hsps:
-                            # check to see if evalue_threshold is met
-                            if hsp.expect < evalue_threshold:
+                            length1 = len(guide.seq)
+                            length2 = alignment.length
+                            # check if length similarity threshold met
+                            # and check to see if evalue_threshold is met
+                            if (length1 < length2 * (1 + float(length_threshold))) and (length1 > length2 * (1 - float(length_threshold))) \
+                                and (hsp.expect < evalue_threshold):
                                 # blast hit found, add sequence to cluster
                                 # get accession number from sequence title:
                                 # Subject_145 AJ620515.1 Gaura parviflora ITS1, 5.8S rRNA gene, and ITS2
