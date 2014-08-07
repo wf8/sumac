@@ -223,6 +223,9 @@ class GuidedClusterBuilder(ClusterBuilder):
         sys.stdout.write("\n")
         sys.stdout.flush()
         self.clusters = clusters
+        if os.path.isfile("blast_db.fasta"):
+            os.remove("blast_db.fasta")
+
 
 
     def make_guided_clusters_worker(self, guide_seq, all_seq_keys, length_threshold, evalue_threshold, clusters, already_compared, lock, process_num, gb_dir):
