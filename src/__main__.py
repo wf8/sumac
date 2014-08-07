@@ -55,16 +55,25 @@ def main():
             gb_dir = args.path
         else:
             gb_dir = os.path.abspath("genbank/")
+        # if the user requests downloading
         if args.download_gb:
             GenBankSetup.download(args.download_gb, gb_dir)
             print(color.yellow + "Setting up SQLite database..." + color.done)
             gb = GenBankSetup.sqlite(gb_dir)
-        elif not os.path.exists(gb_dir + "/gb.idx"):
+        # the user didn't request downloading, so check for genbank directory
+        elif not os.path.exists(gb_dir):
             print(color.red + "GenBank database not downloaded. Re-run with the -d option. See --help for more details." + color.done)
             sys.exit(0)
-        else:
+        # check if the index file exists
+        elif os.path.exists(gb_dir + "/gb.idx"):
             print(color.purple + "Genbank database already downloaded. Indexing sequences..." + color.done)
             gb = GenBankSetup.sqlite(gb_dir)
+        # if the directory exists but not the index file
+        else:
+            gb = []
+        if len(gb) == 0:
+            print(color.red + "GenBank database not downloaded. Re-run with the -d option. See --help for more details." + color.done)
+            sys.exit(0)
         print(color.purple + "%i sequences indexed!" % len(gb) + color.done)
 
         # check for ingroup and outgroup

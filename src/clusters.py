@@ -197,6 +197,7 @@ class GuidedClusterBuilder(ClusterBuilder):
                 clusters.append([])
 
         # make blast database
+        gb = SeqIO.index_db(gb_dir + "/gb.idx")
         output_handle = open('blast_db.fasta', 'w')
         records = []
         for key in all_seq_keys:
@@ -224,16 +225,14 @@ class GuidedClusterBuilder(ClusterBuilder):
         self.clusters = clusters
 
 
-    def make_guided_clusters_worker(guide_seq, all_seq_keys, length_threshold, evalue_threshold, clusters, already_compared, lock, process_num, gb_dir):
+    def make_guided_clusters_worker(self, guide_seq, all_seq_keys, length_threshold, evalue_threshold, clusters, already_compared, lock, process_num, gb_dir):
         """
         Worker process for make_guided_clusters(). Each process will compare all the ingroup/outgroup sequences
         to a guide sequence, adding that guide sequence to the already_compared list.
         """
-        # each process must load its own sqlite gb
-        gb = SeqIO.index_db(gb_dir + "/gb.idx")
-        process_num = str(process_num)
 
         color = Color()
+        process_num = str(process_num)
 
         # open guide fasta file
         if os.path.isfile(guide_seq):
@@ -275,8 +274,8 @@ class GuidedClusterBuilder(ClusterBuilder):
                             if hsp.expect < evalue_threshold:
                                 # blast hit found, add sequence to cluster
                                 # get accession number from sequence title:
-                                # >gi|583156573|gb|KF875705.1| Rhodiola integrifolia
-                                accession = alignment.title.split("|")[3]
+                                # Subject_145 AJ620515.1 Gaura parviflora ITS1, 5.8S rRNA gene, and ITS2
+                                accession = alignment.title.split(" ")[1]
                                 with lock:
                                     temp_cluster = clusters[guide_sequences.index(guide)]
                                     temp_cluster.append(accession)

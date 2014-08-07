@@ -98,6 +98,10 @@ class GenBankSetup(object):
         else:
             files = os.listdir(path)
             path_files = []
+            if len(files) == 0:
+                color = Color()
+                print(color.red + "GenBank files not found. Re-download with the -d option. See --help for more details." + color.done)
+                sys.exit(0)
             for file in files:
                 path_files.append(path + "/" + file)
             return SeqIO.index_db(path + "/gb.idx", path_files, "genbank")
