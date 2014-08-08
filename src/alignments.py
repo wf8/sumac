@@ -28,6 +28,7 @@ class Alignments(object):
     files = []
     taxa = None
     user_provided = False
+    sumac_aligned = False
 
     def __init__(self, cluster_files, aligned):
         """
@@ -45,15 +46,22 @@ class Alignments(object):
         color = Color()
         if aligned == "unaligned":
             self.user_provided = False
+            self.sumac_aligned = False
             print(color.blue + "Spawning " + color.red + str(multiprocessing.cpu_count()) + color.blue + " processes to align clusters." + color.done)
             pool = multiprocessing.Pool(multiprocessing.cpu_count())
             alignment_files = pool.map(self.align_cluster, cluster_files)
             pool.close()
             pool.join()
             self.files = alignment_files
-        else:
+        elif aligned == "aligned":
             print(color.purple + "Loading user-provided alignments..." + color.done)
             self.user_provided = True
+            self.sumac_aligned = False
+            self.files = cluster_files
+        else:
+            print(color.purple + "Loading SUMAC alignments..." + color.done)
+            self.user_provided = False
+            self.sumac_aligned = True
             self.files = cluster_files
 
 

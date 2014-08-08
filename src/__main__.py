@@ -35,6 +35,7 @@ def main():
     parser.add_argument("--guide", "-g", help="""FASTA file containing sequences to guide cluster construction. If this option is 
                                                  selected then all-by-all BLAST comparisons are not performed.""")
     parser.add_argument("--alignments", "-a", nargs='+', help="List of aligned FASTA files to build supermatrix instead of mining GenBank.")
+    parser.add_argument("--salignments", "-sa", nargs='+', help="List of SUMAC alignments to build supermatrix instead of mining GenBank.")
     parser.add_argument("--search", "-s", action='store_true', help="Turn on search and cluster mode. Will not make alignments or supermatrix.")
     args = parser.parse_args()
  
@@ -49,6 +50,10 @@ def main():
         # if the user provides alignments:
         alignment_files = args.alignments
         alignments = Alignments(alignment_files, "aligned")
+    elif args.salignments:
+        # if the user inputs SUMAC alignments from previous run
+        alignment_files = args.salignments
+        alignments = Alignments(alignment_files, "sumac_aligned")
     else:
         if args.search:
             print(color.yellow + "Running in search and cluster mode. Clusters will not be aligned and supermatrix will not assembled." + color.done) 
@@ -156,7 +161,7 @@ def main():
     supermatrix.print_data()
     print(color.yellow + "Final supermatrix: " + color.red + "alignments/combined.fasta" + color.done)
     
-    if not args.alignments:
+    if not args.alignments and not args.salignments:
         # only make genbank_csv if the sequences were mined direct from genbank
         supermatrix.make_genbank_csv()
     supermatrix.make_figure()
