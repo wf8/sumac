@@ -35,7 +35,7 @@ def main():
     parser.add_argument("--guide", "-g", help="""FASTA file containing sequences to guide cluster construction. If this option is 
                                                  selected then all-by-all BLAST comparisons are not performed.""")
     parser.add_argument("--alignments", "-a", nargs='+', help="List of aligned FASTA files to build supermatrix instead of mining GenBank.")
-    parser.add_argument("--search", "-s", help="Turn on search and cluster mode. Will not make alignments or supermatrix.")
+    parser.add_argument("--search", "-s", action='store_true', help="Turn on search and cluster mode. Will not make alignments or supermatrix.")
     args = parser.parse_args()
  
     sys.stdout = Logger()
