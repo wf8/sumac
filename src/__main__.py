@@ -35,6 +35,7 @@ def main():
     parser.add_argument("--guide", "-g", help="""FASTA file containing sequences to guide cluster construction. If this option is 
                                                  selected then all-by-all BLAST comparisons are not performed.""")
     parser.add_argument("--alignments", "-a", nargs='+', help="List of aligned FASTA files to build supermatrix instead of mining GenBank.")
+    parser.add_argument("--search", "-s", help="Turn on search and cluster mode. Will not make alignments or supermatrix.")
     args = parser.parse_args()
  
     sys.stdout = Logger()
@@ -49,7 +50,9 @@ def main():
         alignment_files = args.alignments
         alignments = Alignments(alignment_files, "aligned")
     else:
-        # if the user is generating alignments:
+        if args.search:
+            print(color.yellow + "Running in search and cluster mode. Clusters will not be aligned and supermatrix will not assembled." + color.done) 
+
         # first download and set up sqllite db if necessary
         if args.path:
             gb_dir = args.path
@@ -132,10 +135,14 @@ def main():
         print(color.yellow + "Building sequence matrices for each cluster." + color.done)
         cluster_builder.assemble_fasta(gb)
         print(color.purple + "Kept " + color.red + str(len(cluster_builder.clusters)) + color.purple + " clusters, discarded those with < 4 taxa." + color.done)
+        
+        # if we are in search and cluster mode we are done
+        if args.search:
+            sys.exit(0) 
+        
         if len(cluster_builder.clusters) == 0:
             print(color.red + "No clusters left to align." + color.done)
             sys.exit(0)
-
         # now align each cluster with MUSCLE
         print(color.blue + "Aligning clusters with MUSCLE..." + color.done)
         alignments = Alignments(cluster_builder.cluster_files, "unaligned")
