@@ -313,9 +313,12 @@ class Supermatrix(object):
         Method to calculate the fraction of triples, a measure of partial decisiveness (PD).
         See: Sanderson, M.J., McMahon, M.M. & Steel, M., 2010. BMC evolutionary biology, 10. 
         """
-        triplets = []
+        decisive_triples = 0
+        total_triples = 0
         i = 0
         for otu1 in self.otus:
+            sys.stdout.write("\r" + "Calculating PD: " + str(round(100 * i/float(len(self.otus)), 4)) + "% finished")
+            sys.stdout.flush()
             if i < (len(self.otus) - 2):
                 j = 0
                 for otu2 in self.otus:
@@ -324,34 +327,39 @@ class Supermatrix(object):
                         for otu3 in self.otus:
                             if j < k:
                                 triplet = [otu1, otu2, otu3]
-                                triplets.append(triplet)
+                                decisive = self.calculate_triplet_PD(triplet)
+                                decisive_triples += decisive
+                                total_triples += 1
                             k += 1
                     j += 1
             i += 1
-
-        decisive_triples = 0
-        total_triples = len(triplets)
-        for triplet in triplets:
-            i = 0
-            for seq_length in self.otus[triplet[0]].sequence_lengths:
-                if seq_length == 0:
-                    s1 = 0
-                else:
-                    s1 = 1
-                if self.otus[triplet[1]].sequence_lengths[i] == 0:
-                    s2 = 0
-                else:
-                    s2 = 1
-                if self.otus[triplet[2]].sequence_lengths[i] == 0:
-                    s3 = 0
-                else:
-                    s3 = 1
-                if (s1 * s2 * s3) == 1:
-                    decisive_triples += 1
-                    break
-                i += 1
         return round(decisive_triples/float(total_triples), 2)
 
+
+
+    def calculate_triplet_PD(self, triplet):
+        """
+        """
+        decisive = 0
+        i = 0
+        for seq_length in self.otus[triplet[0]].sequence_lengths:
+            if seq_length == 0:
+                s1 = 0
+            else:
+                s1 = 1
+            if self.otus[triplet[1]].sequence_lengths[i] == 0:
+                s2 = 0
+            else:
+                s2 = 1
+            if self.otus[triplet[2]].sequence_lengths[i] == 0:
+                s3 = 0
+            else:
+                s3 = 1
+            if (s1 * s2 * s3) == 1:
+                decisive = 1
+                break
+            i += 1
+        return decisive
 
 
 

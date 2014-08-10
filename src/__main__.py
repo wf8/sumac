@@ -158,14 +158,14 @@ def main():
     # concatenate alignments
     print(color.purple + "Concatenating alignments..." + color.done)
     supermatrix = Supermatrix(alignments)
-    supermatrix.print_data()
-    print(color.yellow + "Final supermatrix: " + color.red + "alignments/combined.fasta" + color.done)
     
     if not args.alignments and not args.salignments:
         # only make genbank_csv if the sequences were mined direct from genbank
         supermatrix.make_genbank_csv()
     supermatrix.make_figure()
-
+    supermatrix.print_data()
+    print(color.yellow + "Final supermatrix: " + color.red + "alignments/combined.fasta" + color.done)
+    
 
 
 if __name__ == "__main__":
