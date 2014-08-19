@@ -316,6 +316,7 @@ class Supermatrix(object):
         decisive_triples = 0
         total_triples = 0
         i = 0
+        # nested loops to run through every possible triplet
         for otu1 in self.otus:
             sys.stdout.write("\r" + "Calculating PD: " + str(round(100 * i/float(len(self.otus)), 4)) + "% finished")
             sys.stdout.flush()
@@ -326,6 +327,7 @@ class Supermatrix(object):
                         k = 0
                         for otu3 in self.otus:
                             if j < k:
+                                # do calculations for this triplet
                                 triplet = [otu1, otu2, otu3]
                                 decisive = self.calculate_triplet_PD(triplet)
                                 decisive_triples += decisive
@@ -339,11 +341,14 @@ class Supermatrix(object):
 
     def calculate_triplet_PD(self, triplet):
         """
+        Function that returns 1 if the triplet contains at least
+        one gene region with sequence data for all three OTUs.
+        Otherwise returns 0.
         """
         decisive = 0
         i = 0
-        for seq_length in self.otus[triplet[0]].sequence_lengths:
-            if seq_length == 0:
+        while i < len(self.otus[triplet[0]].sequence_lengths):
+            if self.otus[triplet[0]].sequence_lengths[i] == 0:
                 s1 = 0
             else:
                 s1 = 1
