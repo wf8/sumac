@@ -80,6 +80,14 @@ class SumacTest(unittest.TestCase):
         self.assertTrue(os.path.exists("./sequence_decisiveness_plot.pdf"))
 
 
+
+    def test_supermatrix_decisiveness_csv(self):
+        import os
+        sm = self.setup_supermatrix()
+        sm.make_decisiveness_csv()
+        self.assertTrue(os.path.exists("./missing_sequence_decisiveness.csv"))
+
+
     #if verbose:
     #    print stuff
 

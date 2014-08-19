@@ -196,6 +196,26 @@ class Supermatrix(object):
                 for accession in self.otus[otu].accessions:
                     row.append(accession)
                 csvwriter.writerow(row)
+    
+    
+    
+    def make_decisiveness_csv(self):
+        """
+        Method to generate a CSV file with the sequence decisiveness scores for all missing data.
+        """
+        with open('missing_sequence_decisiveness.csv', 'wb') as csv_output:
+            csvwriter = csv.writer(csv_output)
+            header = ["OTU", "Gene Region", "Sequence Decisiveness Score"]
+            csvwriter.writerow(header)
+            for otu in self.otus:
+                i = 0
+                for seq in self.otus[otu].sequence_lengths:
+                    if seq == 0:
+                        row = [self.otus[otu].name]
+                        row.append(str(i+1))
+                        row.append(str(self.otus[otu].decisiveness_score + self.loci[i][2]))
+                        csvwriter.writerow(row)
+                    i += 1
 
 
 
