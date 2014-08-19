@@ -327,11 +327,14 @@ class Supermatrix(object):
                         k = 0
                         for otu3 in self.otus:
                             if j < k:
-                                # do calculations for this triplet
+                                # do PD calculations for this triplet
                                 triplet = [otu1, otu2, otu3]
-                                decisive = self.calculate_triplet_PD(triplet)
+                                decisive, decisive_loci = self.calculate_triplet_PD(triplet)
                                 decisive_triples += decisive
                                 total_triples += 1
+                                # triplet calculations for OTU and loci decisiveness scores
+                                self.update_OTU_decisiveness(triplet, decisive)
+                                self.update_locus_decisiveness(decisive_loci, decisive)
                             k += 1
                     j += 1
             i += 1
@@ -343,10 +346,11 @@ class Supermatrix(object):
         """
         Function that returns 1 if the triplet contains at least
         one gene region with sequence data for all three OTUs.
-        Otherwise returns 0.
+        Otherwise returns 0. Also return the list of loci that may be decisive.
         """
         decisive = 0
         i = 0
+        decisive_loci = []
         while i < len(self.otus[triplet[0]].sequence_lengths):
             if self.otus[triplet[0]].sequence_lengths[i] == 0:
                 s1 = 0
@@ -362,9 +366,58 @@ class Supermatrix(object):
                 s3 = 1
             if (s1 * s2 * s3) == 1:
                 decisive = 1
-                break
+                decisive_loci.append(i)
             i += 1
-        return decisive
+        return decisive, decisive_loci
+
+
+
+    def update_OTU_decisiveness(self, triplet, decisive):
+        """
+        Function that loops through all OTUs not in the triplet, updating
+        other_decisive_triples and other_total_triples for each OTU.
+        PD without OTU = other_decisive_triples / other_total_triples
+        OTU Decisiveness Score = PD / PD without OTU
+        """
+        for otu in self.otus:
+            if self.otus[otu].other_decisive_triples == None:
+                self.otus[otu].other_decisive_triples = 0
+            if self.otus[otu].other_total_triples == None:
+                self.otus[otu].other_total_triples = 0
+            if otu not in triplet:
+                self.otus[otu].other_decisive_triples += decisive
+                self.otus[otu].other_total_triples += 1
+
+
+
+    def update_locus_decisiveness(self, decisive_loci, decisive):
+        """
+        Function that loops through all loci not making this triplet
+        decisive and updating other_decisive_triples and other_total_triples
+        for each loci.
+        PD without loci = other_decisive_triples / other_total_triples
+        Locus Decisiveness Score = PD / PD without locus
+        """
+        if self.loci == None:
+            self.setup_loci()
+        for locus in self.loci:
+            if locus not in decisive_loci:
+                self.loci[locus][0] += decisive
+                self.loci[locus][1] += 1
+
+
+
+    def setup_loci(self):
+        """
+        Sets up a dictionary of the supermatrix's loci. Each dictionary value
+        is a list [other_decisive_triples, other_total_triples]
+        """
+        for otu in self.otus:
+            i = 0
+            while i < len(self.otus[otu].sequence_lengths)
+                self.loci[i] = [0, 0]
+                i += 1
+            break
 
 
 
