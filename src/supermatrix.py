@@ -394,7 +394,7 @@ class Supermatrix(object):
         """
         decisive_triples = 0
         total_triples = 0
-        total = len(self.otus) * (len(self.otus) - 1) * (len(self.otus) - 2)
+        total = self.choose(len(self.otus), 3)
         i = 0
         # nested loops to run through every possible triplet
         for otu1 in self.otus:
@@ -530,6 +530,23 @@ class Supermatrix(object):
                 PD_locus = 1/float(len(self.otus) * (len(self.otus)-1) * (len(self.otus)-2))
                 score = round(self.pd/PD_locus, 2)
             self.loci[locus].append(score)
+
+
+
+    def choose(self, n, k):
+        """
+        A fast way to calculate binomial coefficients by Andrew Dalke (contrib).
+        """
+        if 0 <= k <= n:
+            ntok = 1
+            ktok = 1
+            for t in xrange(1, min(k, n - k) + 1):
+                ntok *= n
+                ktok *= t
+                n -= 1
+            return ntok // ktok
+        else:
+            return 0
 
 
 
