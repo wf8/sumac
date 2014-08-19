@@ -77,7 +77,7 @@ class SumacTest(unittest.TestCase):
         import os
         sm = self.setup_supermatrix()
         sm.make_sequence_decisiveness_figure()
-        self.assertTrue(os.path.exists("./sequence_decisiveness_plot.pdf"))
+        self.assertTrue(os.path.exists("./sequence_decisiveness_plot_all_scores.pdf"))
 
 
 

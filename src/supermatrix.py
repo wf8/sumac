@@ -321,21 +321,27 @@ class Supermatrix(object):
 
 
     def make_sequence_decisiveness_figure(self):
-        
-        # TODO:
-        # test for numpy and matplotlib, show message if not present
-        import numpy as np
-        import matplotlib.pyplot as plt
+        """
+        Method to make plot for the Sequence Decisiveness Scores.
+        """
 
-        data = []
+        data_all = []
+        data_missing = []
         otu_names = []
         genes = []
         i = 1
         for otu in self.otus:
-            seq_dec_scores = []
+            seq_dec_scores_all = []
+            seq_dec_scores_missing = []
             for locus in self.loci:
-                seq_dec_scores.append(self.otus[otu].decisiveness_score + self.loci[locus][2])
-            data.append(seq_dec_scores)
+                # if sequence data present, make score 0
+                if self.otus[otu].sequence_lengths[locus] != 0:
+                    seq_dec_scores_missing.append(0)
+                else:
+                    seq_dec_scores_missing.append(self.otus[otu].decisiveness_score + self.loci[locus][2])
+                seq_dec_scores_all.append(self.otus[otu].decisiveness_score + self.loci[locus][2])
+            data_all.append(seq_dec_scores_all)
+            data_missing.append(seq_dec_scores_missing)
             otu_names.append(otu)
             genes.append(str(i))
             i += 1
@@ -349,6 +355,19 @@ class Supermatrix(object):
             if font_size < 0:
                 font_size = 0
 
+        self.finish_sequence_decisiveness_figure(data_missing, font_size, otu_names, genes, "sequence_decisiveness_plot_missing_scores.pdf")
+        self.finish_sequence_decisiveness_figure(data_all, font_size, otu_names, genes, "sequence_decisiveness_plot_all_scores.pdf")
+
+
+
+    def finish_sequence_decisiveness_figure(self, data, font_size, otu_names, genes, file_name):
+        """
+        Method to finish plots for the Sequence Decisiveness Scores.
+        """
+        # TODO:
+        # test for numpy and matplotlib, show message if not present
+        import numpy as np
+        import matplotlib.pyplot as plt
         supermatrix = np.array(data)
 
         # set up figure
@@ -391,7 +410,7 @@ class Supermatrix(object):
         cbar = fig.colorbar(heatmap, cax=axcolor, ticks=[0,50, 100], orientation='horizontal')
         cbar.ax.set_xticklabels(['0%', '50%', '100%'], family="Arial", size=10)
 
-        plt.savefig("sequence_decisiveness_plot.pdf")
+        plt.savefig(file_name)
 
 
 
