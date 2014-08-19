@@ -53,6 +53,7 @@ class SumacTest(unittest.TestCase):
         
         sm = Supermatrix()
         sm.otus = {"alpha": alpha, "beta": beta, "pi": pi, "omega": omega, "gamma": gamma}
+        sm.get_PD()
         return sm
 
 
@@ -60,17 +61,23 @@ class SumacTest(unittest.TestCase):
     def test_pd_calculation(self):
         # 10 total triplets for 5 taxa, 2 of them are decisive, therefore pd=0.2
         sm = self.setup_supermatrix()
-        self.assertEqual(sm.calculate_PD(), 0.2)
+        self.assertEqual(sm.get_PD(), 0.2)
 
 
 
-    def test_supermatrix_figure(self):
+    def test_supermatrix_data_figure(self):
         import os
         sm = self.setup_supermatrix()
-        sm.make_figure()
-        self.assertTrue(os.path.exists("./plot.pdf"))
-        # TODO: delete plot?
+        sm.make_sequence_data_figure()
+        self.assertTrue(os.path.exists("./sequence_data_plot.pdf"))
 
+
+
+    def test_supermatrix_decisiveness_figure(self):
+        import os
+        sm = self.setup_supermatrix()
+        sm.make_sequence_decisiveness_figure()
+        self.assertTrue(os.path.exists("./sequence_decisiveness_plot.pdf"))
 
 
     #if verbose:

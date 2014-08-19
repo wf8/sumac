@@ -162,8 +162,9 @@ def main():
     if not args.alignments and not args.salignments:
         # only make genbank_csv if the sequences were mined direct from genbank
         supermatrix.make_genbank_csv()
-    supermatrix.make_figure()
     supermatrix.print_data()
+    supermatrix.make_sequence_data_figure()
+    supermatrix.make_sequence_sequence_decisiveness_figure()
     print(color.yellow + "Final supermatrix: " + color.red + "alignments/combined.fasta" + color.done)
     
 

@@ -26,6 +26,7 @@ class Supermatrix(object):
     otus = {}           # dictionary of Otu objects
     pd = None           # fraction of triples, a measure of the partial decisiveness of a supermatrix
     missing_data = None # % of sequence data missing
+    loci = None
 
 
     def __init__(self, alignments=None):
@@ -36,6 +37,7 @@ class Supermatrix(object):
         self.otus = {}
         self.pd = None
         self.coverage_density = None
+        self.loci == None
         if alignments is not None:
             self.concatenate(alignments)
 
@@ -224,7 +226,7 @@ class Supermatrix(object):
 
 
 
-    def make_figure(self):
+    def make_sequence_data_figure(self):
         
         # TODO:
         # test for numpy and matplotlib, show message if not present
@@ -294,7 +296,82 @@ class Supermatrix(object):
         cbar = fig.colorbar(heatmap, cax=axcolor, ticks=[0,50, 100], orientation='horizontal')
         cbar.ax.set_xticklabels(['0%', '50%', '100%'], family="Arial", size=10)
 
-        plt.savefig("plot.pdf")
+        plt.savefig("sequence_data_plot.pdf")
+
+
+
+    def make_sequence_decisiveness_figure(self):
+        
+        # TODO:
+        # test for numpy and matplotlib, show message if not present
+        import numpy as np
+        import matplotlib.pyplot as plt
+
+        data = []
+        otu_names = []
+        genes = []
+        i = 1
+        for otu in self.otus:
+            seq_dec_scores = []
+            for locus in self.loci:
+                seq_dec_scores.append(self.otus[otu].decisiveness_score + self.loci[locus][2])
+            data.append(seq_dec_scores)
+            otu_names.append(otu)
+            genes.append(str(i))
+            i += 1
+        
+        # set font size to scale with number of otus
+        n = len(self.otus)
+        if n < 25:
+            font_size = 10
+        else:
+            font_size = round(11.8-(0.073*n), 1)
+            if font_size < 0:
+                font_size = 0
+
+        supermatrix = np.array(data)
+
+        # set up figure
+        fig, ax = plt.subplots()
+        ax.set_position([0.4, 0.1, .3, .7])
+        # fig.set_size_inches(8.5, 11)
+
+        # add data
+        heatmap = ax.pcolor(supermatrix, cmap=plt.cm.YlOrRd)
+
+        # put the labels in the middle of each cell
+        ax.set_yticks(np.arange(supermatrix.shape[0]) + 0.5, minor=False)
+        ax.set_xticks(np.arange(supermatrix.shape[1]) + 0.5, minor=False)
+
+        # move x axis label stuff to top
+        ax.invert_yaxis()
+        ax.xaxis.tick_top()
+
+        # add the labels
+        ax.set_xticklabels(genes, minor=False, family="Arial", size=6)
+        ax.set_yticklabels(otu_names, minor=False, family="Arial", size=font_size)
+
+        # rotate the gene names
+        #plt.xticks(rotation=90)
+
+        # remove junk from axes
+        ax.grid(False)
+        ax.set_frame_on(False)
+
+        # turn off all the ticks
+        for t in ax.xaxis.get_major_ticks():
+            t.tick1On = False
+            t.tick2On = False
+        for t in ax.yaxis.get_major_ticks():
+            t.tick1On = False
+            t.tick2On = False
+
+        # add color legend
+        axcolor = fig.add_axes([0.425, .90, 0.25, 0.015])
+        cbar = fig.colorbar(heatmap, cax=axcolor, ticks=[0,50, 100], orientation='horizontal')
+        cbar.ax.set_xticklabels(['0%', '50%', '100%'], family="Arial", size=10)
+
+        plt.savefig("sequence_decisiveness_plot.pdf")
 
 
 
@@ -304,6 +381,8 @@ class Supermatrix(object):
         """
         if self.pd == None:
             self.pd = self.calculate_PD()
+            self.calculate_OTU_decisiveness_scores()
+            self.calculate_locus_decisiveness_scores()
         return self.pd
 
 
@@ -315,11 +394,10 @@ class Supermatrix(object):
         """
         decisive_triples = 0
         total_triples = 0
+        total = len(self.otus) * (len(self.otus) - 1) * (len(self.otus) - 2)
         i = 0
         # nested loops to run through every possible triplet
         for otu1 in self.otus:
-            sys.stdout.write("\r" + "Calculating PD: " + str(round(100 * i/float(len(self.otus)), 4)) + "% finished")
-            sys.stdout.flush()
             if i < (len(self.otus) - 2):
                 j = 0
                 for otu2 in self.otus:
@@ -327,6 +405,8 @@ class Supermatrix(object):
                         k = 0
                         for otu3 in self.otus:
                             if j < k:
+                                sys.stdout.write("\r" + "Calculating PD: " + str(round(100 * total_triples/float(total), 4)) + "% finished")
+                                sys.stdout.flush()
                                 # do PD calculations for this triplet
                                 triplet = [otu1, otu2, otu3]
                                 decisive, decisive_loci = self.calculate_triplet_PD(triplet)
@@ -412,12 +492,44 @@ class Supermatrix(object):
         Sets up a dictionary of the supermatrix's loci. Each dictionary value
         is a list [other_decisive_triples, other_total_triples]
         """
+        self.loci = {}
         for otu in self.otus:
             i = 0
-            while i < len(self.otus[otu].sequence_lengths)
+            while i < len(self.otus[otu].sequence_lengths):
                 self.loci[i] = [0, 0]
                 i += 1
             break
+
+
+
+    def calculate_OTU_decisiveness_scores(self):
+        """
+        Method to calculate OTU Decisiveness Scores.
+        """
+        for otu in self.otus:
+            PD_otu = self.otus[otu].other_decisive_triples/float(self.otus[otu].other_total_triples)
+            if PD_otu != 0:
+                score = round(self.pd/PD_otu, 2)
+            else:
+                PD_otu = 1/float(len(self.otus) * (len(self.otus)-1) * (len(self.otus)-2))
+                score = round(self.pd/PD_otu, 2)
+            self.otus[otu].decisiveness_score = score
+
+
+
+    def calculate_locus_decisiveness_scores(self):
+        """
+        Method to calculate Locus Decisiveness Scores.
+        Adds the score to the list that is the self.loci dictionary value.
+        """
+        for locus in self.loci:
+            PD_locus = self.loci[locus][0]/float(self.loci[locus][1])
+            if PD_locus != 0:
+                score = round(self.pd/PD_locus, 2)
+            else:
+                PD_locus = 1/float(len(self.otus) * (len(self.otus)-1) * (len(self.otus)-2))
+                score = round(self.pd/PD_locus, 2)
+            self.loci[locus].append(score)
 
 
 
@@ -431,6 +543,8 @@ class Otu(object):
     sequence = ""           # the full aligned sequence for this OTU in the supermatrix
     accessions = []         # list of each GenBank accession used where "-" means no sequence for that region
     sequence_lengths = []   # list of the length of each sequence
+    other_decisive_triples = None
+    other_total_triples = None
 
 
 
@@ -442,6 +556,8 @@ class Otu(object):
         self.sequence = ""
         self.accessions = []
         self.sequence_lengths = []
+        self.other_decisive_triples = None
+        self.other_total_triples = None
 
 
 
