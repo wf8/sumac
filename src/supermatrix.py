@@ -435,6 +435,7 @@ class Supermatrix(object):
         Method to calculate the fraction of triples, a measure of partial decisiveness (PD).
         See: Sanderson, M.J., McMahon, M.M. & Steel, M., 2010. BMC evolutionary biology, 10. 
         """
+        color = Color()
         decisive_triples = 0
         total_triples = 0
         total = self.binomial_coefficient(len(self.otus), 3)
@@ -448,7 +449,8 @@ class Supermatrix(object):
                         k = 0
                         for otu3 in self.otus:
                             if j < k:
-                                sys.stdout.write("\r" + "Calculating PD: " + str(round(100 * total_triples/float(total), 4)) + "% finished")
+                                sys.stdout.write("\r" + color.blue + "Calculating PD: " + color.red + str(round(100 * total_triples/float(total), 4)) + \
+                                    "% " + color.blue + "finished" + color.done)
                                 sys.stdout.flush()
                                 # do PD calculations for this triplet
                                 triplet = [otu1, otu2, otu3]
@@ -461,6 +463,8 @@ class Supermatrix(object):
                             k += 1
                     j += 1
             i += 1
+        sys.stdout.write("\r" + color.blue + "Calculating PD: " + color.red + "100.00% " + color.blue + "finished\n" + color.done)
+        sys.stdout.flush()
         return round(decisive_triples/float(total_triples), 2)
 
 
