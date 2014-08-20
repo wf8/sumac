@@ -38,6 +38,8 @@ class Supermatrix(object):
         self.pd = None
         self.coverage_density = None
         self.loci == None
+        self.highest_OTU_decisiveness_score = 0
+        self.highest_locus_decisiveness_score = 0
         if alignments is not None:
             self.concatenate(alignments)
 
@@ -213,7 +215,8 @@ class Supermatrix(object):
                     if seq == 0:
                         row = [self.otus[otu].name]
                         row.append(str(i+1))
-                        row.append(str(self.otus[otu].decisiveness_score + self.loci[i][2]))
+                        score = self.calculate_sequence_decisiveness_score(self.otus[otu].decisiveness_score, self.loci[i][2])
+                        row.append(str(score))
                         csvwriter.writerow(row)
                     i += 1
 
@@ -334,12 +337,13 @@ class Supermatrix(object):
             seq_dec_scores_all = []
             seq_dec_scores_missing = []
             for locus in self.loci:
+                score = self.calculate_sequence_decisiveness_score(self.otus[otu].decisiveness_score, self.loci[locus][2])
                 # if sequence data present, make score 0
                 if self.otus[otu].sequence_lengths[locus] != 0:
                     seq_dec_scores_missing.append(0)
                 else:
-                    seq_dec_scores_missing.append(self.otus[otu].decisiveness_score + self.loci[locus][2])
-                seq_dec_scores_all.append(self.otus[otu].decisiveness_score + self.loci[locus][2])
+                    seq_dec_scores_missing.append(score)
+                seq_dec_scores_all.append(score)
             data_all.append(seq_dec_scores_all)
             data_missing.append(seq_dec_scores_missing)
             otu_names.append(otu)
@@ -433,7 +437,7 @@ class Supermatrix(object):
         """
         decisive_triples = 0
         total_triples = 0
-        total = self.choose(len(self.otus), 3)
+        total = self.binomial_coefficient(len(self.otus), 3)
         i = 0
         # nested loops to run through every possible triplet
         for otu1 in self.otus:
@@ -545,14 +549,17 @@ class Supermatrix(object):
         """
         Method to calculate OTU Decisiveness Scores.
         """
+        self.highest_OTU_decisiveness_score = 0
         for otu in self.otus:
             PD_otu = self.otus[otu].other_decisive_triples/float(self.otus[otu].other_total_triples)
             if PD_otu != 0:
                 score = round(self.pd/PD_otu, 2)
             else:
-                PD_otu = 1/float(len(self.otus) * (len(self.otus)-1) * (len(self.otus)-2))
+                PD_otu = 1/float(self.binomial_coefficient(len(self.otus),3))
                 score = round(self.pd/PD_otu, 2)
             self.otus[otu].decisiveness_score = score
+            if score > self.highest_OTU_decisiveness_score:
+                self.highest_OTU_decisiveness_score = score
 
 
 
@@ -561,18 +568,32 @@ class Supermatrix(object):
         Method to calculate Locus Decisiveness Scores.
         Adds the score to the list that is the self.loci dictionary value.
         """
+        self.highest_locus_decisiveness_score = 0
         for locus in self.loci:
             PD_locus = self.loci[locus][0]/float(self.loci[locus][1])
             if PD_locus != 0:
                 score = round(self.pd/PD_locus, 2)
             else:
-                PD_locus = 1/float(len(self.otus) * (len(self.otus)-1) * (len(self.otus)-2))
+                PD_locus = 1/float(self.binomial_coefficient(len(self.otus), 3))
                 score = round(self.pd/PD_locus, 2)
             self.loci[locus].append(score)
+            if score > self.highest_locus_decisiveness_score:
+                self.highest_locus_decisiveness_score = score
 
 
 
-    def choose(self, n, k):
+    def calculate_sequence_decisiveness_score(self, otu_score, locus_score):
+        """
+        Method to calculate sequence decisiveness score.
+        This is the OTU score/highest OTU score + locus score/highest locus score
+        """
+        otu_relative_score = otu_score/float(self.highest_OTU_decisiveness_score)
+        locus_relative_score = locus_score/float(self.highest_locus_decisiveness_score)
+        return round(otu_relative_score + locus_relative_score, 2)
+
+
+
+    def binomial_coefficient(self, n, k):
         """
         A fast way to calculate binomial coefficients by Andrew Dalke (contrib).
         """

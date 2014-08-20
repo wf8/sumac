@@ -165,6 +165,7 @@ def main():
     supermatrix.print_data()
     supermatrix.make_sequence_data_figure()
     supermatrix.make_sequence_decisiveness_figure()
+    supermatrix.make_decisiveness_csv()
     print(color.yellow + "Final supermatrix: " + color.red + "alignments/combined.fasta" + color.done)
     
 
