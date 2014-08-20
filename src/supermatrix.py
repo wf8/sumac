@@ -40,6 +40,8 @@ class Supermatrix(object):
         self.loci == None
         self.highest_OTU_decisiveness_score = 0
         self.highest_locus_decisiveness_score = 0
+        self.lowest_OTU_decisiveness_score = 0
+        self.lowest_locus_decisiveness_score = 0
         if alignments is not None:
             self.concatenate(alignments)
 
@@ -194,7 +196,7 @@ class Supermatrix(object):
                 i += 1
             csvwriter.writerow(header)
             for otu in self.otus:
-                row = [self.otus[otu].name]
+                row = [otu]
                 for accession in self.otus[otu].accessions:
                     row.append(accession)
                 csvwriter.writerow(row)
@@ -340,7 +342,7 @@ class Supermatrix(object):
                 score = self.calculate_sequence_decisiveness_score(self.otus[otu].decisiveness_score, self.loci[locus][2])
                 # if sequence data present, make score 0
                 if self.otus[otu].sequence_lengths[locus] != 0:
-                    seq_dec_scores_missing.append(0)
+                    seq_dec_scores_missing.append(-.5)
                 else:
                     seq_dec_scores_missing.append(score)
                 seq_dec_scores_all.append(score)
@@ -380,7 +382,7 @@ class Supermatrix(object):
         # fig.set_size_inches(8.5, 11)
 
         # add data
-        heatmap = ax.pcolor(supermatrix, cmap=plt.cm.YlOrRd)
+        heatmap = ax.pcolor(supermatrix, cmap=plt.cm.RdGy_r, vmin=-2, vmax=2)
 
         # put the labels in the middle of each cell
         ax.set_yticks(np.arange(supermatrix.shape[0]) + 0.5, minor=False)
@@ -411,8 +413,8 @@ class Supermatrix(object):
 
         # add color legend
         axcolor = fig.add_axes([0.425, .90, 0.25, 0.015])
-        cbar = fig.colorbar(heatmap, cax=axcolor, ticks=[0,50, 100], orientation='horizontal')
-        cbar.ax.set_xticklabels(['0%', '50%', '100%'], family="Arial", size=10)
+        cbar = fig.colorbar(heatmap, cax=axcolor, ticks=[-2, 0, 2], orientation='horizontal')
+        cbar.ax.set_xticklabels(['-2', '0', '2'], family="Arial", size=6)
 
         plt.savefig(file_name)
 
@@ -554,16 +556,19 @@ class Supermatrix(object):
         Method to calculate OTU Decisiveness Scores.
         """
         self.highest_OTU_decisiveness_score = 0
+        self.lowest_OTU_decisiveness_score = 999
         for otu in self.otus:
             PD_otu = self.otus[otu].other_decisive_triples/float(self.otus[otu].other_total_triples)
             if PD_otu != 0:
-                score = round(self.pd/PD_otu, 2)
+                score = self.pd/PD_otu
             else:
                 PD_otu = 1/float(self.binomial_coefficient(len(self.otus),3))
-                score = round(self.pd/PD_otu, 2)
+                score = self.pd/PD_otu
             self.otus[otu].decisiveness_score = score
             if score > self.highest_OTU_decisiveness_score:
                 self.highest_OTU_decisiveness_score = score
+            if score < self.lowest_OTU_decisiveness_score:
+                self.lowest_OTU_decisiveness_score = score
 
 
 
@@ -573,16 +578,19 @@ class Supermatrix(object):
         Adds the score to the list that is the self.loci dictionary value.
         """
         self.highest_locus_decisiveness_score = 0
+        self.lowest_locus_decisiveness_score = 999
         for locus in self.loci:
             PD_locus = self.loci[locus][0]/float(self.loci[locus][1])
             if PD_locus != 0:
-                score = round(self.pd/PD_locus, 2)
+                score = self.pd/PD_locus
             else:
                 PD_locus = 1/float(self.binomial_coefficient(len(self.otus), 3))
-                score = round(self.pd/PD_locus, 2)
+                score = self.pd/PD_locus
             self.loci[locus].append(score)
             if score > self.highest_locus_decisiveness_score:
                 self.highest_locus_decisiveness_score = score
+            if score < self.lowest_locus_decisiveness_score:
+                self.lowest_locus_decisiveness_score = score
 
 
 
@@ -591,8 +599,8 @@ class Supermatrix(object):
         Method to calculate sequence decisiveness score.
         This is the OTU score/highest OTU score + locus score/highest locus score
         """
-        otu_relative_score = otu_score/float(self.highest_OTU_decisiveness_score)
-        locus_relative_score = locus_score/float(self.highest_locus_decisiveness_score)
+        otu_relative_score = (otu_score - self.lowest_OTU_decisiveness_score)/float(self.highest_OTU_decisiveness_score - self.lowest_OTU_decisiveness_score)
+        locus_relative_score = (locus_score - self.lowest_locus_decisiveness_score)/float(self.highest_locus_decisiveness_score - self.lowest_locus_decisiveness_score)
         return round(otu_relative_score + locus_relative_score, 2)
 
 
