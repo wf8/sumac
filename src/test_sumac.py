@@ -32,7 +32,7 @@ class SumacTest(unittest.TestCase):
         beta = Otu("beta")
         pi = Otu("pi")
         omega = Otu("omega")
-        gamma = Otu("omega")
+        gamma = Otu("gamma")
 
         # add sequence data to taxa, all that matters is the sequence length
         alpha_seq_lengths = [10, 0, 10, 0]
