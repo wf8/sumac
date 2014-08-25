@@ -382,7 +382,8 @@ class Supermatrix(object):
         # fig.set_size_inches(8.5, 11)
 
         # add data
-        heatmap = ax.pcolor(supermatrix, cmap=plt.cm.YlOrRd, vmin=-0.5, vmax=2)
+        #heatmap = ax.pcolor(supermatrix, cmap=plt.cm.YlOrRd, vmin=-0.5, vmax=2)
+        heatmap = ax.pcolor(supermatrix, cmap=plt.cm.RdYlBu_r, vmin=-2, vmax=2)
 
         # put the labels in the middle of each cell
         ax.set_yticks(np.arange(supermatrix.shape[0]) + 0.5, minor=False)
@@ -413,8 +414,8 @@ class Supermatrix(object):
 
         # add color legend
         axcolor = fig.add_axes([0.425, .90, 0.25, 0.015])
-        cbar = fig.colorbar(heatmap, cax=axcolor, ticks=[-0.5, 0, 2], orientation='horizontal')
-        cbar.ax.set_xticklabels(['-0.5', '0', '2'], family="Arial", size=6)
+        cbar = fig.colorbar(heatmap, cax=axcolor, ticks=[-2, 0, 2], orientation='horizontal')
+        cbar.ax.set_xticklabels(['-2', '0', '2'], family="Arial", size=6)
 
         plt.savefig(file_name)
 
