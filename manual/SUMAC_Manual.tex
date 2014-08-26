@@ -1,4 +1,4 @@
-\documentclass[12pt]{report}
+\documentclass[10pt]{report}
 \usepackage{geometry} 
 \usepackage{indentfirst}
 \usepackage{hyperref}
@@ -58,7 +58,7 @@ and use a single-linkage hierarchical clustering algorithm, or
 (2) BLAST each ingroup and outgroup sequence against user provided guide sequences
 that define each cluster.
 SUMAC then discards clusters that are not phylogenetically informative ($< 4$ taxa), 
-and then aligns each cluster of sequences using MUSCLE.
+and then aligns each cluster of sequences using MAFFT.
 Finally, the alignments are concatenated by species name (using the GenBank taxonomy) 
 creating a supermatrix. A number of metrics are then calculated on the supermatrix, 
 a graph indicating taxon coverage density is generated, and spreadsheets (in CSV format)
@@ -74,19 +74,13 @@ detail later in this manual.
 
 The following dependencies must be installed to run SUMAC:
 
-\begin{verbatim}
-Python 2.7
-Biopython
-MUSCLE
-BLAST+
-\end{verbatim}
-
-The following are optional if you would like to generate graphs:
-
-\begin{verbatim}
-NumPy
-matplotlib
-\end{verbatim}
+\begin{itemize}
+\item \texttt{Python 2.7}
+\item \texttt{Biopython}
+\item \texttt{matplotlib}
+\item \texttt{MAFFT v6.9+}
+\item \texttt{BLAST+}
+\end{itemize}
 
 \subsection{Installing Dependencies on Linux}
 
@@ -97,7 +91,7 @@ sudo pip install numpy
 sudo pip install matplotlib
 sudo pip install biopython
 sudo apt-get install ncbi-blast+
-sudo apt-get install muscle
+sudo apt-get install mafft
 \end{verbatim}
 %git clone https://github.com/biopython/biopython.git
 %cd biopython
@@ -122,7 +116,7 @@ python setup.py install
 \section{License and Warranty}
 SUMAC is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
 
-The program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details (http://www.gnu.org/copyleft/gpl.html).
+The program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details \\ (http://www.gnu.org/copyleft/gpl.html).
 
 %----------------------------------------
 % Quick Start Tutorial
@@ -182,17 +176,19 @@ analyzed and the computational resources available.
 
 SUMAC will output the following files:
 
-\begin{verbatim}
-alignments/combined.fasta
-alignments/N.fasta
-clusters/N.fasta
-gb_search_results
-genbank_accessions.csv
-gene_regions.csv
-plot.pdf
-sumac_log
-\end{verbatim}
+\begin{enumerate}
+\item \texttt{alignments/combined.fasta} The final aligned supermatrix in FASTA format.
+\item \texttt{alignments/N.fasta} The alignment of gene region $N$ where $N$ is an integer $> 0$.
+\item \texttt{clusters/N.fasta} The unaligned raw sequence cluster of gene region $N$.
+\item \texttt{gb\_search\_results} File used by SUMAC to save the results of the GenBank sequence search in case the search is re-run. This file is not human readable.
+\item \texttt{genbank\_accessions.csv} A table with each GenBank accession used, ordered by gene region and taxon (like the appendices found in most systematics papers).
+\item \texttt{gene\_regions.csv} A table with the number of taxa, the aligned length, the percent missing data, and the taxon coverage density of each gene region used in the supermatrix.
+\item \texttt{plot.pdf} A figure that shows how much sequence data was available for each taxon for each gene region.
+\item \texttt{sumac\_log} Log of the SUMAC run, and contains a great deal of information about the supermatrix construction, including final metrics such as the partical decisiveness (PD) of the supermatrix.
+\end{enumerate}
 
+% start comment
+\iffalse
 The \verb|alignments/combined.fasta| is the final aligned supermatrix in FASTA format.
 \verb|alignments/N.fasta|, where $N$ is an integer $> 0$, is the alignment of gene region $N$.
 Similarly, \verb|clusters/N.fasta| is the unaligned raw sequence cluster of gene region $N$.
@@ -211,8 +207,8 @@ each taxon for each gene region.
 \verb|sumac_log| is a log of the SUMAC run, and contains a great deal of information
 about the supermatrix construction, including final metrics such as the partical
 decisiveness (PD) of the supermatrix.
-
-
+\fi
+% end comment
 
 %----------------------------------------
 % SUMAC in Detail

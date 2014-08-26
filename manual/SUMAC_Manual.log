@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012) (format=pdflatex 2012.6.30)  28 JUL 2014 00:06
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012) (format=pdflatex 2012.6.30)  25 AUG 2014 21:06
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -18,8 +18,8 @@ lovak, slovenian, spanish, swedish, turkish, turkmen, ukrainian, uppersorbian,
 welsh, loaded.
 (/usr/local/texlive/2012/texmf-dist/tex/latex/base/report.cls
 Document Class: report 2007/10/19 v1.4h Standard LaTeX document class
-(/usr/local/texlive/2012/texmf-dist/tex/latex/base/size12.clo
-File: size12.clo 2007/10/19 v1.4h Standard LaTeX file (size option)
+(/usr/local/texlive/2012/texmf-dist/tex/latex/base/size10.clo
+File: size10.clo 2007/10/19 v1.4h Standard LaTeX file (size option)
 )
 \c@part=\count79
 \c@chapter=\count80
@@ -393,12 +393,12 @@ LaTeX Font Info:    ... okay on input line 30.
 * \topmargin=-7.86334pt
 * \headheight=12.0pt
 * \headsep=25.0pt
-* \topskip=12.0pt
+* \topskip=10.0pt
 * \footskip=30.0pt
-* \marginparwidth=44.0pt
-* \marginparsep=10.0pt
+* \marginparwidth=65.0pt
+* \marginparsep=11.0pt
 * \columnsep=10.0pt
-* \skip\footins=10.8pt plus 4.0pt minus 2.0pt
+* \skip\footins=9.0pt plus 4.0pt minus 2.0pt
 * \hoffset=0.0pt
 * \voffset=0.0pt
 * \mag=1000
@@ -461,60 +461,70 @@ Package caption Info: End \AtBeginDocument code.
 [1
 
 {/usr/local/texlive/2012/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
-(./SUMAC_Manual.tocpdfTeX warning (ext4): destination with the same identifier 
-(name{page.1}) has been already used, duplicate ignored
-<to be read again> 
-                   \relax 
-l.20 ...e Length Similarity}{10}{subsection.3.4.2}
-                                                   [1
-
-])
+(./SUMAC_Manual.toc)
 \tf@toc=\write5
 \openout5 = `SUMAC_Manual.toc'.
 
- [2]
+pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has 
+been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.39 \chapter
+             {Introduction} [1
+
+]
 Chapter 1.
-[3
+[2
 
-] [4] [5]
+]
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 78.
+ (/usr/local/texlive/2012/texmf-dist/tex/latex/base/omscmr.fd
+File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
+)
+LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 78.
+ [3] [4]
 Chapter 2.
-[6
+[5
 
-] [7] [8]
+] [6]
 Chapter 3.
-[9
+[7
 
-] [10]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 279.
- [11]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 279.
+]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 275.
+ [8]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 275.
  (./SUMAC_Manual.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 279.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 279.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 275.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 275.
 Package rerunfilecheck Info: File `SUMAC_Manual.out' has not changed.
 (rerunfilecheck)             Checksum: 1E3DDAF5E7CDBB9EE71CB59DB1EFC3D3;1493.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 279.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 275.
  ) 
 Here is how much of TeX's memory you used:
- 8148 strings out of 493488
- 122339 string characters out of 3141326
- 219197 words of memory out of 3000000
- 11335 multiletter control sequences out of 15000+200000
- 11848 words of font info for 43 fonts, out of 3000000 for 9000
+ 8175 strings out of 493488
+ 122674 string characters out of 3141326
+ 220169 words of memory out of 3000000
+ 11349 multiletter control sequences out of 15000+200000
+ 11540 words of font info for 42 fonts, out of 3000000 for 9000
  957 hyphenation exceptions out of 8191
- 36i,7n,38p,289b,439s stack positions out of 5000i,500n,10000p,200000b,50000s
-</usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb
-></usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb>
-</usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></
-usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></us
-r/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/
-local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/loc
-al/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/loca
-l/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt12.pfb>
-Output written on SUMAC_Manual.pdf (12 pages, 106857 bytes).
+ 36i,7n,38p,312b,376s stack positions out of 5000i,500n,10000p,200000b,50000s
+</usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb
+></usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb>
+</usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><
+/usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></u
+sr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr
+/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/l
+ocal/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/loca
+l/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/t
+exlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/local/texl
+ive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texli
+ve/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
+Output written on SUMAC_Manual.pdf (9 pages, 146610 bytes).
 PDF statistics:
- 209 PDF objects out of 1000 (max. 8388607)
- 185 compressed objects within 2 object streams
- 35 named destinations out of 1000 (max. 500000)
+ 220 PDF objects out of 1000 (max. 8388607)
+ 196 compressed objects within 2 object streams
+ 40 named destinations out of 1000 (max. 500000)
  177 words of extra memory for PDF output out of 10000 (max. 10000000)
 
