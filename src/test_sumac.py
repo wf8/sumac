@@ -15,9 +15,12 @@ class SumacTest(unittest.TestCase):
         self.assertEqual(version, "2.7", "SUMAC was written for Python 2.7. You are running Python " + version)
 
     
-    # TODO:
-    # test for alignment program
-    # test for biopython
+    
+    def test_mafft_alignment(self):
+        import os
+        from alignments import Alignments
+        alignments = Alignments(["test.fasta"], "unaligned")
+        self.assertTrue(os.path.exists("alignments/test.fasta"))
 
 
 
