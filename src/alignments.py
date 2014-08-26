@@ -14,7 +14,7 @@ import copy_reg
 import types
 from Bio import Entrez
 from Bio import SeqIO
-from Bio.Align.Applications import MuscleCommandline
+from Bio.Align.Applications import MafftCommandline
 from util import Color
 
 
@@ -70,16 +70,21 @@ class Alignments(object):
         """
         Worker fuction for align_clusters
         Inputs a FASTA file containing an unaligned sequence cluster.
-        Uses MUSCLE to align the cluster.
+        Uses MAFFT to align the cluster.
         """
-        # TODO:   
-        # use MAFFT instead of MUSCLE to deal with forward/reverse strand issue
-        alignment_file = "alignments" + cluster_file[cluster_file.index("/"):]
-        muscle_cline = MuscleCommandline(input=cluster_file, out=alignment_file)
+        mafft_cline = MafftCommandline(input=cluster_file)
+        mafft_cline.set_parameter("--auto", True)
+        mafft_cline.set_parameter("--adjustdirection", True)
         color = Color()
-        print(color.red + str(muscle_cline) + color.done)
+        print(color.red + str(mafft_cline) + color.done)
         sys.stdout.flush()
-        stdout, stderr = muscle_cline()
+        if cluster_file.find("/") != -1:
+            alignment_file = "alignments" + cluster_file[cluster_file.index("/"):]
+        else:
+            alignment_file = "alignments/" + cluster_file
+        stdout, stderr = mafft_cline()
+        with open(alignment_file, "w") as handle:
+            handle.write(stdout)
         return alignment_file
 
 
