@@ -158,9 +158,17 @@ class Supermatrix(object):
         print(color.blue + "Total length of matrix = " + color.red + str(matrix_length))
         print(color.blue + "Taxon coverage density = " + color.red + str(self.get_coverage_density()))
         print(color.blue + "Total % gaps = " + color.red + str(round(total_gap/float(matrix_length * num_records), 2)) + color.done)
-        print(color.blue + "Partial decisiveness (fraction of triples) = " + color.red + str(self.get_PD()) + color.done) 
         #for otu in self.otus: 
         #    self.otus[otu].print_data()
+
+
+
+    def print_PD(self):
+        """
+        Prints partial decisiveness.
+        """
+        color = Color()
+        print(color.blue + "Partial decisiveness (fraction of triples) = " + color.red + str(self.get_PD()) + color.done)
 
 
 

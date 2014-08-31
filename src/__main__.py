@@ -37,6 +37,7 @@ def main():
     parser.add_argument("--alignments", "-a", nargs='+', help="List of aligned FASTA files to build supermatrix instead of mining GenBank.")
     parser.add_argument("--salignments", "-sa", nargs='+', help="List of SUMAC alignments to build supermatrix instead of mining GenBank.")
     parser.add_argument("--search", "-s", action='store_true', help="Turn on search and cluster mode. Will not make alignments or supermatrix.")
+    parser.add_argument("--decisiveness", "-de", action='store_true', help="Calculate partial decisiveness. For larger matrices this may be slow.")
     args = parser.parse_args()
  
     sys.stdout = Logger()
@@ -164,8 +165,10 @@ def main():
         supermatrix.make_genbank_csv()
     supermatrix.print_data()
     supermatrix.make_sequence_data_figure()
-    supermatrix.make_sequence_decisiveness_figure()
-    supermatrix.make_decisiveness_csv()
+    if args.decisiveness:
+        supermatrix.print_PD()
+        supermatrix.make_sequence_decisiveness_figure()
+        supermatrix.make_decisiveness_csv()
     print(color.yellow + "Final supermatrix: " + color.red + "alignments/combined.fasta" + color.done)
     
 
