@@ -369,8 +369,8 @@ class Supermatrix(object):
             if font_size < 0:
                 font_size = 0
 
-        self.finish_sequence_decisiveness_figure(data_missing, font_size, otu_names, genes, "sequence_decisiveness_plot_missing_scores.pdf")
-        self.finish_sequence_decisiveness_figure(data_all, font_size, otu_names, genes, "sequence_decisiveness_plot_all_scores.pdf")
+        self.finish_sequence_decisiveness_figure(data_missing, font_size, otu_names, genes, "sequence_decisiveness_scores_plot.pdf")
+        #self.finish_sequence_decisiveness_figure(data_all, font_size, otu_names, genes, "sequence_decisiveness_plot_all_scores.pdf")
 
 
 
