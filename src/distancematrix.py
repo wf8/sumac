@@ -182,7 +182,7 @@ class DistanceMatrixBuilder:
                 j = 0
                 output_handle = open('blast_db' + process_num + '.fasta', 'w')
                 records = []
-                for key2 in all_seq_keys:
+                for key2 in seq_keys:
                     # only add sequences that have not yet been compared
                     if j > i:
                         record = gb[key2]
@@ -191,6 +191,7 @@ class DistanceMatrixBuilder:
                         row = dist_matrix[i]
                         row[j] = 0.0
                         dist_matrix[i] = row
+                    j += 1
                 SeqIO.write(records, output_handle, 'fasta')
                 output_handle.close()
 
@@ -200,13 +201,14 @@ class DistanceMatrixBuilder:
                 stdout, stderr = blastn_cmd()
 
                 # parse blast output
+                j = 0
                 blastn_xml = open('blast' + process_num + '.xml', 'r')
                 blast_records = NCBIXML.parse(blastn_xml)
                 for blast_record in blast_records:
                     for alignment in blast_record.alignments:
                         # loop through each high-scoring segment pair (HSP)
                         for hsp in alignment.hsps:
-                            length1 = len(guide.seq)
+                            length1 = len(record1.seq)
                             length2 = alignment.length
                             # first check if length similarity threshold met
                             if (length1 < length2 * (1 + float(length_threshold))) and (length1 > length2 * (1 - float(length_threshold))):
@@ -225,6 +227,7 @@ class DistanceMatrixBuilder:
                                 row = dist_matrix[j]
                                 row[i] = 50.0
                                 dist_matrix[j] = row
+                    j += 1
                 blastn_xml.close()
             i += 1
             # update status
