@@ -73,16 +73,9 @@ def main():
         elif not os.path.exists(gb_dir):
             print(color.red + "GenBank database not downloaded. Re-run with the -d option. See --help for more details." + color.done)
             sys.exit(0)
-        # check if the index file exists
-        elif os.path.exists(gb_dir + "/gb.idx"):
-            print(color.purple + "Genbank database already downloaded. Indexing sequences..." + color.done)
-            gb = GenBankSetup.sqlite(gb_dir)
-        # if the directory exists but not the index file
+        # the genbank directory exists so check for sequences and index them
         else:
-            gb = []
-        if len(gb) == 0:
-            print(color.red + "GenBank database not downloaded. Re-run with the -d option. See --help for more details." + color.done)
-            sys.exit(0)
+            gb = GenBankSetup.sqlite(gb_dir)
         print(color.purple + "%i sequences indexed!" % len(gb) + color.done)
 
         # check for ingroup and outgroup
