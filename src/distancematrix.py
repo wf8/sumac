@@ -61,6 +61,7 @@ class DistanceMatrixBuilder:
         self.distance_matrix = dist_matrix
 
 
+
     def distance_matrix_worker_old(self, seq_keys, length_threshold, dist_matrix, already_compared, lock, process_num, gb_dir):
         """
         Worker process for make_distance_matrix(). Takes a list "already_compared" of sequences that have
@@ -163,7 +164,6 @@ class DistanceMatrixBuilder:
         i = 0
         color = Color()
         for key in seq_keys:
-
             # check whether another process is already comparing this row
             compare_row = False
             with lock:
@@ -195,47 +195,52 @@ class DistanceMatrixBuilder:
                 SeqIO.write(records, output_handle, 'fasta')
                 output_handle.close()
 
-                # blast query against blast_db
-                blastn_cmd = NcbiblastnCommandline(query='query' + process_num + '.fasta', subject='blast_db' + process_num + '.fasta', \
-                    out='blast' + process_num + '.xml', outfmt=5)
-                stdout, stderr = blastn_cmd()
+                if len(records) > 0:
+                    # blast query against blast_db
+                    blastn_cmd = NcbiblastnCommandline(query='query' + process_num + '.fasta', subject='blast_db' + process_num + '.fasta', \
+                        out='blast' + process_num + '.xml', outfmt=5)
+                    stdout, stderr = blastn_cmd()
 
-                # parse blast output
-                j = 0
-                blastn_xml = open('blast' + process_num + '.xml', 'r')
-                blast_records = NCBIXML.parse(blastn_xml)
-                for blast_record in blast_records:
-                    for alignment in blast_record.alignments:
-                        # loop through each high-scoring segment pair (HSP)
-                        for hsp in alignment.hsps:
-                            length1 = len(record1.seq)
-                            length2 = alignment.length
-                            # first check if length similarity threshold met
-                            if (length1 < length2 * (1 + float(length_threshold))) and (length1 > length2 * (1 - float(length_threshold))):
-                                # blast hit found, set distance to e-value
-                                row = dist_matrix[i]
-                                row[j] = hsp.expect
-                                dist_matrix[i] = row
-                                row = dist_matrix[j]
-                                row[i] = hsp.expect
-                                dist_matrix[j] = row
-                            else:
-                                # set distance to 50.0 if length similarity threshold not met
-                                row = dist_matrix[i]
-                                row[j] = 50.0
-                                dist_matrix[i] = row
-                                row = dist_matrix[j]
-                                row[i] = 50.0
-                                dist_matrix[j] = row
-                    j += 1
-                blastn_xml.close()
+                    # parse blast output
+                    j = i + 1
+                    blastn_xml = open('blast' + process_num + '.xml', 'r')
+                    blast_records = NCBIXML.parse(blastn_xml)
+                    for blast_record in blast_records:
+                        for alignment in blast_record.alignments:
+                            # loop through each high-scoring segment pair (HSP)
+                            for hsp in alignment.hsps:
+                                length1 = len(record1.seq)
+                                length2 = alignment.length
+                                # first check if length similarity threshold met
+                                if (length1 < length2 * (1 + float(length_threshold))) and (length1 > length2 * (1 - float(length_threshold))):
+                                    # blast hit found, set distance to e-value
+                                    row = dist_matrix[i]
+                                    row[j] = hsp.expect
+                                    dist_matrix[i] = row
+                                    row = dist_matrix[j]
+                                    row[i] = hsp.expect
+                                    dist_matrix[j] = row
+                                else:
+                                    # set distance to 50.0 if length similarity threshold not met
+                                    row = dist_matrix[i]
+                                    row[j] = 50.0
+                                    dist_matrix[i] = row
+                                    row = dist_matrix[j]
+                                    row[i] = 50.0
+                                    dist_matrix[j] = row
+                        j += 1
+                    blastn_xml.close()
             i += 1
             # update status
             percent = str(round(100 * len(already_compared)/float(len(seq_keys)), 2))
             sys.stdout.write('\r' + color.blue + 'Completed: ' + color.red + str(len(already_compared)) + '/' + str(len(seq_keys)) + ' (' + percent + '%)' + color.done)
             sys.stdout.flush()
         # done looping through all keys, now clean up
-        os.remove('blast_db' + process_num + '.fasta')
-        os.remove("blast" + process_num + ".xml")
-        os.remove("query" + process_num + ".fasta")
-        os.remove("subject" + process_num + ".fasta")
+        if os.path.exists('blast_db' + process_num + '.fasta'):
+            os.remove('blast_db' + process_num + '.fasta')
+        if os.path.exists("blast" + process_num + ".xml"):
+            os.remove("blast" + process_num + ".xml")
+        if os.path.exists("query" + process_num + ".fasta"):
+            os.remove("query" + process_num + ".fasta")
+        if os.path.exists("subject" + process_num + ".fasta"):
+            os.remove("subject" + process_num + ".fasta")
