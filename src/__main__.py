@@ -143,7 +143,7 @@ def main():
             print(color.red + "No clusters left to align." + color.done)
             sys.exit(0)
         # now align each cluster with MUSCLE
-        print(color.blue + "Aligning clusters with MUSCLE..." + color.done)
+        print(color.blue + "Aligning clusters with MAFFT..." + color.done)
         alignments = Alignments(cluster_builder.cluster_files, "unaligned")
     
     alignments.print_data()

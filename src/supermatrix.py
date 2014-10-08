@@ -288,14 +288,14 @@ class Supermatrix(object):
                 font_size = 0
 
         supermatrix = np.array(data)
-
+        
         # set up figure
         fig, ax = plt.subplots()
         ax.set_position([0.4, 0.1, .3, .7])
         # fig.set_size_inches(8.5, 11)
 
         # add data
-        heatmap = ax.pcolor(supermatrix, cmap=plt.cm.Blues, alpha=0.8)
+        heatmap = ax.pcolor(supermatrix, cmap=plt.cm.Blues, alpha=0.8, vmin=0, vmax=100)
 
         # put the labels in the middle of each cell
         ax.set_yticks(np.arange(supermatrix.shape[0]) + 0.5, minor=False)
@@ -350,7 +350,7 @@ class Supermatrix(object):
                 score = self.calculate_sequence_decisiveness_score(self.otus[otu].decisiveness_score, self.loci[locus][2])
                 # if sequence data present, make score 0
                 if self.otus[otu].sequence_lengths[locus] != 0:
-                    seq_dec_scores_missing.append(-0.5)
+                    seq_dec_scores_missing.append(-0.25)
                 else:
                     seq_dec_scores_missing.append(score)
                 seq_dec_scores_all.append(score)
@@ -390,8 +390,7 @@ class Supermatrix(object):
         # fig.set_size_inches(8.5, 11)
 
         # add data
-        #heatmap = ax.pcolor(supermatrix, cmap=plt.cm.YlOrRd, vmin=-0.5, vmax=2)
-        heatmap = ax.pcolor(supermatrix, cmap=plt.cm.RdYlBu_r, vmin=-2, vmax=2)
+        heatmap = ax.pcolor(supermatrix, cmap=plt.cm.YlOrRd, vmin=-0.25, vmax=1)
 
         # put the labels in the middle of each cell
         ax.set_yticks(np.arange(supermatrix.shape[0]) + 0.5, minor=False)
@@ -422,8 +421,8 @@ class Supermatrix(object):
 
         # add color legend
         axcolor = fig.add_axes([0.425, .90, 0.25, 0.015])
-        cbar = fig.colorbar(heatmap, cax=axcolor, ticks=[-2, 0, 2], orientation='horizontal')
-        cbar.ax.set_xticklabels(['-2', '0', '2'], family="Arial", size=6)
+        cbar = fig.colorbar(heatmap, cax=axcolor, ticks=[-0.25, 0, 1], orientation='horizontal')
+        cbar.ax.set_xticklabels(['-0.25', '0', '1'], family="Arial", size=6)
 
         plt.savefig(file_name)
 
@@ -610,7 +609,7 @@ class Supermatrix(object):
         """
         otu_relative_score = (otu_score - self.lowest_OTU_decisiveness_score)/float(self.highest_OTU_decisiveness_score - self.lowest_OTU_decisiveness_score)
         locus_relative_score = (locus_score - self.lowest_locus_decisiveness_score)/float(self.highest_locus_decisiveness_score - self.lowest_locus_decisiveness_score)
-        return round(otu_relative_score + locus_relative_score, 2)
+        return round((otu_relative_score + locus_relative_score)/2, 3)
 
 
 
