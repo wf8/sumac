@@ -277,7 +277,7 @@ class GuidedClusterBuilder(ClusterBuilder):
                             length2 = alignment.length
                             # check if length similarity threshold met
                             # and check to see if evalue_threshold is met
-                            if (length1 < length2 * (1 + float(length_threshold))) and (length1 > length2 * (1 - float(length_threshold))) \
+                            if (length2 < length1 * (1 + float(length_threshold))) and (length2 > length1 * (1 - float(length_threshold))) \
                                 and (hsp.expect < evalue_threshold):
                                 # blast hit found, add sequence to cluster
                                 # get accession number from sequence title:

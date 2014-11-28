@@ -101,7 +101,7 @@ class DistanceMatrixBuilder:
                             length1 = len(record1.seq)
                             length2 = len(record2.seq)
                             # set distance to 50.0 if length similarity threshold not met
-                            if (length1 > length2 * (1 + float(length_threshold))) or (length1 < length2 * (1 - float(length_threshold))):
+                            if (length2 < length1 * (1 + float(length_threshold))) and (length2 > length1 * (1 - float(length_threshold))):
                                 row = dist_matrix[i]
                                 row[j] = 50.0
                                 dist_matrix[i] = row
