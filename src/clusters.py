@@ -104,10 +104,10 @@ class SLINKClusterBuilder(ClusterBuilder):
         # pointer representation of cluster hierarchy:
         # Pi[i] is the first cluster that cluster i joins
         # Lambda[i] is the distance between cluster i and cluster Pi[i]
-        Pi = []
-        Lambda = []
-        M = []
         n = len(seq_keys)
+        Pi = [0] * n
+        Lambda = [0] * n
+        M = [0] * n
 
         Pi[0] = 0
         Lambda[0] = float("inf")
