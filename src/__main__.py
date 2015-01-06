@@ -15,7 +15,8 @@ from util import Logger
 from genbank import GenBankSetup
 from genbank import GenBankSearch
 from distancematrix import DistanceMatrixBuilder
-from clusters import DistanceMatrixClusterBuilder
+from clusters import HACClusterBuilder
+from clusters import SLINKClusterBuilder
 from clusters import GuidedClusterBuilder
 from alignments import Alignments
 from supermatrix import Supermatrix
@@ -31,13 +32,14 @@ def main():
     parser.add_argument("--outgroup", "-o", help="Outgroup clade to build supermatrix.")
     parser.add_argument("--evalue", "-e", help="BLAST E-value threshold to cluster taxa. Defaults to 1e-10")
     parser.add_argument("--length", "-l", help="Threshold of sequence length percent similarity to cluster taxa. Defaults to 0.5")
-    parser.add_argument("--max_ingroup", "-m", help="Maximum number of taxa to include in ingroup. Use only for testing. Default is None.") 
+    parser.add_argument("--max_ingroup", "-m", help="Maximum number of taxa to include in ingroup. Default is none (no maximum limit).") 
     parser.add_argument("--guide", "-g", help="""FASTA file containing sequences to guide cluster construction. If this option is 
                                                  selected then all-by-all BLAST comparisons are not performed.""")
     parser.add_argument("--alignments", "-a", nargs='+', help="List of aligned FASTA files to build supermatrix instead of mining GenBank.")
     parser.add_argument("--salignments", "-sa", nargs='+', help="List of SUMAC alignments to build supermatrix instead of mining GenBank.")
     parser.add_argument("--search", "-s", action='store_true', help="Turn on search and cluster mode. Will not make alignments or supermatrix.")
     parser.add_argument("--decisiveness", "-de", action='store_true', help="Calculate partial decisiveness. For larger matrices this may be slow.")
+    parser.add_argument("--hac", action='store_true', help="Use HAC single-linkage clustering algorithm instead of the default SLINK algorithm.")
     args = parser.parse_args()
  
     sys.stdout = Logger()
@@ -122,8 +124,12 @@ def main():
             distance_matrix = DistanceMatrixBuilder(gb, all_seq_keys, length_threshold, gb_dir).distance_matrix
 
             # cluster sequences
-            print(color.purple + "Clustering sequences..." + color.done)
-            cluster_builder = DistanceMatrixClusterBuilder(all_seq_keys, distance_matrix, evalue_threshold)
+            if args.hac:
+                print(color.purple + "Clustering sequences using the HAC algorithm..." + color.done)
+                cluster_builder = HACClusterBuilder(all_seq_keys, distance_matrix, evalue_threshold)
+            else:
+                print(color.purple + "Clustering sequences using the SLINK algorithm..." + color.done)
+                cluster_builder = SLINKClusterBuilder(all_seq_keys, distance_matrix, evalue_threshold)
 
         print(color.purple + "Found " + color.red + str(len(cluster_builder.clusters)) + color.purple + " clusters." + color.done)
         if len(cluster_builder.clusters) == 0:

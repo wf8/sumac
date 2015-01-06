@@ -79,9 +79,74 @@ class ClusterBuilder(object):
 
 
 
-class DistanceMatrixClusterBuilder(ClusterBuilder):
+class SLINKClusterBuilder(ClusterBuilder):
     """
-    Builds clusters from a distance matrix.
+    Clusters sequences using the SLINK single-linkage clustering algorithm, which has a O(n^2) time complexity.
+    Inherits from ClusterBuilder.
+    """
+
+
+    distance_matrix = []
+    threshold = (1.0/10**10)
+
+
+    def __init__(self, seq_keys, distance_matrix, threshold=(1.0/10**10)):
+        """
+        Input: seq_keys a list of all sequences used in the analysis, distance_matrix based on BLAST e-values, and an optional e-value threshold for clustering.
+        Output: a list of clusters (each cluster is itself a list of keys to sequences)
+        This function is a wrapper around the recursive function merge_closest_clusters.
+        """
+        ClusterBuilder.__init__(self, seq_keys)
+        self.distance_matrix = distance_matrix
+        self.seq_keys = seq_keys
+        self.threshold = threshold
+
+        # pointer representation of cluster hierarchy:
+        # Pi[i] is the first cluster that cluster i joins
+        # Lambda[i] is the distance between cluster i and cluster Pi[i]
+        Pi = []
+        Lambda = []
+        M = []
+        n = len(seq_keys)
+
+        Pi[0] = 0
+        Lambda[0] = float("inf")
+        for i in range(1, n):
+            Pi[i] = i
+            Lambda[i] = float("inf")
+
+            for j in range(i):
+                M[j] = distance_matrix[i][j]
+
+            for j in range(i):
+                if Lambda[j] >= M[j]:
+                    M[Pi[j]] = min(M[Pi[j]], Lambda[j])
+                    Lambda[j] = M[j]
+                    Pi[j] = i
+                else:
+                    M[Pi[j]] = min(M[Pi[j]], M[j])
+
+            for j in range(i):
+                if Lambda[j] >= Lambda[Pi[j]]:
+                    Pi[j] = i
+
+        # convert from pointer representation to list of sequence clusters
+        temp_clusters = [list([]) for _ in xrange(n)]
+
+        for i in range(n):
+            if Lambda[i] < self.threshold or Lambda[i] == float("inf"):
+                temp_clusters[Pi[i]].append(seq_keys[i])
+
+        for temp_cluster in temp_clusters:
+            if len(temp_cluster > 0):
+                self.clusters.append(temp_cluster)
+
+
+
+class HACClusterBuilder(ClusterBuilder):
+    """
+    Clusters sequences using the naive hierarchical agglomerative clustering (HAC) algorithm, 
+    which has a O(n^3) time complexity.
     Inherits from ClusterBuilder.
     """
 
@@ -111,7 +176,7 @@ class DistanceMatrixClusterBuilder(ClusterBuilder):
         """
         Input: a list of clusters, distance_matrix based on BLAST e-values
         Output: a list of clusters (each cluster is itself a list of keys to sequences)
-        Single-linkage hierarchical clustering algorithm.
+        Recursive function for the naive single-linkage hierarchical clustering algorithm.
         """
         cluster1 = 0
         cluster2 = 0
