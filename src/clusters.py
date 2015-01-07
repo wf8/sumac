@@ -169,6 +169,8 @@ class HACClusterBuilder(ClusterBuilder):
         # put each sequence in its own cluster
         for seq in seq_keys:
             self.clusters.append([seq])
+        
+        sys.setrecursionlimit(len(self.clusters) + 10)
         self.merge_closest_clusters(self.clusters, distance_matrix)
 
 
