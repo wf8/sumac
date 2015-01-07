@@ -138,7 +138,7 @@ class SLINKClusterBuilder(ClusterBuilder):
                 temp_clusters[Pi[i]].append(seq_keys[i])
 
         for temp_cluster in temp_clusters:
-            if len(temp_cluster > 0):
+            if len(temp_cluster) > 0:
                 self.clusters.append(temp_cluster)
 
 
