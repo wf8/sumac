@@ -131,15 +131,24 @@ class SLINKClusterBuilder(ClusterBuilder):
                     Pi[j] = i
 
         # convert from pointer representation to list of sequence clusters
-        temp_clusters = [list([]) for _ in xrange(n)]
+        temp_clusters = [[] for _ in range(n)]
 
         for i in range(n):
-            if Lambda[i] < self.threshold or Lambda[i] == float("inf"):
-                temp_clusters[Pi[i]].append(seq_keys[i])
+            if Lambda[i] <= self.threshold:
+                temp_clusters[Pi[i]].append(i)
+                if len(temp_clusters[i]) > 0:
+                    for j in temp_clusters[i]:
+                        temp_clusters[Pi[i]].append(j)
+                    temp_clusters[i] = []
+            else:
+                temp_clusters[i].append(i)
 
         for temp_cluster in temp_clusters:
             if len(temp_cluster) > 0:
-                self.clusters.append(temp_cluster)
+                temp_cluster_seq = []
+                for i in temp_cluster:
+                    temp_cluster_seq.append(seq_keys[i])
+                self.clusters.append(temp_cluster_seq)
 
 
 
