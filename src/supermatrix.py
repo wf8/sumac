@@ -9,6 +9,7 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 import os
 import sys
 import csv
+import multiprocessing
 from collections import OrderedDict
 from Bio import Entrez
 from Bio import SeqIO
@@ -476,6 +477,72 @@ class Supermatrix(object):
         sys.stdout.write("\r" + color.blue + "Calculating PD: " + color.red + "100.00% " + color.blue + "finished\n" + color.done)
         sys.stdout.flush()
         return round(decisive_triples/float(total_triples), 2)
+    
+
+
+    def calculate_PD_parallel(self):
+        """
+        Method to calculate the fraction of triples, a measure of partial decisiveness (PD).
+        See: Sanderson, M.J., McMahon, M.M. & Steel, M., 2010. BMC evolutionary biology, 10. 
+        """
+        color = Color()
+        lock = multiprocessing.Lock()
+        manager = multiprocessing.Manager()
+        #already_compared = manager.list()
+        #dist_matrix = manager.list()
+        otus_shared = manager.dict()
+        otus_shared = otus
+        decisive_triples = manager.Value('i', 0)
+        total_triples = manager.Value('i', 0)
+        total = self.binomial_coefficient(len(self.otus), 3)
+
+        num_cores = multiprocessing.cpu_count()
+        for i in range(num_cores):
+            p = multiprocessing.Process(target=calculate_PD_worker, args=(lock, i, num_cores, decisive_triples, total_triples, total, otus_shared))
+            p.start()
+            processes.append(p)
+
+        for p in processes:
+            p.join()
+        
+        self.otus = otus_shared
+
+        sys.stdout.write("\r" + color.blue + "Calculating PD: " + color.red + "100.00% " + color.blue + "finished\n" + color.done)
+        sys.stdout.flush()
+        return round(decisive_triples/float(total_triples), 2)
+
+
+
+    def calculate_PD_worker(self, lock, process_num, num_cores, decisive_triples, total_triples, total, otus):
+        """
+        Worker function to help calculate fraction of triples
+        """
+        self.otus = otus
+        # nested loops to run through every possible triplet
+        i = process_num
+        for otu1 in self.otus:
+            if i < (len(self.otus) - 2):
+                j = 0
+                for otu2 in otus:
+                    if i < j:
+                        k = 0
+                        for otu3 in otus:
+                            if j < k:
+                                sys.stdout.write("\r" + color.blue + "Calculating PD: " + color.red + str(round(100 * total_triples/float(total), 4)) + \
+                                    "% " + color.blue + "finished" + color.done)
+                                sys.stdout.flush()
+                                # do PD calculations for this triplet
+                                triplet = [otu1, otu2, otu3]
+                                decisive, decisive_loci = self.calculate_triplet_PD(triplet)
+                                with lock:
+                                    decisive_triples += decisive
+                                    total_triples += 1
+                                # triplet calculations for OTU and loci decisiveness scores
+                                self.update_OTU_decisiveness(triplet, decisive)
+                                self.update_locus_decisiveness(decisive_loci, decisive)
+                            k += 1
+                    j += 1
+            i += num_cores
 
 
 
@@ -507,7 +574,7 @@ class Supermatrix(object):
             i += 1
         return decisive, decisive_loci
 
-
+    # TODO: make parallel version of the following three functions:
 
     def update_OTU_decisiveness(self, triplet, decisive):
         """
