@@ -265,8 +265,9 @@ class Supermatrix(object):
         # TODO:
         # test for numpy and matplotlib, show message if not present
         import numpy as np
+        import matplotlib
+        matplotlib.use('Agg')
         import matplotlib.pyplot as plt
-
         self.normalize()
 
         data = []
@@ -383,6 +384,8 @@ class Supermatrix(object):
         # TODO:
         # test for numpy and matplotlib, show message if not present
         import numpy as np
+        import matplotlib
+        matplotlib.use('Agg')
         import matplotlib.pyplot as plt
         supermatrix = np.array(data)
 
@@ -637,7 +640,10 @@ class Supermatrix(object):
         self.highest_OTU_decisiveness_score = 0
         self.lowest_OTU_decisiveness_score = 999
         for otu in self.otus:
-            PD_otu = self.otus[otu].other_decisive_triples/float(self.otus[otu].other_total_triples)
+            if self.otus[otu].other_total_triples != 0:
+                PD_otu = self.otus[otu].other_decisive_triples/float(self.otus[otu].other_total_triples)
+            else:
+                PD_otu = 0
             if PD_otu != 0:
                 score = self.pd/PD_otu
             else:
@@ -659,7 +665,10 @@ class Supermatrix(object):
         self.highest_locus_decisiveness_score = 0
         self.lowest_locus_decisiveness_score = 999
         for locus in self.loci:
-            PD_locus = self.loci[locus][0]/float(self.loci[locus][1])
+            if self.loci[locus][1] != 0:
+                PD_locus = self.loci[locus][0]/float(self.loci[locus][1])
+            else:
+                PD_locus = 0
             if PD_locus != 0:
                 score = self.pd/PD_locus
             else:
@@ -678,8 +687,14 @@ class Supermatrix(object):
         Method to calculate sequence decisiveness score.
         This is the [(OTU score - min OTU score)/(highest OTU score - min OTU score) + (locus score - min locus score)/(highest locus score - min locus)]/2
         """
-        otu_relative_score = (otu_score - self.lowest_OTU_decisiveness_score)/float(self.highest_OTU_decisiveness_score - self.lowest_OTU_decisiveness_score)
-        locus_relative_score = (locus_score - self.lowest_locus_decisiveness_score)/float(self.highest_locus_decisiveness_score - self.lowest_locus_decisiveness_score)
+        if self.highest_OTU_decisiveness_score != self.lowest_OTU_decisiveness_score:
+            otu_relative_score = (otu_score - self.lowest_OTU_decisiveness_score)/float(self.highest_OTU_decisiveness_score - self.lowest_OTU_decisiveness_score)
+        else:
+            otu_relative_score = otu_score/float(self.highest_OTU_decisiveness_score)
+        if self.highest_locus_decisiveness_score != self.lowest_locus_decisiveness_score:
+            locus_relative_score = (locus_score - self.lowest_locus_decisiveness_score)/float(self.highest_locus_decisiveness_score - self.lowest_locus_decisiveness_score)
+        else:
+            locus_relative_score = locus_score/float(self.highest_locus_decisiveness_score)
         return round((otu_relative_score + locus_relative_score)/2, 3)
 
 
