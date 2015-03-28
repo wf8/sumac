@@ -13,6 +13,8 @@ import multiprocessing
 from collections import OrderedDict
 from Bio import Entrez
 from Bio import SeqIO
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
 from util import Color
 
 
@@ -72,6 +74,7 @@ class Supermatrix(object):
             records = SeqIO.parse(alignment, "fasta")
             # make sure to only add 1 sequence per cluster for each otu
             already_added = []
+            records_for_loci = []
             for record in records:
                 if alignments.user_provided:
                     otu = record.description
@@ -79,6 +82,7 @@ class Supermatrix(object):
                     descriptors = record.description.split(" ")
                     otu = descriptors[1] + " " + descriptors[2]
                 if otu not in already_added:
+                    records_for_loci.append(SeqRecord(record.seq, id=otu, description=""))
                     if alignments.user_provided:
                         otus[otu].update(record.seq, alignment, self.get_ungapped_length(record.seq))
                     else:
@@ -86,16 +90,26 @@ class Supermatrix(object):
                     already_added.append(otu)
                 loci_length = len(record.seq)
             total_length += loci_length
+            
             # add '?' for any OTU that didn't have a sequence
             for otu in otus:
                 if len(otus[otu].sequence) < total_length:
-                    otus[otu].update(self.make_missing(loci_length), "-", 0)
+                    missing_seq = self.make_missing(loci_length)
+                    records_for_loci.append(SeqRecord(Seq(missing_seq), id=otu, description=""))
+                    otus[otu].update(missing_seq, "-", 0)
+            
+            # make fasta file of this loci
+            alignment_out = alignment.split("/")
+            f = open("alignments/supermatrix_" + alignment_out[len(alignment_out)-1], "w")
+            sorted_records = sorted(records_for_loci, key=lambda record: record.id)
+            SeqIO.write(sorted_records, f, "fasta")
+            f.close()
 
         # order otus
         otus = OrderedDict(sorted(otus.items(), key=lambda t: t[0]))
 
         # write to FASTA file
-        f = open("alignments/combined.fasta", "w")
+        f = open("alignments/supermatrix_concatenated.fasta", "w")
         for otu in otus:
             # >otu
             # otus[otu]
@@ -106,7 +120,7 @@ class Supermatrix(object):
                 f.write(sequence[i:i+80] + "\n")
                 i += 80
         f.close()
-        self.file = "alignments/combined.fasta"
+        self.file = "alignments/supermatrix_concatenated.fasta"
         self.otus = otus
 
 
