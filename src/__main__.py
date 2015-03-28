@@ -159,7 +159,7 @@ def main():
     print(color.purple + "Concatenating alignments..." + color.done)
     supermatrix = Supermatrix(alignments)
     
-    if not args.alignments and not args.salignments:
+    if not args.alignments: # and not args.salignments:
         # only make genbank_csv if the sequences were mined direct from genbank
         supermatrix.make_genbank_csv()
     supermatrix.print_data()

@@ -352,6 +352,7 @@ class Supermatrix(object):
                 # if sequence data present, make score 0
                 if self.otus[otu].sequence_lengths[locus] != 0:
                     seq_dec_scores_missing.append(-0.25)
+                    #seq_dec_scores_missing.append(-1)
                 else:
                     seq_dec_scores_missing.append(score)
                 seq_dec_scores_all.append(score)
@@ -392,6 +393,7 @@ class Supermatrix(object):
 
         # add data
         heatmap = ax.pcolor(supermatrix, cmap=plt.cm.YlOrRd, vmin=-0.25, vmax=1)
+        #heatmap = ax.pcolor(supermatrix, cmap=plt.cm.Spectral_r, vmin=-1, vmax=1)
 
         # put the labels in the middle of each cell
         ax.set_yticks(np.arange(supermatrix.shape[0]) + 0.5, minor=False)
@@ -424,6 +426,8 @@ class Supermatrix(object):
         axcolor = fig.add_axes([0.425, .90, 0.25, 0.015])
         cbar = fig.colorbar(heatmap, cax=axcolor, ticks=[-0.25, 0, 1], orientation='horizontal')
         cbar.ax.set_xticklabels(['-0.25', '0', '1'], family="Arial", size=6)
+        #cbar = fig.colorbar(heatmap, cax=axcolor, ticks=[-1, 0, 1], orientation='horizontal')
+        #cbar.ax.set_xticklabels(['-1', '0', '1'], family="Arial", size=6)
 
         plt.savefig(file_name)
 
@@ -672,7 +676,7 @@ class Supermatrix(object):
     def calculate_sequence_decisiveness_score(self, otu_score, locus_score):
         """
         Method to calculate sequence decisiveness score.
-        This is the OTU score/highest OTU score + locus score/highest locus score
+        This is the [(OTU score - min OTU score)/(highest OTU score - min OTU score) + (locus score - min locus score)/(highest locus score - min locus)]/2
         """
         otu_relative_score = (otu_score - self.lowest_OTU_decisiveness_score)/float(self.highest_OTU_decisiveness_score - self.lowest_OTU_decisiveness_score)
         locus_relative_score = (locus_score - self.lowest_locus_decisiveness_score)/float(self.highest_locus_decisiveness_score - self.lowest_locus_decisiveness_score)
