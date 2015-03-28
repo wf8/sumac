@@ -86,10 +86,10 @@ class Supermatrix(object):
                     already_added.append(otu)
                 loci_length = len(record.seq)
             total_length += loci_length
-            # add gaps for any OTU that didn't have a sequence
+            # add '?' for any OTU that didn't have a sequence
             for otu in otus:
                 if len(otus[otu].sequence) < total_length:
-                    otus[otu].update(self.make_gaps(loci_length), "-", 0)
+                    otus[otu].update(self.make_missing(loci_length), "-", 0)
 
         # order otus
         otus = OrderedDict(sorted(otus.items(), key=lambda t: t[0]))
@@ -111,14 +111,14 @@ class Supermatrix(object):
 
 
 
-    def make_gaps(self, length):
+    def make_missing(self, length):
         """
         Inputs an integer.
         Returns a string of '-' of length
         """
         gap = ""
         for i in range(length):
-            gap = "-" + gap
+            gap = "?" + gap
         return gap
 
 
@@ -144,21 +144,21 @@ class Supermatrix(object):
         print(color.blue + "Supermatrix attributes:")
         records = SeqIO.parse(self.file, "fasta")
         num_records = 0
-        total_gap = 0
+        total_missing = 0
         for record in records:
             otu = record.description
-            gap = 0
+            missing = 0
             for letter in record.seq:
-                if letter == '-':
-                    gap += 1
-                    total_gap += 1
-            print(color.yellow + "OTU: " + color.red + otu + color.yellow + " % gaps = " + color.red + str(round(gap/float(len(record.seq)), 2)))
+                if letter == '?':
+                    missing += 1
+                    total_missing += 1
+            print(color.yellow + "OTU: " + color.red + otu + color.yellow + " % missing data = " + color.red + str(round(missing/float(len(record.seq)), 2)))
             num_records += 1
             matrix_length = len(record.seq)
         print(color.blue + "Total number of OTUs = " + color.red + str(num_records))
         print(color.blue + "Total length of matrix = " + color.red + str(matrix_length))
         print(color.blue + "Taxon coverage density = " + color.red + str(self.get_coverage_density()))
-        print(color.blue + "Total % gaps = " + color.red + str(round(total_gap/float(matrix_length * num_records), 2)) + color.done)
+        print(color.blue + "Total % missing data = " + color.red + str(round(total_missing/float(matrix_length * num_records), 2)) + color.done)
         #for otu in self.otus: 
         #    self.otus[otu].print_data()
 
@@ -385,7 +385,7 @@ class Supermatrix(object):
         # test for numpy and matplotlib, show message if not present
         import numpy as np
         import matplotlib
-        matplotlib.use('Agg')
+        #matplotlib.use('Agg')
         import matplotlib.pyplot as plt
         supermatrix = np.array(data)
 
