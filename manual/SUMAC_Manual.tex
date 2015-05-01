@@ -111,21 +111,48 @@ sudo apt-get install mafft
 %python setup.py test
 %sudo python setup.py install
 
-TODO: test installation!!
-
 \subsection{Installing Requirements on Mac}
 
-TODO!
+The following commands install the requirements of Mac OS X:
+
+\begin{verbatim}
+sudo pip install numpy
+sudo pip install matplotlib
+sudo pip install biopython
+\end{verbatim}
+
+Install BLAST by downloading the appropriate executable from:
+
+\begin{verbatim}
+ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/
+\end{verbatim}
+
+Install MAFFT from here:
+
+\begin{verbatim}
+http://mafft.cbrc.jp/alignment/software/
+\end{verbatim}
+
 
 \subsection{Installing SUMAC}
 
-TODO: test pip to install...
+To install SUMAC use this command:
 
 \begin{verbatim}
+sudo pip install sumac
+\end{verbatim}
+
+If you prefer to use the development version in the Git repository
+use these commands:
+
+\begin{verbatim}
+git clone https://github.com/wf8/sumac.git
+cd sumac/src
 python setup.py install
 \end{verbatim}
 
 \section{License and Warranty}
+
 SUMAC is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
 
 The program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details \\ (http://www.gnu.org/copyleft/gpl.html).
@@ -160,14 +187,13 @@ SUMAC will then perform all-by-all BLAST comparisons of each sequence,
 build clusters of putatively homologous sequences, and 
 construct a supermatrix. 
 
-Unless you are on a large multi-core system, the all-by-all BLAST comparisons
-will take a very long time to be performed since well over 5000 sequences
+Unless you are on a large multi-core system, the clustering
+will take a long time to be performed since well over 5000 sequences
 will be found.
 To speed up the supermatrix construction, you could make a FASTA file
 of guide sequences to define each cluster. Each guide
-sequence could be an example of a sequence commonly used for phylogenetic
-analysis. 
-You could then use this command:
+sequence should be an example of a sequence commonly used for phylogenetic
+analysis. Then you could then use this command:
 
 \begin{verbatim}
 python -m sumac -d pln -i Onagraceae -o Lythraceae -g guides.fasta
@@ -183,6 +209,11 @@ fashion, so that sequence data not necessarily used in previous systematic
 studies can also be incorporated into the supermatrix.
 The decision will depend on the size of the taxonomic group being
 analyzed and the computational resources available.
+
+To calculate the partial decisiveness (PD) and Missing Sequence Decisiveness Scores (MSDS)
+for the data matrix, run SUMAC with the \texttt{--decisiveness} flag.
+See \citet{sumac} for an explanation of these metrics.
+Please be aware that the decisiveness computations can be time consuming.
 
 \section{Explanation of the Output Files}
 
