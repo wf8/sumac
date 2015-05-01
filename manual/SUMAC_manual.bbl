@@ -1,0 +1,26 @@
+\begin{thebibliography}{}
+
+\bibitem[Camacho et~al., 2009]{blast}
+Camacho, C., Coulouris, G., Avagyan, V., Ma, N., Papadopoulos, J., Bealer, K.,
+  and Madden, T.~L. (2009).
+\newblock {BLAST}+: architecture and applications.
+\newblock {\em BMC Bioinformatics}, 10(1):421.
+
+\bibitem[Freyman, 2015]{sumac}
+Freyman, W. (2015).
+\newblock {SUMAC: software for constructing phylogenetic supermatrices and
+  assessing partially decisive taxon coverage.}
+\newblock {\em In prep}.
+
+\bibitem[Hipp and Kennedy, 2007]{sqlite}
+Hipp, D.~R. and Kennedy, D. (2007).
+\newblock Sqlite.
+\newblock http://www.sqlite.org.
+
+\bibitem[Katoh et~al., 2002]{katoh2002mafft}
+Katoh, K., Misawa, K., Kuma, K.-i., and Miyata, T. (2002).
+\newblock Mafft: a novel method for rapid multiple sequence alignment based on
+  fast fourier transform.
+\newblock {\em Nucleic acids research}, 30(14):3059--3066.
+
+\end{thebibliography}
