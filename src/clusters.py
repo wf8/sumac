@@ -100,6 +100,7 @@ class SLINKClusterBuilder(ClusterBuilder):
         self.distance_matrix = distance_matrix
         self.seq_keys = seq_keys
         self.threshold = threshold
+        color = Color()
 
         # pointer representation of cluster hierarchy:
         # Pi[i] is the first cluster that cluster i joins
@@ -112,6 +113,11 @@ class SLINKClusterBuilder(ClusterBuilder):
         Pi[0] = 0
         Lambda[0] = float("inf")
         for i in range(1, n):
+            # update status
+            percent = str(round(100 * i/float(n), 2))
+            sys.stdout.write('\r' + color.blue + 'Completed: ' + color.red + str(i) + '/' + str(n) + ' (' + percent + '%)' + color.done)    
+            sys.stdout.flush()    
+            
             Pi[i] = i
             Lambda[i] = float("inf")
 
@@ -131,6 +137,9 @@ class SLINKClusterBuilder(ClusterBuilder):
                     Pi[j] = i
 
         # convert from pointer representation to list of sequence clusters
+        sys.stdout.write("\n")
+        sys.stdout.flush()
+        print(color.blue + "Finalizing clusters..." + color.done)
         temp_clusters = [[] for _ in range(n)]
 
         for i in range(n):
