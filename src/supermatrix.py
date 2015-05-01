@@ -9,9 +9,12 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 import os
 import sys
 import csv
+import multiprocessing
 from collections import OrderedDict
 from Bio import Entrez
 from Bio import SeqIO
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
 from util import Color
 
 
@@ -71,6 +74,7 @@ class Supermatrix(object):
             records = SeqIO.parse(alignment, "fasta")
             # make sure to only add 1 sequence per cluster for each otu
             already_added = []
+            records_for_loci = []
             for record in records:
                 if alignments.user_provided:
                     otu = record.description
@@ -78,6 +82,7 @@ class Supermatrix(object):
                     descriptors = record.description.split(" ")
                     otu = descriptors[1] + " " + descriptors[2]
                 if otu not in already_added:
+                    records_for_loci.append(SeqRecord(record.seq, id=otu, description=""))
                     if alignments.user_provided:
                         otus[otu].update(record.seq, alignment, self.get_ungapped_length(record.seq))
                     else:
@@ -85,16 +90,26 @@ class Supermatrix(object):
                     already_added.append(otu)
                 loci_length = len(record.seq)
             total_length += loci_length
-            # add gaps for any OTU that didn't have a sequence
+            
+            # add '?' for any OTU that didn't have a sequence
             for otu in otus:
                 if len(otus[otu].sequence) < total_length:
-                    otus[otu].update(self.make_gaps(loci_length), "-", 0)
+                    missing_seq = self.make_missing(loci_length)
+                    records_for_loci.append(SeqRecord(Seq(missing_seq), id=otu, description=""))
+                    otus[otu].update(missing_seq, "-", 0)
+            
+            # make fasta file of this loci
+            alignment_out = alignment.split("/")
+            f = open("alignments/supermatrix_" + alignment_out[len(alignment_out)-1], "w")
+            sorted_records = sorted(records_for_loci, key=lambda record: record.id)
+            SeqIO.write(sorted_records, f, "fasta")
+            f.close()
 
         # order otus
         otus = OrderedDict(sorted(otus.items(), key=lambda t: t[0]))
 
         # write to FASTA file
-        f = open("alignments/combined.fasta", "w")
+        f = open("alignments/supermatrix_concatenated.fasta", "w")
         for otu in otus:
             # >otu
             # otus[otu]
@@ -105,19 +120,19 @@ class Supermatrix(object):
                 f.write(sequence[i:i+80] + "\n")
                 i += 80
         f.close()
-        self.file = "alignments/combined.fasta"
+        self.file = "alignments/supermatrix_concatenated.fasta"
         self.otus = otus
 
 
 
-    def make_gaps(self, length):
+    def make_missing(self, length):
         """
         Inputs an integer.
         Returns a string of '-' of length
         """
         gap = ""
         for i in range(length):
-            gap = "-" + gap
+            gap = "?" + gap
         return gap
 
 
@@ -143,21 +158,21 @@ class Supermatrix(object):
         print(color.blue + "Supermatrix attributes:")
         records = SeqIO.parse(self.file, "fasta")
         num_records = 0
-        total_gap = 0
+        total_missing = 0
         for record in records:
             otu = record.description
-            gap = 0
+            missing = 0
             for letter in record.seq:
-                if letter == '-':
-                    gap += 1
-                    total_gap += 1
-            print(color.yellow + "OTU: " + color.red + otu + color.yellow + " % gaps = " + color.red + str(round(gap/float(len(record.seq)), 2)))
+                if letter == '?':
+                    missing += 1
+                    total_missing += 1
+            print(color.yellow + "OTU: " + color.red + otu + color.yellow + " % missing data = " + color.red + str(round(missing/float(len(record.seq)), 2)))
             num_records += 1
             matrix_length = len(record.seq)
         print(color.blue + "Total number of OTUs = " + color.red + str(num_records))
         print(color.blue + "Total length of matrix = " + color.red + str(matrix_length))
         print(color.blue + "Taxon coverage density = " + color.red + str(self.get_coverage_density()))
-        print(color.blue + "Total % gaps = " + color.red + str(round(total_gap/float(matrix_length * num_records), 2)) + color.done)
+        print(color.blue + "Total % missing data = " + color.red + str(round(total_missing/float(matrix_length * num_records), 2)) + color.done)
         #for otu in self.otus: 
         #    self.otus[otu].print_data()
 
@@ -352,6 +367,7 @@ class Supermatrix(object):
                 # if sequence data present, make score 0
                 if self.otus[otu].sequence_lengths[locus] != 0:
                     seq_dec_scores_missing.append(-0.25)
+                    #seq_dec_scores_missing.append(-1)
                 else:
                     seq_dec_scores_missing.append(score)
                 seq_dec_scores_all.append(score)
@@ -383,7 +399,7 @@ class Supermatrix(object):
         # test for numpy and matplotlib, show message if not present
         import numpy as np
         import matplotlib
-        matplotlib.use('Agg')
+        #matplotlib.use('Agg')
         import matplotlib.pyplot as plt
         supermatrix = np.array(data)
 
@@ -394,6 +410,7 @@ class Supermatrix(object):
 
         # add data
         heatmap = ax.pcolor(supermatrix, cmap=plt.cm.YlOrRd, vmin=-0.25, vmax=1)
+        #heatmap = ax.pcolor(supermatrix, cmap=plt.cm.Spectral_r, vmin=-1, vmax=1)
 
         # put the labels in the middle of each cell
         ax.set_yticks(np.arange(supermatrix.shape[0]) + 0.5, minor=False)
@@ -426,6 +443,8 @@ class Supermatrix(object):
         axcolor = fig.add_axes([0.425, .90, 0.25, 0.015])
         cbar = fig.colorbar(heatmap, cax=axcolor, ticks=[-0.25, 0, 1], orientation='horizontal')
         cbar.ax.set_xticklabels(['-0.25', '0', '1'], family="Arial", size=6)
+        #cbar = fig.colorbar(heatmap, cax=axcolor, ticks=[-1, 0, 1], orientation='horizontal')
+        #cbar.ax.set_xticklabels(['-1', '0', '1'], family="Arial", size=6)
 
         plt.savefig(file_name)
 
@@ -479,6 +498,72 @@ class Supermatrix(object):
         sys.stdout.write("\r" + color.blue + "Calculating PD: " + color.red + "100.00% " + color.blue + "finished\n" + color.done)
         sys.stdout.flush()
         return round(decisive_triples/float(total_triples), 2)
+    
+
+
+    def calculate_PD_parallel(self):
+        """
+        Method to calculate the fraction of triples, a measure of partial decisiveness (PD).
+        See: Sanderson, M.J., McMahon, M.M. & Steel, M., 2010. BMC evolutionary biology, 10. 
+        """
+        color = Color()
+        lock = multiprocessing.Lock()
+        manager = multiprocessing.Manager()
+        #already_compared = manager.list()
+        #dist_matrix = manager.list()
+        otus_shared = manager.dict()
+        otus_shared = otus
+        decisive_triples = manager.Value('i', 0)
+        total_triples = manager.Value('i', 0)
+        total = self.binomial_coefficient(len(self.otus), 3)
+
+        num_cores = multiprocessing.cpu_count()
+        for i in range(num_cores):
+            p = multiprocessing.Process(target=calculate_PD_worker, args=(lock, i, num_cores, decisive_triples, total_triples, total, otus_shared))
+            p.start()
+            processes.append(p)
+
+        for p in processes:
+            p.join()
+        
+        self.otus = otus_shared
+
+        sys.stdout.write("\r" + color.blue + "Calculating PD: " + color.red + "100.00% " + color.blue + "finished\n" + color.done)
+        sys.stdout.flush()
+        return round(decisive_triples/float(total_triples), 2)
+
+
+
+    def calculate_PD_worker(self, lock, process_num, num_cores, decisive_triples, total_triples, total, otus):
+        """
+        Worker function to help calculate fraction of triples
+        """
+        self.otus = otus
+        # nested loops to run through every possible triplet
+        i = process_num
+        for otu1 in self.otus:
+            if i < (len(self.otus) - 2):
+                j = 0
+                for otu2 in otus:
+                    if i < j:
+                        k = 0
+                        for otu3 in otus:
+                            if j < k:
+                                sys.stdout.write("\r" + color.blue + "Calculating PD: " + color.red + str(round(100 * total_triples/float(total), 4)) + \
+                                    "% " + color.blue + "finished" + color.done)
+                                sys.stdout.flush()
+                                # do PD calculations for this triplet
+                                triplet = [otu1, otu2, otu3]
+                                decisive, decisive_loci = self.calculate_triplet_PD(triplet)
+                                with lock:
+                                    decisive_triples += decisive
+                                    total_triples += 1
+                                # triplet calculations for OTU and loci decisiveness scores
+                                self.update_OTU_decisiveness(triplet, decisive)
+                                self.update_locus_decisiveness(decisive_loci, decisive)
+                            k += 1
+                    j += 1
+            i += num_cores
 
 
 
@@ -510,7 +595,7 @@ class Supermatrix(object):
             i += 1
         return decisive, decisive_loci
 
-
+    # TODO: make parallel version of the following three functions:
 
     def update_OTU_decisiveness(self, triplet, decisive):
         """
@@ -614,7 +699,7 @@ class Supermatrix(object):
     def calculate_sequence_decisiveness_score(self, otu_score, locus_score):
         """
         Method to calculate sequence decisiveness score.
-        This is the OTU score/highest OTU score + locus score/highest locus score
+        This is the [(OTU score - min OTU score)/(highest OTU score - min OTU score) + (locus score - min locus score)/(highest locus score - min locus)]/2
         """
         if self.highest_OTU_decisiveness_score != self.lowest_OTU_decisiveness_score:
             otu_relative_score = (otu_score - self.lowest_OTU_decisiveness_score)/float(self.highest_OTU_decisiveness_score - self.lowest_OTU_decisiveness_score)

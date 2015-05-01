@@ -159,7 +159,7 @@ def main():
     print(color.purple + "Concatenating alignments..." + color.done)
     supermatrix = Supermatrix(alignments)
     
-    if not args.alignments and not args.salignments:
+    if not args.alignments: # and not args.salignments:
         # only make genbank_csv if the sequences were mined direct from genbank
         supermatrix.make_genbank_csv()
     supermatrix.print_data()
@@ -168,7 +168,7 @@ def main():
         supermatrix.print_PD()
         supermatrix.make_sequence_decisiveness_figure()
         supermatrix.make_decisiveness_csv()
-    print(color.yellow + "Final supermatrix: " + color.red + "alignments/combined.fasta" + color.done)
+    print(color.yellow + "Final supermatrix: " + color.red + "alignments/supermatrix_concatenated.fasta" + color.done)
     
 
 
