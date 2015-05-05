@@ -169,7 +169,7 @@ would likely be helpful.
 
 \section{Construct a Supermatrix}
 
-The most basic usuage of SUMAC is to build a supermatrix with the following
+The most basic usage of SUMAC is to build a supermatrix with the following
 command:
 
 \begin{verbatim}
@@ -179,17 +179,20 @@ python -m sumac -d pln -i Onagraceae -o Lythraceae
 This command is an example of the minimum amount of input required
 to run SUMAC. The first part of the command \texttt{python -m sumac}
 runs the SUMAC module. The \texttt{-d pln}
-tell SUAMC to download the PLN (Plant) GenBank division. The
+tells SUMAC to download the PLN (Plant) GenBank division and is only necessary the first time one runs SUMAC. The
 \texttt{-i Onagraceae} and \texttt{-o Lythraceae}
 tells SUMAC to search the PLN division for all sequences within
 the taxonomic groups Onagraceae (the ingroup) and Lythraceae (the outgroup).
-SUMAC will then perform all-by-all BLAST comparisons of each sequence, 
+Specifying an outgroup (the \texttt{-o} flag) is not necessary, 
+but maybe useful when the user wants to combine sequences from two
+different taxonomic groups.
+SUMAC will then perform all-by-all BLAST comparisons of all found sequences, 
 build clusters of putatively homologous sequences, and 
 construct a supermatrix. 
 
 Unless you are on a large multi-core system, the clustering
-will take a long time to be performed since well over 5000 sequences
-will be found.
+will take a long time to be performed (for the example above) 
+since well over 5000 sequences will be found.
 To speed up the supermatrix construction, you could make a FASTA file
 of guide sequences to define each cluster. Each guide
 sequence should be an example of a sequence commonly used for phylogenetic
@@ -220,36 +223,34 @@ Please be aware that the decisiveness computations can be time consuming.
 SUMAC will output the following files:
 
 \begin{enumerate}
-\item \texttt{alignments/combined.fasta} The final aligned supermatrix in FASTA format.
-\item \texttt{alignments/N.fasta} The alignment of gene region $N$ where $N$ is an integer $> 0$.
+
+\item \texttt{alignments/supermatrix\_concatenated.fasta} The final aligned and concatenated supermatrix in FASTA format.
+
+\item \texttt{alignments/supermatrix\_N.fasta} The alignment of gene region $N$ where ($N = 1,2,3...$) as it was used in the final supermatrix. The FASTA description contains only the species binomial. These files are useful for gene tree inference.
+
+\item \texttt{alignments/N.fasta} The alignment of gene region $N$, but with the full GeBank descriptions included in the FASTA descriptions.
+
 \item \texttt{clusters/N.fasta} The unaligned raw sequence cluster of gene region $N$.
+
 \item \texttt{gb\_search\_results} File used by SUMAC to save the results of the GenBank sequence search in case the search is re-run. This file is not human readable.
-\item \texttt{genbank\_accessions.csv} A table with each GenBank accession used, ordered by gene region and taxon (like the appendices found in most systematics papers).
+
+\item \texttt{genbank\_accessions.csv} A spreadsheet with each GenBank accession used, ordered by gene region and taxon (useful for generating the appendices found in most systematics papers).
+
 \item \texttt{gene\_regions.csv} A table with the number of taxa, the aligned length, the percent missing data, and the taxon coverage density of each gene region used in the supermatrix.
-\item \texttt{plot.pdf} A figure that shows how much sequence data was available for each taxon for each gene region.
-\item \texttt{sumac\_log} Log of the SUMAC run, and contains a great deal of information about the supermatrix construction, including final metrics such as the partical decisiveness (PD) of the supermatrix.
+
+\item \texttt{missing\_sequence\_decisiveness.csv} A spreadsheet that contains the MSDS scores for all missing sequences. This is useful for prioritizing which sequences to add to the matrix to increase the overall decisiveness. Only generated if SUMAC is run with the \texttt{--decisiveness} flag.
+
+\item \texttt{sequence\_decisiveness\_scores\_plot.pdf} A graph that shows the MSDS scores for the final supermatrix. Only generated if SUMAC is run with the \texttt{--decisiveness} flag.
+
+\item \texttt{sequence\_data\_plot.pdf} A figure that shows how much sequence data was available for each taxon for each gene region.
+
+\item \texttt{sumac\_log} Log of the SUMAC run that contains details about the supermatrix construction.
+
 \end{enumerate}
 
 % start comment
 \iffalse
 The \verb|alignments/combined.fasta| is the final aligned supermatrix in FASTA format.
-\verb|alignments/N.fasta|, where $N$ is an integer $> 0$, is the alignment of gene region $N$.
-Similarly, \verb|clusters/N.fasta| is the unaligned raw sequence cluster of gene region $N$.
-The \verb|gb_search_results| file is used by SUMAC to save the results of the GenBank
-sequence search in case the search is re-run. This file is not human readable.
-
-The two CSV (comma-separated values) files contain tables that provide useful
-summary information about the supermatrix. \verb|genbank_accessions.csv| is a table
-with each GenBank accession used, ordered by gene region and taxon (like the
-appendices found in most systematics papers). The \verb|gene_regions.csv|
-file contains the number of taxa, the aligned length, the percent missing data,
-and the taxon coverage density of each gene region used in the supermatrix.
-
-The \verb|plot.pdf| file is a figure that shows how much sequence data was available for
-each taxon for each gene region.
-\verb|sumac_log| is a log of the SUMAC run, and contains a great deal of information
-about the supermatrix construction, including final metrics such as the partical
-decisiveness (PD) of the supermatrix.
 \fi
 % end comment
 
@@ -284,8 +285,12 @@ to use \verb|-p /genbank| so that all SUMAC runs use the same copy of the GenBan
 
 \section{Specifying Ingroup and Outgroup}
 
-The \verb|-i| and \verb|-o| options must be used to specify which ingroup and
-outgroup to search for. The taxonomic names must be those used by GenBank.
+The \verb|-i| flag must be used to specify which ingroup to search for. 
+Including an outgroup (the \texttt{-o} flag) is not necessary, 
+but maybe useful when the user wants to combine sequences from two
+different taxonomic groups.
+The taxonomic names must be those used by GenBank, and the 
+searches for the names are case sensitive.
 If a SUMAC run is repeated with the same ingroup and outgroup, SUMAC
 will load the previous search results to save time.
 
@@ -306,10 +311,15 @@ This can be changed with the \verb|-e| option.
 SUMAC uses a default threshold of sequence length percent similarity
 of 0.5. This can be changed with the \verb|-l| option.
 
+\section{Building Supermatrix from User Edited Alignments}
+blah blah use the alignments/N.fasta for -sa
+
 \section{Partial Decisiveness}
 blah blah
 
-\section{Supermatrix Figure}
+\section{Clustering Algorithms}
+
+\section{Example Supermatrix Figures}
 blah blah
 
 

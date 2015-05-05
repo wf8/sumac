@@ -19,5 +19,7 @@
 \BOOKMARK [1][-]{section.3.4}{Homologous Sequence Thresholds}{chapter.3}% 19
 \BOOKMARK [2][-]{subsection.3.4.1}{BLAST E-value}{section.3.4}% 20
 \BOOKMARK [2][-]{subsection.3.4.2}{Sequence Length Similarity}{section.3.4}% 21
-\BOOKMARK [1][-]{section.3.5}{Partial Decisiveness}{chapter.3}% 22
-\BOOKMARK [1][-]{section.3.6}{Supermatrix Figure}{chapter.3}% 23
+\BOOKMARK [1][-]{section.3.5}{Building Supermatrix from User Edited Alignments}{chapter.3}% 22
+\BOOKMARK [1][-]{section.3.6}{Partial Decisiveness}{chapter.3}% 23
+\BOOKMARK [1][-]{section.3.7}{Clustering Algorithms}{chapter.3}% 24
+\BOOKMARK [1][-]{section.3.8}{Example Supermatrix Figures}{chapter.3}% 25
