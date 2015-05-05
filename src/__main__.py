@@ -7,6 +7,7 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 
+import imp
 import os
 import sys
 import argparse
@@ -162,15 +163,25 @@ def main():
     # concatenate alignments
     print(color.purple + "Concatenating alignments..." + color.done)
     supermatrix = Supermatrix(alignments)
-    
+   
+    try:
+        imp.find_module('matplotlib')
+        imp.find_module('numpy')
+        matplot = True
+    except ImportError:
+        matplot = False
+        print(color.red + "Skipping generating graphs since matplotlib is not installed." + color.done)
+
     if not args.alignments: # and not args.salignments:
         # only make genbank_csv if the sequences were mined direct from genbank
         supermatrix.make_genbank_csv()
     supermatrix.print_data()
-    supermatrix.make_sequence_data_figure()
+    if matplot:
+        supermatrix.make_sequence_data_figure()
     if args.decisiveness:
         supermatrix.print_PD()
-        supermatrix.make_sequence_decisiveness_figure()
+        if matplot:
+            supermatrix.make_sequence_decisiveness_figure()
         supermatrix.make_decisiveness_csv()
     print(color.yellow + "Final supermatrix: " + color.red + "alignments/supermatrix_concatenated.fasta" + color.done)
     
