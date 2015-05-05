@@ -81,16 +81,20 @@ def main():
         print(color.purple + "%i sequences indexed!" % len(gb) + color.done)
 
         # check for ingroup and outgroup
-        if args.ingroup and args.outgroup:
+        if args.ingroup:
             ingroup = args.ingroup
-            outgroup = args.outgroup
+            if args.outgroup:
+                outgroup = args.outgroup
+            else:
+                outgroup = "NONE"
         else:
-            print(color.red + "Please specify ingroup and outgroup. See --help for details." + color.done)
+            print(color.red + "Please specify ingroup. See --help for details." + color.done)
             sys.exit(0)
         
         # search db for ingroup and outgroup sequences
-        print(color.blue + "Outgroup = " + outgroup)
-        print("Ingroup = " + ingroup + color.done)
+        print(color.blue + "Ingroup = " + ingroup + color.done)
+        if args.outgroup:
+            print(color.blue + "Outgroup = " + outgroup + color.done)
         print(color.blue + "Searching for ingroup and outgroup sequences..." + color.done)
         if args.max_ingroup:
             search_results = GenBankSearch(gb, ingroup, outgroup, int(args.max_ingroup))
