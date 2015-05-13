@@ -2,82 +2,73 @@
 # SUMAC: supermatrix constructor
 
 
-Python package that:   
+SUMAC (Supermatrix Constructor) is a Python package to data-mine GenBank, construct phylogenetic supermatrices, and assess the phylogenetic decisiveness of a matrix given the pattern of missing sequence data. It is designed to be run as a command-line program, though the modules can also be imported and used in other Python scripts. SUMAC will assemble supermatrices for any taxonomic group recognized in GenBank, and is optimized to run on multicore systems by utilizing multiple parallel processes.
 
-1. Downloads GenBank database of the specified GB division (PLN, MAM, etc)  
-2. Performs an exhaustive all-by-all BLAST comparisons of each ingroup and outgroup sequence, or  
-3. alternatively (much faster) uses a FASTA file of guide sequences to define each cluster. 
-Each ingroup/outgroup sequence is BLASTed against the guide sequences.  
-4. Builds clusters of sequences:  
-    - uses single-linkage hierarchical clustering algorithm  
-    - distance threshold default BLASTn e-value 1.0e-10  
-    - sequence length percent similarity cutoff default 0.5  
-    - discards clusters that are not phylogenetically informative (< 4 taxa)  
-5. Aligns each cluster of sequences using MUSCLE.  
-6. Concatenates the clusters creating a supermatrix.  
-
-Optimized to run on multicore servers with the use of parallel multiple processes.
 
 ### Requirements:
 
     Python 2.7
     Biopython
-    MUSCLE
+    AFFT v6.9+
     BLAST+
 
-### To install: 
+### To install and use: 
 
-    python setup.py install
-
-### To use:
-
-A basic example:
-
-    python -m sumac -d pln -i Onagraceae -o Lythraceae
-
-If you already downloaded the GenBank database:
-
-    python -m sumac -i Onagraceae -o Lythraceae
-
-Instead of doing an all-by-all BLAST comparison, use guide sequences to build clusters:
-
-    python -m sumac -i Onagraceae -o Lythraceae -g guides.fasta
+See the [SUMAC user manual](https://rawgit.com/wf8/sumac/master/manual/SUMAC_Manual.pdf)!
 
 ### Usuage arguments:
 
-    python -m sumac [-h] [--download_gb DOWNLOAD_GB] [--ingroup INGROUP]
-                         [--outgroup OUTGROUP] 
-                         [--evalue EVALUE] [--length LENGTH] [--guide GUIDE]
-                         [--path PATH]
+    python -m sumac [-h] [--download_gb DOWNLOAD_GB] [--path PATH]
+                   [--ingroup INGROUP] [--outgroup OUTGROUP] [--evalue EVALUE]
+                   [--length LENGTH] [--max_ingroup MAX_INGROUP]
+                   [--guide GUIDE] [--alignments ALIGNMENTS [ALIGNMENTS ...]]
+                   [--salignments SALIGNMENTS [SALIGNMENTS ...]] [--search]
+                   [--decisiveness] [--hac]
 
 ### Argument details:
 
-      -h, --help            show this help message and exit
-      --download_gb DOWNLOAD_GB, -d DOWNLOAD_GB
-                            Name of the GenBank division to download (e.g. PLN or
-                            MAM).
-      --ingroup INGROUP, -i INGROUP
-                            Ingroup clade to build supermatrix.
-      --outgroup OUTGROUP, -o OUTGROUP
-                            Outgroup clade to build supermatrix.
-      --evalue EVALUE, -e EVALUE
-                            BLAST E-value threshold to cluster taxa. Defaults to
-                            0.1
-      --length LENGTH, -l LENGTH
-                            Threshold of sequence length percent similarity to
-                            cluster taxa. Defaults to 0.5
-      --guide GUIDE, -g GUIDE
-                            FASTA file containing sequences to guide cluster
-                            construction. If this option is selected then
-                            all-by-all BLAST comparisons are not performed.
-      --path PATH, -p PATH  Absolute path to download GenBank files to. Defaults
-                            to ./genbank/
+  -h, --help            show this help message and exit
+  --download_gb DOWNLOAD_GB, -d DOWNLOAD_GB
+                        Name of the GenBank division to download (e.g. PLN or
+                        MAM).
+  --path PATH, -p PATH  Absolute path to download GenBank files to. Defaults
+                        to ./genbank/
+  --ingroup INGROUP, -i INGROUP
+                        Ingroup clade to build supermatrix.
+  --outgroup OUTGROUP, -o OUTGROUP
+                        Outgroup clade to build supermatrix.
+  --evalue EVALUE, -e EVALUE
+                        BLAST E-value threshold to cluster taxa. Defaults to
+                        1e-10
+  --length LENGTH, -l LENGTH
+                        Threshold of sequence length percent similarity to
+                        cluster taxa. Defaults to 0.5
+  --max_ingroup MAX_INGROUP, -m MAX_INGROUP
+                        Maximum number of taxa to include in ingroup. Default
+                        is none (no maximum limit).
+  --guide GUIDE, -g GUIDE
+                        FASTA file containing sequences to guide cluster
+                        construction. If this option is selected then all-by-
+                        all BLAST comparisons are not performed.
+  --alignments ALIGNMENTS [ALIGNMENTS ...], -a ALIGNMENTS [ALIGNMENTS ...]
+                        List of aligned FASTA files to build supermatrix
+                        instead of mining GenBank.
+  --salignments SALIGNMENTS [SALIGNMENTS ...], -sa SALIGNMENTS [SALIGNMENTS ...]
+                        List of SUMAC alignments to build supermatrix instead
+                        of mining GenBank.
+  --search, -s          Turn on search and cluster mode. Will not make
+                        alignments or supermatrix.
+  --decisiveness, -de   Calculate partial decisiveness. For larger matrices
+                        this may be slow.
+  --hac                 Use HAC single-linkage clustering algorithm instead of
+                        the default SLINK algorithm.
 
 ### Citation:
 
-Freyman, W.A. 2014. SUMAC: GenBank data miner and phylogenetic supermatrix constructor
+Freyman, W.A. 2015. SUMAC: software for constructing phylogenetic supermatrices and assessing
+partially decisive taxon coverage.
 
 ### Other stuff:
 
-Copyright 2014 Will Freyman - freyman@berkeley.edu  
+Copyright 2015 Will Freyman - freyman@berkeley.edu  
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
