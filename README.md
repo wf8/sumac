@@ -2,8 +2,15 @@
 # SUMAC: supermatrix constructor
 
 
-SUMAC (Supermatrix Constructor) is a Python package to data-mine GenBank, construct phylogenetic supermatrices, and assess the phylogenetic decisiveness of a matrix given the pattern of missing sequence data. It is designed to be run as a command-line program, though the modules can also be imported and used in other Python scripts. SUMAC will assemble supermatrices for any taxonomic group recognized in GenBank, and is optimized to run on multicore systems by utilizing multiple parallel processes.
+SUMAC (Supermatrix Constructor) is a Python package to data-mine GenBank, construct phylogenetic supermatrices, 
+and assess the phylogenetic decisiveness of a matrix given the pattern of missing sequence data. 
+SUMAC calculates a novel metric, Missing Sequence Decisiveness Scores (MSDS), which measure how much each 
+individual missing sequence contributes to the decisiveness of the matrix. 
+MSDS can be used to compare supermatrices and prioritize the acquisition of new sequence data.
 
+SUMAC is designed to be run as a command-line program, though the modules can also be imported and used in other Python scripts. 
+SUMAC will assemble supermatrices for any taxonomic group recognized in GenBank, and is optimized to run on multicore systems by utilizing multiple parallel processes.
+Please see the [SUMAC user manual](https://rawgit.com/wf8/sumac/master/manual/SUMAC_Manual.pdf) for many more details.
 
 ### Requirements:
 
