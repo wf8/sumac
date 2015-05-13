@@ -47,7 +47,7 @@ It is designed to be run as a command-line program, though
 the modules can also be imported and used in other Python scripts.
 SUMAC will assemble
 supermatrices for any taxonomic group recognized in GenBank,
-and is optimized to run on multicore processors and clusters by utilizing multiple parallel processes.
+and is optimized to run on multicore systems by utilizing multiple parallel processes.
 
 When run from the command-line, SUMAC will perform a number of steps to construct
 a supermatrix.
@@ -312,15 +312,53 @@ SUMAC uses a default threshold of sequence length percent similarity
 of 0.5. This can be changed with the \verb|-l| option.
 
 \section{Building Supermatrix from User Edited Alignments}
-blah blah use the alignments/N.fasta for -sa
+Often the user will want to edit the alignments used by SUMAC
+and then regenerate the supermatrix (reconcatenating the alignments and
+recalculating the various metrics and spreadsheets). The user may want to add their own
+sequences to the GenBank sequences, make taxonomic changes to the GenBank sequences, or remove erroneous
+sequences. To do this the user should edit the \texttt{alignments/N.fasta}
+files and then rerun SUMAC with the \texttt{-sa} flag with the path
+of the edited alignments as an argument. For example, if the edited
+alignments are in the \texttt{edited\_alignments} directory, the user
+should run the command \texttt{python -m sumac -sa edited\_alignments/*}. 
+The \texttt{*} is a wildcard that specifies all files within the directory.
+
 
 \section{Partial Decisiveness}
-blah blah
+To calculate the partial decisiveness (PD) and Missing Sequence Decisiveness Scores (MSDS)
+for the data matrix, run SUMAC with the \texttt{--decisiveness} flag.
+See \citet{sumac} for an explanation of these metrics. 
+An example of the plot of MSDS scores that SUMAC generates is given below.
 
 \section{Clustering Algorithms}
+Two hierarchical clustering algorithms are implemented in SUMAC.
+By default, SUMAC clusters sequences using the SLINK single-linkage hierarchical clustering algorithm \citep{Sibson1973}.
+If run with the command line flag \texttt{--hac}, SUMAC will instead cluster sequences using Sneath's naive
+hierarchical agglomerative clustering (HAC) algorithm \citep{Sneath1957}.
+See \citet{sumac} for more details on their implementation.
 
 \section{Example Supermatrix Figures}
-blah blah
+
+SUMAC generates two PDF plots of the supermatrix. The file \texttt{sequence\_data\_plot.pdf} is a plot of the sequence data coverage (Figure \ref{fig:01}). 
+If run with the \texttt{-de} flag, SUMAC will generate \texttt{sequence\_decisiveness\_scores\_plot.pdf}, which is a plot of 
+Missing Sequence Decisiveness Scores (MSDS) (Figure \ref{fig:02}).
+
+\begin{figure}[!tpb]
+\centerline{\includegraphics[scale=1.0]{figures/sequence_plot.pdf}}
+\caption{Data coverage for a sequence matrix with 10 genes, 384 OTUs, taxon coverage density of 0.26, and partial decisiveness of 0.31.
+White represents missing data, and shades of blue represent sequences present. Longer sequences are dark blue, short sequences
+are light blue.} \label{fig:01}
+\end{figure}
+
+\begin{figure}[!tpb]
+\centerline{\includegraphics[scale=1.0]{figures/MSDS_figure_1.pdf}}
+\caption{Missing Sequence Decisiveness Scores (MSDS) for a sequence matrix with 10 genes, 384 OTUs, taxon coverage density of 0.26, and partial decisiveness of 0.31.
+Pale yellow represents sequence data present, shades of orange represent missing sequences with low to intermediate MSDS (~0-0.75),
+and red to maroon represents missing sequences with high MSDS (~0.75-1.0).
+MSDS measures how much the individual missing sequence contributes to the decisiveness of the matrix given the overall pattern of missing data.
+MSDS prioritizes which sequences to add to the matrix; where MSDS is high the addition of new data will increase the
+decisiveness of the matrix more than where MSDS is low.}\label{fig:02}
+\end{figure}
 
 
 %\bibliographystyle{natbib}

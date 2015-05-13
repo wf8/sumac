@@ -20,6 +20,6 @@
 \contentsline {subsection}{\numberline {3.4.1}BLAST E-value}{10}{subsection.3.4.1}
 \contentsline {subsection}{\numberline {3.4.2}Sequence Length Similarity}{10}{subsection.3.4.2}
 \contentsline {section}{\numberline {3.5}Building Supermatrix from User Edited Alignments}{10}{section.3.5}
-\contentsline {section}{\numberline {3.6}Partial Decisiveness}{10}{section.3.6}
-\contentsline {section}{\numberline {3.7}Clustering Algorithms}{10}{section.3.7}
-\contentsline {section}{\numberline {3.8}Example Supermatrix Figures}{10}{section.3.8}
+\contentsline {section}{\numberline {3.6}Partial Decisiveness}{11}{section.3.6}
+\contentsline {section}{\numberline {3.7}Clustering Algorithms}{11}{section.3.7}
+\contentsline {section}{\numberline {3.8}Example Supermatrix Figures}{11}{section.3.8}

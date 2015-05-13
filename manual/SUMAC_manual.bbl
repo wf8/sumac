@@ -23,4 +23,15 @@ Katoh, K., Misawa, K., Kuma, K.-i., and Miyata, T. (2002).
   fast fourier transform.
 \newblock {\em Nucleic acids research}, 30(14):3059--3066.
 
+\bibitem[Sibson, 1973]{Sibson1973}
+Sibson, R. (1973).
+\newblock {SLINK: An optimally efficient algorithm for the single-link cluster
+  method}.
+\newblock {\em The Computer Journal}, 16(1):30--34.
+
+\bibitem[Sneath, 1957]{Sneath1957}
+Sneath, P. H.~A. (1957).
+\newblock {The Application of Computers to Taxonomy}.
+\newblock {\em Journal of General Microbiology}, 17(1):201--226.
+
 \end{thebibliography}
