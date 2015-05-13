@@ -16,7 +16,7 @@ Please see the [SUMAC user manual](https://rawgit.com/wf8/sumac/master/manual/SU
 
     Python 2.7
     Biopython
-    AFFT v6.9+
+    MAFFT v6.9+
     BLAST+
 
 ### To install and use: 
