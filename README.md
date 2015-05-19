@@ -76,7 +76,7 @@ For more detailed instructions see the [SUMAC user manual](https://rawgit.com/wf
 
 ### Citation:
 
-Freyman, W.A. 2015. SUMAC: software for constructing phylogenetic supermatrices and assessing
+Freyman, W.A. 2015. SUMAC: constructing phylogenetic supermatrices and assessing
 partially decisive taxon coverage.
 
 ### Other stuff:

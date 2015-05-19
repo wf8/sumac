@@ -21,7 +21,11 @@ Please see the [SUMAC user manual](https://rawgit.com/wf8/sumac/master/manual/SU
 
 ### To install and use: 
 
-See the [SUMAC user manual](https://rawgit.com/wf8/sumac/master/manual/SUMAC_Manual.pdf)
+The quick way:
+
+    sudo pip install sumac
+
+For more detailed instructions see the [SUMAC user manual](https://rawgit.com/wf8/sumac/master/manual/SUMAC_Manual.pdf)
 
 ### Usuage arguments:
 
@@ -72,7 +76,7 @@ See the [SUMAC user manual](https://rawgit.com/wf8/sumac/master/manual/SUMAC_Man
 
 ### Citation:
 
-Freyman, W.A. 2015. SUMAC: software for constructing phylogenetic supermatrices and assessing
+Freyman, W.A. 2015. SUMAC: constructing phylogenetic supermatrices and assessing
 partially decisive taxon coverage.
 
 ### Other stuff:
