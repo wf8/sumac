@@ -21,7 +21,11 @@ Please see the [SUMAC user manual](https://rawgit.com/wf8/sumac/master/manual/SU
 
 ### To install and use: 
 
-See the [SUMAC user manual](https://rawgit.com/wf8/sumac/master/manual/SUMAC_Manual.pdf)
+The quick way:
+
+    sudo pip install sumac
+
+For more detailed instructions see the [SUMAC user manual](https://rawgit.com/wf8/sumac/master/manual/SUMAC_Manual.pdf)
 
 ### Usuage arguments:
 
