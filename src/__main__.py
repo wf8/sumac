@@ -110,6 +110,9 @@ def main():
         ingroup_keys = search_results.ingroup_keys
         outgroup_keys = search_results.outgroup_keys
         all_seq_keys = ingroup_keys + outgroup_keys
+        if len(all_seq_keys) == 0:
+            print(color.red + "No sequences found for the ingroup and outgroup!" + color.done)
+            sys.exit(0)
 
         # determine sequence length similarity threshold
         length_threshold = 0.5
