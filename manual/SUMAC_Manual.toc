@@ -14,7 +14,7 @@
 \contentsline {section}{\numberline {3.1}Downloading GenBank}{9}{section.3.1}
 \contentsline {subsection}{\numberline {3.1.1}GenBank Division}{9}{subsection.3.1.1}
 \contentsline {subsection}{\numberline {3.1.2}GenBank File Path}{9}{subsection.3.1.2}
-\contentsline {section}{\numberline {3.2}Specifying Ingroup and Outgroup}{9}{section.3.2}
+\contentsline {section}{\numberline {3.2}Specifying Ingroup and Outgroup}{10}{section.3.2}
 \contentsline {section}{\numberline {3.3}Setting the Number of CPU Cores}{10}{section.3.3}
 \contentsline {section}{\numberline {3.4}Using Guide Sequences}{10}{section.3.4}
 \contentsline {section}{\numberline {3.5}Homologous Sequence Thresholds}{10}{section.3.5}
@@ -24,3 +24,4 @@
 \contentsline {section}{\numberline {3.7}Partial Decisiveness}{11}{section.3.7}
 \contentsline {section}{\numberline {3.8}Clustering Algorithms}{11}{section.3.8}
 \contentsline {section}{\numberline {3.9}Example Supermatrix Figures}{11}{section.3.9}
+\contentsline {chapter}{Bibliography}{14}{section*.4}

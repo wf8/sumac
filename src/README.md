@@ -42,6 +42,10 @@ For more detailed instructions see the [SUMAC user manual](https://rawgit.com/wf
     --download_gb DOWNLOAD_GB, -d DOWNLOAD_GB
                           Name of the GenBank division to download (e.g. PLN or
                           MAM).
+    --download_gb2 DOWNLOAD_GB2, -d2 DOWNLOAD_GB2
+                          Name of the optional second GenBank division to
+                          download. Use this option if the ingroup and outgroup
+                          are in different GenBank divisions.
     --path PATH, -p PATH  Absolute path to download GenBank files to. Defaults
                           to ./genbank/
     --ingroup INGROUP, -i INGROUP
@@ -79,8 +83,8 @@ For more detailed instructions see the [SUMAC user manual](https://rawgit.com/wf
 
 ### Citation:
 
-Freyman, W.A. 2015. SUMAC: constructing phylogenetic supermatrices and assessing
-partially decisive taxon coverage.
+Freyman, W.A. Accepted. SUMAC: constructing phylogenetic supermatrices and assessing
+partially decisive taxon coverage. Accepted in *Evolutionary Bioinformatics*.
 
 ### Other stuff:
 

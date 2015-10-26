@@ -29,6 +29,8 @@ def main():
     # parse the command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("--download_gb", "-d", help="Name of the GenBank division to download (e.g. PLN or MAM).")
+    parser.add_argument("--download_gb2", "-d2", help="""Name of the optional second GenBank division to download. Use this
+                                                         option if the ingroup and outgroup are in different GenBank divisions.""")
     parser.add_argument("--path", "-p", help="Absolute path to download GenBank files to. Defaults to ./genbank/")
     parser.add_argument("--ingroup", "-i", help="Ingroup clade to build supermatrix.")
     parser.add_argument("--outgroup", "-o", help="Outgroup clade to build supermatrix.")
@@ -75,7 +77,10 @@ def main():
             gb_dir = os.path.abspath("genbank/")
         # if the user requests downloading
         if args.download_gb:
-            GenBankSetup.download(args.download_gb, gb_dir)
+            divisions = [args.download_gb]
+            if args.download_gb2:
+                divisions.append(args.download_gb2)
+            GenBankSetup.download(divions, gb_dir)
             print(color.yellow + "Setting up SQLite database..." + color.done)
             gb = GenBankSetup.sqlite(gb_dir)
         # the user didn't request downloading, so check for genbank directory

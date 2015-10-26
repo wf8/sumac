@@ -77,7 +77,8 @@ detail later in this manual.
 
 If you use SUMAC for a published paper please cite the following release note: \\
 \\
-Freyman, W.A. In prep. SUMAC: software for constructing phylogenetic supermatrices and assessing partially decisive taxon coverage.
+Freyman, W.A. Accepted. SUMAC: constructing phylogenetic supermatrices and assessing partially decisive taxon coverage.
+Accepted in \textit{Evolutionary Bioinformatics}.
 
 \section{Installation}
 
@@ -271,7 +272,9 @@ to download with the \verb|-d div| option, where \verb|div| is the
 GenBank designated three letter code of the division (PLN, MAM, etc).
 Once SUMAC has downloaded the GenBank division, future SUMAC runs
 should omit the \verb|-d div| option to avoid repeatedly
-downloading GenBank.
+downloading GenBank. 
+If the ingroup and outgroup are in different GenBank divisions,
+use the \texttt{-d2} flag to specify a second GenBank division to download.
 
 \subsection{GenBank File Path}
 
@@ -370,7 +373,9 @@ decisiveness of the matrix more than where MSDS is low.}\label{fig:02}
 
 
 %\bibliographystyle{natbib}
-
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{Bibliography}
 \bibliography{SUMAC_manual}
 
 \end{document}

@@ -43,47 +43,48 @@ class GenBankSetup(object):
 
 
     @classmethod
-    def download(cls, division_input, path):
+    def download(cls, divisions, path):
         """
         Downloads and uncompresses files for a GenBank division.
         Path should be the absolute path to save the GB files.
         """
-        color = Color()
-        division = str(division_input).lower()
-        print(color.purple + "Connecting to ftp.ncbi.nih.gov..." + color.done)
-        ftp = FTP("ftp.ncbi.nih.gov")
-        ftp.login()
-        print(color.yellow + "Opening directory genbank..." + color.done)
-        ftp.cwd("genbank")
-        file_list = ftp.nlst()
-        i = 1
-        file_name = "gb" + division + str(i) + ".seq.gz"
-        if not os.path.exists(path):
-            os.makedirs(path)
-        path = path + "/"
-        while file_name in file_list:
-            print(color.red + "Downloading file " + file_name + color.done)
-            file = open(path + file_name, "wb")
-            cls.getbinary(ftp, file_name, file)
-            file.close()
-            print(color.yellow + "Uncompressing file " + file_name + color.done)
-            file = gzip.open(path + file_name, "rb")
-            file_content = file.read()
-            file.close()
-            file = open(path + file_name[:-3], "wb")
-            file.write(file_content)
-            file.close()
-            os.remove(path + file_name)
-            i += 1
-            file_name = 'gb' + division + str(i) + '.seq.gz'
-        # check if any files were downloaded
-        if i == 1:
-            print(color.red + "GenBank division " + division_input \
-                  + " not found. Please use a valid division name " \
-                  + "(e.g. VRT, INV, PLN)." + color.done
-                 )
-            sys.exit(0)
-        ftp.quit()
+        for division_input in divisions:
+            color = Color()
+            division = str(division_input).lower()
+            print(color.purple + "Connecting to ftp.ncbi.nih.gov..." + color.done)
+            ftp = FTP("ftp.ncbi.nih.gov")
+            ftp.login()
+            print(color.yellow + "Opening directory genbank..." + color.done)
+            ftp.cwd("genbank")
+            file_list = ftp.nlst()
+            i = 1
+            file_name = "gb" + division + str(i) + ".seq.gz"
+            if not os.path.exists(path):
+                os.makedirs(path)
+            path = path + "/"
+            while file_name in file_list:
+                print(color.red + "Downloading file " + file_name + color.done)
+                file = open(path + file_name, "wb")
+                cls.getbinary(ftp, file_name, file)
+                file.close()
+                print(color.yellow + "Uncompressing file " + file_name + color.done)
+                file = gzip.open(path + file_name, "rb")
+                file_content = file.read()
+                file.close()
+                file = open(path + file_name[:-3], "wb")
+                file.write(file_content)
+                file.close()
+                os.remove(path + file_name)
+                i += 1
+                file_name = 'gb' + division + str(i) + '.seq.gz'
+            # check if any files were downloaded
+            if i == 1:
+                print(color.red + "GenBank division " + division_input \
+                      + " not found. Please use a valid division name " \
+                      + "(e.g. VRT, INV, PLN)." + color.done
+                     )
+                sys.exit(0)
+            ftp.quit()
 
 
     @staticmethod
