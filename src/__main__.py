@@ -11,6 +11,7 @@ import imp
 import os
 import sys
 import argparse
+import multiprocessing
 from util import Color
 from util import Logger
 from genbank import GenBankSetup
@@ -31,6 +32,7 @@ def main():
     parser.add_argument("--path", "-p", help="Absolute path to download GenBank files to. Defaults to ./genbank/")
     parser.add_argument("--ingroup", "-i", help="Ingroup clade to build supermatrix.")
     parser.add_argument("--outgroup", "-o", help="Outgroup clade to build supermatrix.")
+    parser.add_argument("--cores", "-c", help="The number of CPU cores to use for parallel processing. Defaults to the max available.")
     parser.add_argument("--evalue", "-e", help="BLAST E-value threshold to cluster taxa. Defaults to 1e-10")
     parser.add_argument("--length", "-l", help="Threshold of sequence length percent similarity to cluster taxa. Defaults to 0.5")
     parser.add_argument("--max_ingroup", "-m", help="Maximum number of taxa to include in ingroup. Default is none (no maximum limit).") 
@@ -50,14 +52,18 @@ def main():
     print(color.blue + "SUMAC: supermatrix constructor" + color.done)
     print("")
 
+    num_cores = multiprocessing.cpu_count()
+    if args.cores and int(args.cores) <= num_cores:
+        num_cores = int(args.cores) 
+
     if args.alignments:
         # if the user provides alignments:
         alignment_files = args.alignments
-        alignments = Alignments(alignment_files, "aligned")
+        alignments = Alignments(alignment_files, "aligned", num_cores)
     elif args.salignments:
         # if the user inputs SUMAC alignments from previous run
         alignment_files = args.salignments
-        alignments = Alignments(alignment_files, "sumac_aligned")
+        alignments = Alignments(alignment_files, "sumac_aligned", num_cores)
     else:
         if args.search:
             print(color.yellow + "Running in search and cluster mode. Clusters will not be aligned and supermatrix will not assembled." + color.done) 
@@ -122,11 +128,11 @@ def main():
         if args.guide:
             # use FASTA file of guide sequences
             print(color.blue + "Building clusters using the guide sequences..." + color.done)
-            cluster_builder = GuidedClusterBuilder(args.guide, all_seq_keys, length_threshold, evalue_threshold, gb_dir)
+            cluster_builder = GuidedClusterBuilder(args.guide, all_seq_keys, length_threshold, evalue_threshold, gb_dir, num_cores)
         else:
             # make distance matrix
             print(color.blue + "Making distance matrix for all sequences..." + color.done)
-            distance_matrix = DistanceMatrixBuilder(gb, all_seq_keys, length_threshold, gb_dir).distance_matrix
+            distance_matrix = DistanceMatrixBuilder(gb, all_seq_keys, length_threshold, gb_dir, num_cores).distance_matrix
 
             # cluster sequences
             if args.hac:
@@ -155,7 +161,7 @@ def main():
             sys.exit(0)
         # now align each cluster with MUSCLE
         print(color.blue + "Aligning clusters with MAFFT..." + color.done)
-        alignments = Alignments(cluster_builder.cluster_files, "unaligned")
+        alignments = Alignments(cluster_builder.cluster_files, "unaligned", num_cores)
     
     alignments.print_data()
     alignments.make_gene_region_csv()

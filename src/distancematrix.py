@@ -23,7 +23,7 @@ class DistanceMatrixBuilder:
     
     distance_matrix = []
 
-    def __init__(self, gb, seq_keys, length_threshold, gb_dir):
+    def __init__(self, gb, seq_keys, length_threshold, gb_dir, num_cores):
         """
         Takes as input a dictionary of SeqRecords gb and the keys to all sequences.
         length_threshold is the threshold of sequence length percent similarity to cluster taxa.
@@ -42,8 +42,6 @@ class DistanceMatrixBuilder:
         for i in range(len(seq_keys)):
             dist_matrix.append(row)
 
-        num_cores = multiprocessing.cpu_count()
-        
         color = Color()
         print(color.blue + "Spawning " + color.red + str(num_cores) + color.blue + " processes to make distance matrix." + color.done)
         processes = []

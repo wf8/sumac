@@ -255,7 +255,7 @@ class GuidedClusterBuilder(ClusterBuilder):
     """
 
 
-    def __init__(self, guide_seq, all_seq_keys, length_threshold, evalue_threshold, gb_dir):
+    def __init__(self, guide_seq, all_seq_keys, length_threshold, evalue_threshold, gb_dir, num_cores):
         """
         Input: name of FASTA file containing guide sequences, dictionary of all GenBank sequences,
         a list of ingroup/outgroup sequences, the e-value threshold to cluster, and the
@@ -292,7 +292,6 @@ class GuidedClusterBuilder(ClusterBuilder):
         output_handle.close()
 
         # spawn processes
-        num_cores = multiprocessing.cpu_count()
         print(color.blue + "Spawning " + color.red + str(num_cores) + color.blue + " processes to make clusters." + color.done)
         processes = []
         

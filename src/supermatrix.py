@@ -501,7 +501,7 @@ class Supermatrix(object):
     
 
 
-    def calculate_PD_parallel(self):
+    def calculate_PD_parallel(self, num_cores):
         """
         Method to calculate the fraction of triples, a measure of partial decisiveness (PD).
         See: Sanderson, M.J., McMahon, M.M. & Steel, M., 2010. BMC evolutionary biology, 10. 
@@ -517,7 +517,6 @@ class Supermatrix(object):
         total_triples = manager.Value('i', 0)
         total = self.binomial_coefficient(len(self.otus), 3)
 
-        num_cores = multiprocessing.cpu_count()
         for i in range(num_cores):
             p = multiprocessing.Process(target=calculate_PD_worker, args=(lock, i, num_cores, decisive_triples, total_triples, total, otus_shared))
             p.start()

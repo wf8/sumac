@@ -30,7 +30,7 @@ class Alignments(object):
     user_provided = False
     sumac_aligned = False
 
-    def __init__(self, cluster_files, aligned):
+    def __init__(self, cluster_files, aligned, num_cores):
         """
         Input parameters: 
         cluster_files: a list of FASTA files 
@@ -47,8 +47,8 @@ class Alignments(object):
         if aligned == "unaligned":
             self.user_provided = False
             self.sumac_aligned = False
-            print(color.blue + "Spawning " + color.red + str(multiprocessing.cpu_count()) + color.blue + " processes to align clusters." + color.done)
-            pool = multiprocessing.Pool(multiprocessing.cpu_count())
+            print(color.blue + "Spawning " + color.red + str(num_cores) + color.blue + " processes to align clusters." + color.done)
+            pool = multiprocessing.Pool(num_cores)
             alignment_files = pool.map(self.align_cluster, cluster_files)
             pool.close()
             pool.join()

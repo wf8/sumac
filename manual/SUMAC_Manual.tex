@@ -19,7 +19,7 @@
 %----------------------------------------
 %AUTHORS
 %----------------------------------------
-\title{SUMAC: Supermatrix Constructor version 1.0 Manual}
+\title{SUMAC: Supermatrix Constructor version 1.1 Manual}
 \author{William A. Freyman\thanks{freyman@berkeley.edu}}
 \affil{Department of Integrative Biology, University of California, Berkeley}
 
@@ -179,8 +179,10 @@ python -m sumac -d pln -i Onagraceae -o Lythraceae
 This command is an example of the minimum amount of input required
 to run SUMAC. The first part of the command \texttt{python -m sumac}
 runs the SUMAC module. The \texttt{-d pln}
-tells SUMAC to download the PLN (Plant) GenBank division and is only necessary the first time one runs SUMAC. The
-\texttt{-i Onagraceae} and \texttt{-o Lythraceae}
+tells SUMAC to download the PLN (Plant) GenBank division and is only necessary the first time one runs SUMAC. 
+If you run SUMAC a second time with the \texttt{-d} flag you will download 
+GenBank again, overwriting the previously downloaded version of GenBank.
+The \texttt{-i Onagraceae} and \texttt{-o Lythraceae}
 tells SUMAC to search the PLN division for all sequences within
 the taxonomic groups Onagraceae (the ingroup) and Lythraceae (the outgroup).
 Specifying an outgroup (the \texttt{-o} flag) is not necessary, 
@@ -268,8 +270,8 @@ The first time you run SUMAC you must specify which GenBank division
 to download with the \verb|-d div| option, where \verb|div| is the
 GenBank designated three letter code of the division (PLN, MAM, etc).
 Once SUMAC has downloaded the GenBank division, future SUMAC runs
-may leave out the \verb|-d div| option to avoid repeatedly
-download the same files.
+should omit the \verb|-d div| option to avoid repeatedly
+downloading GenBank.
 
 \subsection{GenBank File Path}
 
@@ -293,6 +295,12 @@ The taxonomic names must be those used by GenBank, and the
 searches for the names are case sensitive.
 If a SUMAC run is repeated with the same ingroup and outgroup, SUMAC
 will load the previous search results to save time.
+
+\section{Setting the Number of CPU Cores}
+
+By default, SUMAC will use the maximum number of CPU cores
+available on the system. You may limit the number of cores
+used with the \texttt{-c} flag.
 
 \section{Using Guide Sequences}
 

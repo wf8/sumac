@@ -48,6 +48,9 @@ For more detailed instructions see the [SUMAC user manual](https://rawgit.com/wf
                           Ingroup clade to build supermatrix.
     --outgroup OUTGROUP, -o OUTGROUP
                           Outgroup clade to build supermatrix.
+    --cores CORES, -c CORES
+                          The number of CPU cores to use for parallel
+                          processing. Defaults to the max available.
     --evalue EVALUE, -e EVALUE
                           BLAST E-value threshold to cluster taxa. Defaults to
                           1e-10
