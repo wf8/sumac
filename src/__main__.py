@@ -80,7 +80,7 @@ def main():
             divisions = [args.download_gb]
             if args.download_gb2:
                 divisions.append(args.download_gb2)
-            GenBankSetup.download(divions, gb_dir)
+            GenBankSetup.download(divisions, gb_dir)
             print(color.yellow + "Setting up SQLite database..." + color.done)
             gb = GenBankSetup.sqlite(gb_dir)
         # the user didn't request downloading, so check for genbank directory
