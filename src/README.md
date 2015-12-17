@@ -85,8 +85,8 @@ For more detailed instructions see the [SUMAC user manual](https://rawgit.com/wf
 
 ### Citation:
 
-Freyman, W.A. Accepted. SUMAC: constructing phylogenetic supermatrices and assessing
-partially decisive taxon coverage. Accepted in *Evolutionary Bioinformatics*.
+Freyman, W.A. 2015. SUMAC: constructing phylogenetic supermatrices and assessing
+partially decisive taxon coverage. *Evolutionary Bioinformatics* 2015:11 263-266
 
 ### Other stuff:
 
