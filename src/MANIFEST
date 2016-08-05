@@ -5,6 +5,7 @@ alignments.py
 clusters.py
 distancematrix.py
 genbank.py
+setup.cfg
 setup.py
 supermatrix.py
 test_sumac.py
