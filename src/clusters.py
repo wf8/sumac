@@ -310,10 +310,10 @@ class UCLUSTClusterBuilder(ClusterBuilder):
     """
 
 
-    threshold = 0.9
+    threshold = 0.75
     error = False
 
-    def __init__(self, gb, seq_keys, gb_dir, length_thres=0.5, threshold=0.9):
+    def __init__(self, gb, seq_keys, gb_dir, length_thres=0.5, threshold=0.75):
         """
         Input: gb dictionary of SeqRecords, keys to all sequences, and an optional threshold for clustering.
         Output: a list of cluster files from UCLUST
@@ -357,7 +357,6 @@ class UCLUSTClusterBuilder(ClusterBuilder):
         subprocess.check_call(["rm", "_temp2.fasta"])
         cluster_files = [ f for f in listdir("uclusters/") if isfile(join("uclusters/", f)) ]
         for f in cluster_files:
-            #subprocess.check_call(["mv", "uclusters/" + f, "uclusters/" + f + ".fasta"])
             self.clusters.append(f)
 
 

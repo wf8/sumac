@@ -36,7 +36,8 @@ def main():
     parser.add_argument("--ingroup", "-i", help="Ingroup clade to build supermatrix.")
     parser.add_argument("--outgroup", "-o", help="Outgroup clade to build supermatrix.")
     parser.add_argument("--cores", "-c", help="The number of CPU cores to use for parallel processing. Defaults to the max available.")
-    parser.add_argument("--evalue", "-e", help="UCLUST or BLAST E-value threshold to cluster taxa. Defaults to 0.90 for UCLUST and 1e-10 for BLAST")
+    parser.add_argument("--id", "-id", help="UCLUST id threshold to cluster taxa. Defaults to 0.75")
+    parser.add_argument("--evalue", "-e", help="BLAST E-value threshold to cluster taxa. Defaults to 1e-10")
     parser.add_argument("--length", "-l", help="Threshold of sequence length percent similarity to cluster taxa. Defaults to 0.5")
     parser.add_argument("--max_ingroup", "-m", help="Maximum number of taxa to include in ingroup. Default is none (no maximum limit).") 
     parser.add_argument("--guide", "-g", help="""FASTA file containing sequences to guide cluster construction. If this option is 
@@ -128,6 +129,12 @@ def main():
         print(color.blue + "Using sequence length similarity threshold " + color.red + str(length_threshold) + color.done)
 
         # determine e-value threshold
+        id_threshold = 0.75
+        if args.id:
+            id_threshold = float(args.id)
+        print(color.blue + "Using UCLUST id threshold " + color.red + str(id_threshold) + color.done)
+        
+        # determine e-value threshold
         evalue_threshold = (1.0/10**10)
         if args.evalue:
             evalue_threshold = float(args.evalue)
@@ -144,7 +151,7 @@ def main():
             uclust_error = False
             if not (args.slink or args.hac):
                 print(color.blue + "Clustering sequences with UCLUST..." + color.done)
-                cluster_builder = UCLUSTClusterBuilder(gb, all_seq_keys, gb_dir, length_threshold, evalue_threshold)
+                cluster_builder = UCLUSTClusterBuilder(gb, all_seq_keys, gb_dir, length_threshold, id_threshold)
                 if (cluster_builder.error == True):
                     uclust_error = True
                 else:
