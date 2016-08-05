@@ -12,6 +12,8 @@ SUMAC is designed to be run as a command-line program, though the modules can al
 SUMAC will assemble supermatrices for any taxonomic group recognized in GenBank, and is optimized to run on multicore systems by utilizing multiple parallel processes.
 Please see the [SUMAC user manual](https://rawgit.com/wf8/sumac/master/manual/SUMAC_Manual.pdf) for many more details.
 
+SUMAC works on OSX and Linux. Windows is not currently supported, however I hope to add support soon.
+
 ### Requirements:
 
     Python 2.7
@@ -83,8 +85,8 @@ For more detailed instructions see the [SUMAC user manual](https://rawgit.com/wf
 
 ### Citation:
 
-Freyman, W.A. Accepted. SUMAC: constructing phylogenetic supermatrices and assessing
-partially decisive taxon coverage. Accepted in *Evolutionary Bioinformatics*.
+Freyman, W.A. 2015. SUMAC: constructing phylogenetic supermatrices and assessing
+partially decisive taxon coverage. *Evolutionary Bioinformatics* 2015:11 263-266
 
 ### Other stuff:
 

@@ -35,7 +35,7 @@ def main():
     parser.add_argument("--ingroup", "-i", help="Ingroup clade to build supermatrix.")
     parser.add_argument("--outgroup", "-o", help="Outgroup clade to build supermatrix.")
     parser.add_argument("--cores", "-c", help="The number of CPU cores to use for parallel processing. Defaults to the max available.")
-    parser.add_argument("--evalue", "-e", help="BLAST E-value threshold to cluster taxa. Defaults to 1e-10")
+    parser.add_argument("--evalue", "-e", help="UCLUST or BLAST E-value threshold to cluster taxa. Defaults to 0.90 for UCLUST and 1e-10 for BLAST")
     parser.add_argument("--length", "-l", help="Threshold of sequence length percent similarity to cluster taxa. Defaults to 0.5")
     parser.add_argument("--max_ingroup", "-m", help="Maximum number of taxa to include in ingroup. Default is none (no maximum limit).") 
     parser.add_argument("--guide", "-g", help="""FASTA file containing sequences to guide cluster construction. If this option is 
@@ -44,7 +44,8 @@ def main():
     parser.add_argument("--salignments", "-sa", nargs='+', help="List of SUMAC alignments to build supermatrix instead of mining GenBank.")
     parser.add_argument("--search", "-s", action='store_true', help="Turn on search and cluster mode. Will not make alignments or supermatrix.")
     parser.add_argument("--decisiveness", "-de", action='store_true', help="Calculate partial decisiveness. For larger matrices this may be slow.")
-    parser.add_argument("--hac", action='store_true', help="Use HAC single-linkage clustering algorithm instead of the default SLINK algorithm.")
+    parser.add_argument("--hac", action='store_true', help="Use HAC single-linkage clustering algorithm instead of the default UCLUST algorithm.")
+    parser.add_argument("--slink", action='store_true', help="Use the SLINK clustering algorithm instead of the default UCLUST algorithm.")
     args = parser.parse_args()
  
     sys.stdout = Logger()
@@ -138,17 +139,24 @@ def main():
             print(color.blue + "Building clusters using the guide sequences..." + color.done)
             cluster_builder = GuidedClusterBuilder(args.guide, all_seq_keys, length_threshold, evalue_threshold, gb_dir, num_cores)
         else:
-            # make distance matrix
-            print(color.blue + "Making distance matrix for all sequences..." + color.done)
-            distance_matrix = DistanceMatrixBuilder(gb, all_seq_keys, length_threshold, gb_dir, num_cores).distance_matrix
+            # cluster using UCLUST
+            cluster_builder = ""
+            if not (args.slink or args.hac):
+                print(color.blue + "Clustering sequences with UCLUST..." + color.done)
+                cluster_builder = UCLUSTClusterBuilder(gb, all_seq_keys, gb_dir, length_threshold, evalue_threshold)
+                print(color.purple + "Clustering completed..." + color.done)
+            if (args.slink or args.hac) or (cluster_builder == "UCLUST error"):
+                # make distance matrix
+                print(color.blue + "Making distance matrix for all sequences..." + color.done)
+                distance_matrix = DistanceMatrixBuilder(gb, all_seq_keys, length_threshold, gb_dir, num_cores).distance_matrix
 
-            # cluster sequences
-            if args.hac:
-                print(color.purple + "Clustering sequences using the HAC algorithm..." + color.done)
-                cluster_builder = HACClusterBuilder(all_seq_keys, distance_matrix, evalue_threshold)
-            else:
-                print(color.purple + "Clustering sequences using the SLINK algorithm..." + color.done)
-                cluster_builder = SLINKClusterBuilder(all_seq_keys, distance_matrix, evalue_threshold)
+                # cluster sequences
+                if args.hac:
+                    print(color.purple + "Clustering sequences using the HAC algorithm..." + color.done)
+                    cluster_builder = HACClusterBuilder(all_seq_keys, distance_matrix, evalue_threshold)
+                else:
+                    print(color.purple + "Clustering sequences using the SLINK algorithm..." + color.done)
+                    cluster_builder = SLINKClusterBuilder(all_seq_keys, distance_matrix, evalue_threshold)
 
         print(color.purple + "Found " + color.red + str(len(cluster_builder.clusters)) + color.purple + " clusters." + color.done)
         if len(cluster_builder.clusters) == 0:
@@ -157,7 +165,10 @@ def main():
 
         # filter clusters, make FASTA files
         print(color.yellow + "Building sequence matrices for each cluster." + color.done)
-        cluster_builder.assemble_fasta(gb)
+        if (args.slink or args.hac) or (cluster_builder == "UCLUST error"):
+            cluster_builder.assemble_fasta(gb)
+        else:
+            cluster_builder.assemble_fasta_uclust()
         print(color.purple + "Kept " + color.red + str(len(cluster_builder.clusters)) + color.purple + " clusters, discarded those with < 4 taxa." + color.done)
         
         # if we are in search and cluster mode we are done
@@ -167,7 +178,7 @@ def main():
         if len(cluster_builder.clusters) == 0:
             print(color.red + "No clusters left to align." + color.done)
             sys.exit(0)
-        # now align each cluster with MUSCLE
+        # now align each cluster with MAFFT
         print(color.blue + "Aligning clusters with MAFFT..." + color.done)
         alignments = Alignments(cluster_builder.cluster_files, "unaligned", num_cores)
     

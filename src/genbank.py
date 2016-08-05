@@ -185,7 +185,9 @@ class GenBankSearch(object):
         Saves results of GB search to file.
         """
         data = {"ingroup": self.ingroup, "outgroup": self.outgroup, "ingroup_keys": self.ingroup_keys, "outgroup_keys": self.outgroup_keys}
-        pickle.dump(data, open( "gb_search_results", "w" ))
+        out = open( "gb_search_results", "w" )
+        pickle.dump(data, out)
+        out.close()
 
 
     def read_file(self):
