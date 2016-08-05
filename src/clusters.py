@@ -10,6 +10,7 @@ import os
 from os import listdir
 from os.path import isfile, join
 import subprocess
+from subprocess import CalledProcessError
 import sys
 import multiprocessing
 from Bio import Entrez
@@ -97,8 +98,8 @@ class ClusterBuilder(object):
             # get all OTUs in cluster
             otus = []
             for record in SeqIO.parse(open("uclusters/" + cluster, "rU"), "fasta"):
-                descriptors = record.description.split(" ")
-                otu = descriptors[0] + " " + descriptors[1]
+                descriptors = record.id.split("_")
+                otu = descriptors[1] + " " + descriptors[2]
                 if otu not in otus:
                     otus.append(otu)
             # make fasta file if > 3 OTUs in cluster
@@ -106,16 +107,23 @@ class ClusterBuilder(object):
             if len(otus) > 3:
                 sequences = []
                 for record in SeqIO.parse(open("uclusters/" + cluster, "rU"), "fasta"):
-                    descriptors = record.description.split(" ")
-                    otu = descriptors[0] + " " + descriptors[1]
+                    descriptors = record.id.split("_")
+                    otu = descriptors[1] + " " + descriptors[2]
                     # do not allow duplicate OTUs in cluster
                     if otu not in otus_in_cluster:
-                        sequences.append(gb[seq_key])
+                        sequences.append(record)
                         otus_in_cluster.append(otu)
                 file_name = "clusters/" + str(i) + ".fasta"
-                file = open(file_name, "wb")
-                SeqIO.write(sequences, file, 'fasta')
-                file.close()
+                temp_file_name = "clusters/temp" + str(i) + ".fasta"
+                f = open(temp_file_name, "wb")
+                SeqIO.write(sequences, f, 'fasta')
+                f.close()
+                with open(temp_file_name, "r") as f, open(file_name, "w") as fout:
+                    for l in f:
+                        if ">" in l:
+                            l = l.replace("_", " ")    
+                        fout.write(l)
+                subprocess.check_call(["rm", temp_file_name])
                 cluster_files.append(file_name)
                 i += 1
             else:
@@ -303,9 +311,9 @@ class UCLUSTClusterBuilder(ClusterBuilder):
 
 
     threshold = 0.9
+    error = False
 
-
-    def __init__(self, gb, all_seq_keys, gb_dir, length_thres=0.5, threshold=0.9):
+    def __init__(self, gb, seq_keys, gb_dir, length_thres=0.5, threshold=0.9):
         """
         Input: gb dictionary of SeqRecords, keys to all sequences, and an optional threshold for clustering.
         Output: a list of cluster files from UCLUST
@@ -313,32 +321,40 @@ class UCLUSTClusterBuilder(ClusterBuilder):
         ClusterBuilder.__init__(self, seq_keys)
         self.seq_keys = seq_keys
         self.threshold = threshold
+        color = Color()
 
         if not os.path.exists("uclusters"):
             os.makedirs("uclusters")
 
         # write sequences to fasta
-        otus = []
+        sequences = []
         for seq_key in seq_keys:
-            sequences = []
             sequences.append(gb[seq_key])
         file_name = "_temp.fasta"
-        file = open(file_name, "wb")
-        SeqIO.write(sequences, file, 'fasta')
-        file.close()
+        f = open(file_name, "wb")
+        SeqIO.write(sequences, f, 'fasta')
+        f.close()
+        with open("_temp.fasta", "r") as f, open("_temp2.fasta", "w") as fout:
+            for l in f:
+                if ">" in l:
+                    l = l.replace(" ", "_")    
+                fout.write(l)
 
         # call UCLUST
-        uclust = ["usearch", "-cluster_fast", "_temp.fasta", "-id", str(threshold),
-                  "‑minsl", str(length_thres), "-sort", "length", 
+        uclust = ["usearch", "-cluster_fast", "_temp2.fasta", "-id", str(threshold),
+                  "-minsl", str(length_thres), "-sort", "length", 
                   "-clusters", "uclusters/"]
         try:
             subprocess.check_call(uclust)
         except CalledProcessError as e:
-            print(color.red + "UCLUST error: " + e + color.done)
+            print(color.red + "UCLUST error: " + str(e) + color.done)
             print(color.red + "Trying SLINK instead..." + color.done)
             subprocess.check_call(["rm", "_temp.fasta"])
-            return "UCLUST error"
+            subprocess.check_call(["rm", "_temp2.fasta"])
+            self.error = True
+            return
         subprocess.check_call(["rm", "_temp.fasta"])
+        subprocess.check_call(["rm", "_temp2.fasta"])
         cluster_files = [ f for f in listdir("uclusters/") if isfile(join("uclusters/", f)) ]
         for f in cluster_files:
             #subprocess.check_call(["mv", "uclusters/" + f, "uclusters/" + f + ".fasta"])

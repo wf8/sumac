@@ -19,6 +19,7 @@ from genbank import GenBankSearch
 from distancematrix import DistanceMatrixBuilder
 from clusters import HACClusterBuilder
 from clusters import SLINKClusterBuilder
+from clusters import UCLUSTClusterBuilder
 from clusters import GuidedClusterBuilder
 from alignments import Alignments
 from supermatrix import Supermatrix
@@ -140,12 +141,15 @@ def main():
             cluster_builder = GuidedClusterBuilder(args.guide, all_seq_keys, length_threshold, evalue_threshold, gb_dir, num_cores)
         else:
             # cluster using UCLUST
-            cluster_builder = ""
+            uclust_error = False
             if not (args.slink or args.hac):
                 print(color.blue + "Clustering sequences with UCLUST..." + color.done)
                 cluster_builder = UCLUSTClusterBuilder(gb, all_seq_keys, gb_dir, length_threshold, evalue_threshold)
-                print(color.purple + "Clustering completed..." + color.done)
-            if (args.slink or args.hac) or (cluster_builder == "UCLUST error"):
+                if (cluster_builder.error == True):
+                    uclust_error = True
+                else:
+                    print(color.purple + "Clustering completed..." + color.done)
+            if (args.slink or args.hac) or (uclust_error == True):
                 # make distance matrix
                 print(color.blue + "Making distance matrix for all sequences..." + color.done)
                 distance_matrix = DistanceMatrixBuilder(gb, all_seq_keys, length_threshold, gb_dir, num_cores).distance_matrix
@@ -165,7 +169,7 @@ def main():
 
         # filter clusters, make FASTA files
         print(color.yellow + "Building sequence matrices for each cluster." + color.done)
-        if (args.slink or args.hac) or (cluster_builder == "UCLUST error"):
+        if (args.slink or args.hac) or (uclust_error == True):
             cluster_builder.assemble_fasta(gb)
         else:
             cluster_builder.assemble_fasta_uclust()
