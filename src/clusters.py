@@ -353,9 +353,6 @@ class UCLUSTClusterBuilder(ClusterBuilder):
             print(color.red + "UCLUST error: " + str(e) + color.done)
             print(color.red + "Trying SLINK instead..." + color.done)
             self.error = True
-            subprocess.check_call(["rm", "_sumac"])
-            subprocess.check_call(["rm", "_sumac_filtered"])
-            subprocess.check_call(["rm", "_sumac_sorted"])
             return
         except OSError as e:
             print(color.red + "UCLUST is not installed correctly." + color.done)
@@ -363,9 +360,13 @@ class UCLUSTClusterBuilder(ClusterBuilder):
             print(color.red + "Trying SLINK instead..." + color.done)
             self.error = True
             return
-        subprocess.check_call(["rm", "_sumac"])
-        subprocess.check_call(["rm", "_sumac_filtered"])
-        subprocess.check_call(["rm", "_sumac_sorted"])
+        finally:
+            if os.path.exists("_sumac"):
+                subprocess.check_call(["rm", "_sumac"])
+            if os.path.exists("_sumac_filtered"):
+                subprocess.check_call(["rm", "_sumac_filtered"])
+            if os.path.exists("_sumac_sorted"):
+                subprocess.check_call(["rm", "_sumac_sorted"])
         cluster_files = [ f for f in listdir("uclusters/") if isfile(join("uclusters/", f)) ]
         for f in cluster_files:
             self.clusters.append(f)
