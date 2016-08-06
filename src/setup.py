@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 setup(name='sumac',
-      version='1.2',
+      version='2.0',
       description='SUMAC: Supermatrix Constructor',
       long_description='SUMAC (Supermatrix Constructor) is a Python package to data-mine GenBank, construct phylogenetic supermatrices, and assess the phylogenetic decisiveness of a matrix given the pattern of missing sequence data.',
       url='https://github.com/wf8/sumac',

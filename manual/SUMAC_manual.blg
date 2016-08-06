@@ -3,44 +3,44 @@ Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
 The top-level auxiliary file: SUMAC_manual.aux
 The style file: apalike.bst
 Database file #1: SUMAC_manual.bib
-You've used 6 entries,
+You've used 7 entries,
             1935 wiz_defined-function locations,
-            515 strings with 4634 characters,
-and the built_in function-call counts, 2351 in all, are:
-= -- 232
-> -- 95
-< -- 4
-+ -- 32
-- -- 32
-* -- 208
-:= -- 421
-add.period$ -- 18
-call.type$ -- 6
-change.case$ -- 46
-chr.to.int$ -- 6
-cite$ -- 6
-duplicate$ -- 80
-empty$ -- 161
-format.name$ -- 40
-if$ -- 445
+            523 strings with 4755 characters,
+and the built_in function-call counts, 2732 in all, are:
+= -- 272
+> -- 102
+< -- 5
++ -- 34
+- -- 34
+* -- 241
+:= -- 485
+add.period$ -- 21
+call.type$ -- 7
+change.case$ -- 52
+chr.to.int$ -- 7
+cite$ -- 7
+duplicate$ -- 94
+empty$ -- 193
+format.name$ -- 43
+if$ -- 520
 int.to.chr$ -- 1
 int.to.str$ -- 0
-missing$ -- 5
-newline$ -- 33
-num.names$ -- 18
-pop$ -- 30
+missing$ -- 6
+newline$ -- 38
+num.names$ -- 21
+pop$ -- 33
 preamble$ -- 1
-purify$ -- 46
+purify$ -- 52
 quote$ -- 0
-skip$ -- 63
+skip$ -- 74
 stack$ -- 0
-substring$ -- 181
-swap$ -- 5
+substring$ -- 224
+swap$ -- 6
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 36
+type$ -- 42
 warning$ -- 0
-while$ -- 21
+while$ -- 25
 width$ -- 0
-write$ -- 79
+write$ -- 92

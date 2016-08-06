@@ -6,6 +6,11 @@ Camacho, C., Coulouris, G., Avagyan, V., Ma, N., Papadopoulos, J., Bealer, K.,
 \newblock {BLAST}+: architecture and applications.
 \newblock {\em BMC Bioinformatics}, 10(1):421.
 
+\bibitem[Edgar, 2010]{edgar2010search}
+Edgar, R.~C. (2010).
+\newblock Search and clustering orders of magnitude faster than blast.
+\newblock {\em Bioinformatics}, 26(19):2460--2461.
+
 \bibitem[Freyman, 2015]{sumac}
 Freyman, W. (2015).
 \newblock {SUMAC: software for constructing phylogenetic supermatrices and

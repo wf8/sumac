@@ -18,10 +18,12 @@
 \BOOKMARK [1][-]{section.3.3}{Setting the Number of CPU Cores}{chapter.3}% 18
 \BOOKMARK [1][-]{section.3.4}{Using Guide Sequences}{chapter.3}% 19
 \BOOKMARK [1][-]{section.3.5}{Homologous Sequence Thresholds}{chapter.3}% 20
-\BOOKMARK [2][-]{subsection.3.5.1}{BLAST E-value}{section.3.5}% 21
-\BOOKMARK [2][-]{subsection.3.5.2}{Sequence Length Similarity}{section.3.5}% 22
-\BOOKMARK [1][-]{section.3.6}{Building Supermatrix from User Edited Alignments}{chapter.3}% 23
-\BOOKMARK [1][-]{section.3.7}{Partial Decisiveness}{chapter.3}% 24
-\BOOKMARK [1][-]{section.3.8}{Clustering Algorithms}{chapter.3}% 25
-\BOOKMARK [1][-]{section.3.9}{Example Supermatrix Figures}{chapter.3}% 26
-\BOOKMARK [0][-]{section*.4}{Bibliography}{}% 27
+\BOOKMARK [2][-]{subsection.3.5.1}{UCLUST ID value}{section.3.5}% 21
+\BOOKMARK [2][-]{subsection.3.5.2}{BLAST E-value}{section.3.5}% 22
+\BOOKMARK [2][-]{subsection.3.5.3}{Sequence Length Similarity}{section.3.5}% 23
+\BOOKMARK [2][-]{subsection.3.5.4}{Minimum and Maximum Sequence Lengths}{section.3.5}% 24
+\BOOKMARK [1][-]{section.3.6}{Building Supermatrix from User Edited Alignments}{chapter.3}% 25
+\BOOKMARK [1][-]{section.3.7}{Partial Decisiveness}{chapter.3}% 26
+\BOOKMARK [1][-]{section.3.8}{Clustering Algorithms}{chapter.3}% 27
+\BOOKMARK [1][-]{section.3.9}{Example Supermatrix Figures}{chapter.3}% 28
+\BOOKMARK [0][-]{section*.4}{Bibliography}{}% 29

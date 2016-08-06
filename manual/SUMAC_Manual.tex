@@ -19,7 +19,7 @@
 %----------------------------------------
 %AUTHORS
 %----------------------------------------
-\title{SUMAC: Supermatrix Constructor version 1.1 Manual}
+\title{SUMAC: Supermatrix Constructor version 2.0 Manual}
 \author{William A. Freyman\thanks{freyman@berkeley.edu}}
 \affil{Department of Integrative Biology, University of California, Berkeley}
 
@@ -49,6 +49,12 @@ SUMAC will assemble
 supermatrices for any taxonomic group recognized in GenBank,
 and is optimized to run on multicore systems by utilizing multiple parallel processes.
 
+SUMAC version 2.0 is \textit{significantly} faster than earlier versions
+due to utilizing the UCLUST clustering algorithm. However, the
+default values of sequence identity (set with the \texttt{-id} flag)
+should be experimented with. Different values will be optimal
+depending on the sequence divergence of your group of interest.
+
 When run from the command-line, SUMAC will perform a number of steps to construct
 a supermatrix.
 First, SUMAC creates a local SQLite3 \citep{sqlite} database of the specified GenBank division (e.g. PLN or MAM),
@@ -56,7 +62,7 @@ automatically downloading sequences from NCBI if necessary.
 Using NCBI taxonomy, SUMAC searches the local database for all sequences in the user-specified ingroup
 and outgroup.
 Found sequences are then clustered as putative homologs in one of two ways:
-(1) performing exhaustive all-by-all BLASTn \citep{blast} comparisons of each ingroup and outgroup sequence
+(1) using the UCLUST \citep{edgar2010search} algorithm or performing exhaustive all-by-all BLASTn \citep{blast} comparisons of each ingroup and outgroup sequence
 and using a single-linkage hierarchical clustering algorithm, or
 (2) user-provided guide sequences that typify each cluster are BLASTed against all ingroup and outgroup sequences.
 For more details about the clustering algorithms used please see \citet{sumac}.
@@ -92,10 +98,15 @@ The following dependencies must be installed to run SUMAC:
 \item \texttt{Python 2.7}
 \item \texttt{Biopython}
 \item \texttt{MAFFT v6.9+}
-\item \texttt{BLAST+}
+\item \texttt{USEARCH} and/or \texttt{BLAST+}
 \end{itemize}
 
+BLAST+ only needs to be installed if you plan to use functionality that requires it 
+like guide sequence searches.
+For clustering, USEARCH's UCLUST algorithm is recommended over all-by-all BLAST
+comparisons because it is orders of magnitude faster.
 \texttt{matplotlib} should also be installed if you want SUMAC to generate graphs.
+
 
 \subsection{Installing Dependencies on Linux}
 
@@ -105,9 +116,14 @@ The following commands install the requirements for Debian GNU/Ubuntu Linux syst
 sudo pip install numpy
 sudo pip install matplotlib
 sudo pip install biopython
-sudo apt-get install ncbi-blast+
 sudo apt-get install mafft
 \end{verbatim}
+You must also either install USEARCH (recommended) and/or BLAST+:
+\begin{verbatim}
+http://drive5.com/usearch/
+sudo apt-get install ncbi-blast+
+\end{verbatim}
+
 %git clone https://github.com/biopython/biopython.git
 %cd biopython
 %python setup.py build
@@ -124,7 +140,14 @@ sudo pip install matplotlib
 sudo pip install biopython
 \end{verbatim}
 
-Install BLAST by downloading the appropriate executable from:
+You must also either install USEARCH (recommended) and/or BLAST+.
+Install USEARCH here:
+
+\begin{verbatim}
+http://drive5.com/usearch/
+\end{verbatim}
+
+or install BLAST by downloading the appropriate executable from:
 
 \begin{verbatim}
 ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/
@@ -191,7 +214,7 @@ the taxonomic groups Onagraceae (the ingroup) and Lythraceae (the outgroup).
 Specifying an outgroup (the \texttt{-o} flag) is not necessary, 
 but maybe useful when the user wants to combine sequences from two
 different taxonomic groups.
-SUMAC will then perform all-by-all BLAST comparisons of all found sequences, 
+SUMAC will then
 build clusters of putatively homologous sequences, and 
 construct a supermatrix. 
 
@@ -211,7 +234,7 @@ Which approach is better for constructing supermatrices?
 Using guide sequences makes supermatrix construction much faster, however
 it requires a priori knowledge of which DNA regions will be used
 in the supermatrix.
-Performing all-by-all BLAST comparisons is computationally
+Clustering all sequences is computationally
 more expensive, but it effectively data-mines GenBank in an exploratory
 fashion, so that sequence data not necessarily used in previous systematic
 studies can also be incorporated into the supermatrix.
@@ -316,13 +339,27 @@ sequences will be BLASTed against the guide sequences.
 
 \section{Homologous Sequence Thresholds}
 
+\subsection{UCLUST ID value}
+By default, SUMAC uses a threshold default UCLUST ID $0.50$.
+This can be changed with the \verb|-id| option.
+Different values will be optimal depending on the sequence
+divergence within your group of interest.
+This setting will be ignored if using the SLINK or HAC
+clustering algorithms.
+
 \subsection{BLAST E-value}
 By default, SUMAC uses a threshold default BLASTn e-value $1.0e-10$.
 This can be changed with the \verb|-e| option.
 
 \subsection{Sequence Length Similarity}
 SUMAC uses a default threshold of sequence length percent similarity
-of 0.5. This can be changed with the \verb|-l| option.
+of 0.25. This can be changed with the \verb|-l| option.
+
+\subsection{Minimum and Maximum Sequence Lengths}
+By default, SUMAC excludes any sequences less than 100 bp and greater
+than 5000 bp in length. This is to exclude sequences that maybe fragments
+or that maybe whole chloroplast or mitochondrial genomes.
+These defaults can be changed with the \verb|-minl| and \verb|-maxl| options.
 
 \section{Building Supermatrix from User Edited Alignments}
 Often the user will want to edit the alignments used by SUMAC
@@ -345,7 +382,8 @@ An example of the plot of MSDS scores that SUMAC generates is given below.
 
 \section{Clustering Algorithms}
 Two hierarchical clustering algorithms are implemented in SUMAC.
-By default, SUMAC clusters sequences using the SLINK single-linkage hierarchical clustering algorithm \citep{Sibson1973}.
+By default, SUMAC clusters sequences using UCLUST \citep{edgar2010search}, which is by far the fasted clustering method.
+If run with the command line flag \texttt{--SLINK}, the SLINK single-linkage hierarchical clustering algorithm \citep{Sibson1973} will be used.
 If run with the command line flag \texttt{--hac}, SUMAC will instead cluster sequences using Sneath's naive
 hierarchical agglomerative clustering (HAC) algorithm \citep{Sneath1957}.
 See \citet{sumac} for more details on their implementation.

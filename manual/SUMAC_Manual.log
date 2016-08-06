@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015) (preloaded format=pdflatex 2015.9.22)  18 FEB 2016 12:33
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015) (preloaded format=pdflatex 2015.9.22)  6 AUG 2016 11:50
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -465,7 +465,7 @@ Package caption Info: End \AtBeginDocument code.
 (name{page.1}) has been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.25 ....8}Clustering Algorithms}{12}{section.3.8}
+l.25 ...m User Edited Alignments}{12}{section.3.6}
                                                    [1
 
 ])
@@ -477,16 +477,16 @@ Chapter 1.
 [3
 
 ]
-Underfull \hbox (badness 10000) in paragraph at lines 78--82
+Underfull \hbox (badness 10000) in paragraph at lines 84--88
 
  []
 
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 92.
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 98.
 (/usr/local/texlive/2015/texmf-dist/tex/latex/base/omscmr.fd
 File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 92.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 98.
  [4] [5] [6]
 Chapter 2.
 [7
@@ -495,49 +495,49 @@ Chapter 2.
 Chapter 3.
 [10
 
-] [11] <figures/sequence_plot.pdf, id=237, 722.7pt x 542.025pt>
+] [11] [12] <figures/sequence_plot.pdf, id=259, 722.7pt x 542.025pt>
 File: figures/sequence_plot.pdf Graphic file (type pdf)
 
 <use figures/sequence_plot.pdf>
-Package pdftex.def Info: figures/sequence_plot.pdf used on input line 360.
+Package pdftex.def Info: figures/sequence_plot.pdf used on input line 398.
 (pdftex.def)             Requested size: 722.69823pt x 542.02367pt.
 
 
-LaTeX Warning: Float too large for page by 14.49347pt on input line 364.
+LaTeX Warning: Float too large for page by 14.49347pt on input line 402.
 
-<figures/MSDS_figure_1.pdf, id=238, 361.35pt x 542.025pt>
+<figures/MSDS_figure_1.pdf, id=260, 361.35pt x 542.025pt>
 File: figures/MSDS_figure_1.pdf Graphic file (type pdf)
 
 <use figures/MSDS_figure_1.pdf>
-Package pdftex.def Info: figures/MSDS_figure_1.pdf used on input line 367.
+Package pdftex.def Info: figures/MSDS_figure_1.pdf used on input line 405.
 (pdftex.def)             Requested size: 361.34912pt x 542.02367pt.
 
 
-LaTeX Warning: Float too large for page by 104.49347pt on input line 374.
+LaTeX Warning: Float too large for page by 104.49347pt on input line 412.
 
-[12] [13 <./figures/sequence_plot.pdf>] [14 <./figures/MSDS_figure_1.pdf>]
+[13] [14 <./figures/sequence_plot.pdf>] [15 <./figures/MSDS_figure_1.pdf>]
 (./SUMAC_manual.bbl)
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 383.
- [15
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 421.
+ [16
 
 
 ]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 383.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 421.
  (./SUMAC_manual.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 383.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 383.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 421.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 421.
 Package rerunfilecheck Info: File `SUMAC_manual.out' has not changed.
-(rerunfilecheck)             Checksum: E8BDBC1F325424AA0DA07AF2A26F0C8D;1857.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 383.
+(rerunfilecheck)             Checksum: C9047B3E75F29C20F9C4C43102063EC4;2016.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 421.
  ) 
 Here is how much of TeX's memory you used:
- 8418 strings out of 493091
- 127074 string characters out of 6134964
- 226733 words of memory out of 5000000
- 11737 multiletter control sequences out of 15000+600000
+ 8427 strings out of 493091
+ 127238 string characters out of 6134964
+ 226757 words of memory out of 5000000
+ 11742 multiletter control sequences out of 15000+600000
  11886 words of font info for 43 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 36i,7n,38p,857b,443s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 36i,7n,38p,857b,410s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb
 ></usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb>
 </usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><
@@ -550,10 +550,10 @@ exlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/local/texl
 ive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texli
 ve/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texliv
 e/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
-Output written on SUMAC_manual.pdf (16 pages, 522586 bytes).
+Output written on SUMAC_manual.pdf (17 pages, 526546 bytes).
 PDF statistics:
- 346 PDF objects out of 1000 (max. 8388607)
- 305 compressed objects within 4 object streams
- 64 named destinations out of 1000 (max. 500000)
- 227 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 366 PDF objects out of 1000 (max. 8388607)
+ 324 compressed objects within 4 object streams
+ 68 named destinations out of 1000 (max. 500000)
+ 243 words of extra memory for PDF output out of 10000 (max. 10000000)
 
