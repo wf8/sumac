@@ -313,7 +313,7 @@ class UCLUSTClusterBuilder(ClusterBuilder):
     threshold = 0.75
     error = False
 
-    def __init__(self, gb, seq_keys, gb_dir, length_thres=0.5, threshold=0.75):
+    def __init__(self, gb, seq_keys, gb_dir, num_cores, minlength, maxlength, length_thres=0.5, threshold=0.75, evalue=(1.0/10**10)):
         """
         Input: gb dictionary of SeqRecords, keys to all sequences, and an optional threshold for clustering.
         Output: a list of cluster files from UCLUST
@@ -341,20 +341,25 @@ class UCLUSTClusterBuilder(ClusterBuilder):
                 fout.write(l)
 
         # call UCLUST
-        uclust = ["usearch", "-cluster_fast", "_temp2.fasta", "-id", str(threshold),
-                  "-minsl", str(length_thres), "-sort", "length", 
-                  "-clusters", "uclusters/"]
+        sort_sequences = ["usearch", "-sortbylength", "_temp2.fasta", "-fastaout", "_temp2_sorted.fasta",
+                          "-minseqlength", str(minlength), "-maxseqlength", str(maxlength)]
+        uclust = ["usearch", "-cluster_fast", "_temp2_sorted.fasta", "-id", str(threshold),
+                  "-minsl", str(length_thres), "-strand", "both", "-threads", str(num_cores), 
+                  "-clusters", "uclusters/", "-fulldp", "-evalue", str(evalue)]
         try:
+            subprocess.check_call(sort_sequences)
             subprocess.check_call(uclust)
         except CalledProcessError as e:
             print(color.red + "UCLUST error: " + str(e) + color.done)
             print(color.red + "Trying SLINK instead..." + color.done)
             subprocess.check_call(["rm", "_temp.fasta"])
             subprocess.check_call(["rm", "_temp2.fasta"])
+            subprocess.check_call(["rm", "_temp2_sorted.fasta"])
             self.error = True
             return
         subprocess.check_call(["rm", "_temp.fasta"])
         subprocess.check_call(["rm", "_temp2.fasta"])
+        subprocess.check_call(["rm", "_temp2_sorted.fasta"])
         cluster_files = [ f for f in listdir("uclusters/") if isfile(join("uclusters/", f)) ]
         for f in cluster_files:
             self.clusters.append(f)

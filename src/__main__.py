@@ -39,6 +39,8 @@ def main():
     parser.add_argument("--id", "-id", help="UCLUST id threshold to cluster taxa. Defaults to 0.75")
     parser.add_argument("--evalue", "-e", help="BLAST E-value threshold to cluster taxa. Defaults to 1e-10")
     parser.add_argument("--length", "-l", help="Threshold of sequence length percent similarity to cluster taxa. Defaults to 0.5")
+    parser.add_argument("--maxlength", "-maxl", help="Maximum length of sequences to include in UCLUST clusters. Defaults to 5000")
+    parser.add_argument("--minlength", "-minl", help="Minimum length of sequences to include in UCLUST clusters. Defaults to 100")
     parser.add_argument("--max_ingroup", "-m", help="Maximum number of taxa to include in ingroup. Default is none (no maximum limit).") 
     parser.add_argument("--guide", "-g", help="""FASTA file containing sequences to guide cluster construction. If this option is 
                                                  selected then all-by-all BLAST comparisons are not performed.""")
@@ -125,7 +127,7 @@ def main():
         # determine sequence length similarity threshold
         length_threshold = 0.5
         if args.length:
-            length_threshold = args.length
+            length_threshold = float(args.length)
         print(color.blue + "Using sequence length similarity threshold " + color.red + str(length_threshold) + color.done)
 
         # determine e-value threshold
@@ -150,8 +152,14 @@ def main():
             # cluster using UCLUST
             uclust_error = False
             if not (args.slink or args.hac):
-                print(color.blue + "Clustering sequences with UCLUST..." + color.done)
-                cluster_builder = UCLUSTClusterBuilder(gb, all_seq_keys, gb_dir, length_threshold, id_threshold)
+                print(color.blue + "Clustering sequences with UCLUST...")
+                maxlength = 5000
+                minlength = 100
+                if args.maxlength:
+                    maxlength = int(args.maxlength)
+                if args.minlength:
+                    minlength = int(args.minlength)
+                cluster_builder = UCLUSTClusterBuilder(gb, all_seq_keys, gb_dir, num_cores, minlength, maxlength, length_threshold, id_threshold, evalue_threshold)
                 if (cluster_builder.error == True):
                     uclust_error = True
                 else:
