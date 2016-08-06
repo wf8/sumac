@@ -330,20 +330,20 @@ class UCLUSTClusterBuilder(ClusterBuilder):
         sequences = []
         for seq_key in seq_keys:
             sequences.append(gb[seq_key])
-        file_name = "_temp.fasta"
+        file_name = "_sumac"
         f = open(file_name, "wb")
         SeqIO.write(sequences, f, 'fasta')
         f.close()
-        with open("_temp.fasta", "r") as f, open("_temp2.fasta", "w") as fout:
+        with open("_sumac", "r") as f, open("_sumac_filtered", "w") as fout:
             for l in f:
                 if ">" in l:
                     l = l.replace(" ", "_")    
                 fout.write(l)
 
         # call UCLUST
-        sort_sequences = ["usearch", "-sortbylength", "_temp2.fasta", "-fastaout", "_temp2_sorted.fasta",
+        sort_sequences = ["usearch", "-sortbylength", "_sumac_filtered", "-fastaout", "_sumac_sorted",
                           "-minseqlength", str(minlength), "-maxseqlength", str(maxlength)]
-        uclust = ["usearch", "-cluster_fast", "_temp2_sorted.fasta", "-id", str(threshold),
+        uclust = ["usearch", "-cluster_fast", "_sumac_sorted", "-id", str(threshold),
                   "-minsl", str(length_thres), "-strand", "both", "-threads", str(num_cores), 
                   "-clusters", "uclusters/", "-fulldp", "-evalue", str(evalue)]
         try:
@@ -352,14 +352,20 @@ class UCLUSTClusterBuilder(ClusterBuilder):
         except CalledProcessError as e:
             print(color.red + "UCLUST error: " + str(e) + color.done)
             print(color.red + "Trying SLINK instead..." + color.done)
-            subprocess.check_call(["rm", "_temp.fasta"])
-            subprocess.check_call(["rm", "_temp2.fasta"])
-            subprocess.check_call(["rm", "_temp2_sorted.fasta"])
+            self.error = True
+            subprocess.check_call(["rm", "_sumac"])
+            subprocess.check_call(["rm", "_sumac_filtered"])
+            subprocess.check_call(["rm", "_sumac_sorted"])
+            return
+        except OSError as e:
+            print(color.red + "UCLUST is not installed correctly." + color.done)
+            print(color.red + "OS error: " + str(e) + color.done)
+            print(color.red + "Trying SLINK instead..." + color.done)
             self.error = True
             return
-        subprocess.check_call(["rm", "_temp.fasta"])
-        subprocess.check_call(["rm", "_temp2.fasta"])
-        subprocess.check_call(["rm", "_temp2_sorted.fasta"])
+        subprocess.check_call(["rm", "_sumac"])
+        subprocess.check_call(["rm", "_sumac_filtered"])
+        subprocess.check_call(["rm", "_sumac_sorted"])
         cluster_files = [ f for f in listdir("uclusters/") if isfile(join("uclusters/", f)) ]
         for f in cluster_files:
             self.clusters.append(f)

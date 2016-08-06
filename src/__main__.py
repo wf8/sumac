@@ -36,9 +36,9 @@ def main():
     parser.add_argument("--ingroup", "-i", help="Ingroup clade to build supermatrix.")
     parser.add_argument("--outgroup", "-o", help="Outgroup clade to build supermatrix.")
     parser.add_argument("--cores", "-c", help="The number of CPU cores to use for parallel processing. Defaults to the max available.")
-    parser.add_argument("--id", "-id", help="UCLUST id threshold to cluster taxa. Defaults to 0.75")
+    parser.add_argument("--id", "-id", help="UCLUST id threshold to cluster taxa. Defaults to 0.50")
     parser.add_argument("--evalue", "-e", help="BLAST E-value threshold to cluster taxa. Defaults to 1e-10")
-    parser.add_argument("--length", "-l", help="Threshold of sequence length percent similarity to cluster taxa. Defaults to 0.5")
+    parser.add_argument("--length", "-l", help="Threshold of sequence length percent similarity to cluster taxa. Defaults to 0.25")
     parser.add_argument("--maxlength", "-maxl", help="Maximum length of sequences to include in UCLUST clusters. Defaults to 5000")
     parser.add_argument("--minlength", "-minl", help="Minimum length of sequences to include in UCLUST clusters. Defaults to 100")
     parser.add_argument("--max_ingroup", "-m", help="Maximum number of taxa to include in ingroup. Default is none (no maximum limit).") 
@@ -125,13 +125,13 @@ def main():
             sys.exit(0)
 
         # determine sequence length similarity threshold
-        length_threshold = 0.5
+        length_threshold = 0.25
         if args.length:
             length_threshold = float(args.length)
         print(color.blue + "Using sequence length similarity threshold " + color.red + str(length_threshold) + color.done)
 
         # determine e-value threshold
-        id_threshold = 0.75
+        id_threshold = 0.5
         if args.id:
             id_threshold = float(args.id)
         print(color.blue + "Using UCLUST id threshold " + color.red + str(id_threshold) + color.done)
