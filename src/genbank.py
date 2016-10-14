@@ -51,8 +51,8 @@ class GenBankSetup(object):
         for division_input in divisions:
             color = Color()
             division = str(division_input).lower()
-            print(color.purple + "Connecting to ftp.ncbi.nih.gov..." + color.done)
-            ftp = FTP("ftp.ncbi.nih.gov")
+            print(color.purple + "Connecting to ftp.ncbi.nlm.nih.gov..." + color.done)
+            ftp = FTP("ftp.ncbi.nlm.nih.gov")
             ftp.login()
             print(color.yellow + "Opening directory genbank..." + color.done)
             ftp.cwd("genbank")
