@@ -112,7 +112,7 @@ class Alignments(object):
                 region_name = alignment
             else:
                 descriptors = records[0].description.split(" ")
-                region_name = " ".join(descriptors[3:])
+                region_name = " ".join(descriptors[5:])
             print(color.blue + "Aligned cluster #: " + color.red + str(i) + color.done)
             print(color.yellow + "DNA region: " + color.red + region_name + color.done)
             print(color.yellow + "OTUs: " + color.red + str(len(records)) + color.done)

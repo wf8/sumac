@@ -325,11 +325,14 @@ class UCLUSTClusterBuilder(ClusterBuilder):
 
         if not os.path.exists("uclusters"):
             os.makedirs("uclusters")
-
+        
         # write sequences to fasta
         sequences = []
         for seq_key in seq_keys:
-            sequences.append(gb[seq_key])
+            record = gb[seq_key]
+            record.description = record.annotations["organism"] + " " + record.description
+            if "sp." not in record.annotations["organism"]:
+                sequences.append(record)
         file_name = "_sumac"
         f = open(file_name, "wb")
         SeqIO.write(sequences, f, 'fasta')
