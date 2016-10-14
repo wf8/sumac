@@ -5,6 +5,7 @@ all:
 	bibtex $(PROJECT)
 	pdflatex $(PROJECT).tex
 	pdflatex $(PROJECT).tex
+	rm -f *.log *.bak *.aux *.bbl *.blg *.idx *.toc *.out *~
 
 rtf:
 	latex2rtf $(PROJECT).tex
