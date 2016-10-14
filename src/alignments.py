@@ -53,6 +53,9 @@ class Alignments(object):
             pool.close()
             pool.join()
             self.files = alignment_files
+            if (not os.path.isfile(alignment_files[0])) or os.path.getsize(alignment_files[0]) == 0:
+                print(color.red + "Error: MAFFT is not installed correctly." + color.done)
+                sys.exit()
         elif aligned == "aligned":
             print(color.purple + "Loading user-provided alignments..." + color.done)
             self.user_provided = True
@@ -82,9 +85,12 @@ class Alignments(object):
             alignment_file = "alignments" + cluster_file[cluster_file.index("/"):]
         else:
             alignment_file = "alignments/" + cluster_file
-        stdout, stderr = mafft_cline()
-        with open(alignment_file, "w") as handle:
-            handle.write(stdout)
+        try:
+            stdout, stderr = mafft_cline()
+            with open(alignment_file, "w") as handle:
+                handle.write(stdout)
+        except:
+            print(color.red + "Error: alignment file not generated. Please check your MAFFT installation." + color.done)
         return alignment_file
 
 
