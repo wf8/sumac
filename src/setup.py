@@ -20,5 +20,5 @@ setup(name='sumac',
         'Topic :: Scientific/Engineering :: Bio-Informatics',
         'Programming Language :: Python :: 2.7',
       ],
-      install_requires=['biopython'],
+      #install_requires=['biopython'],
      )

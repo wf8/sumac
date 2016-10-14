@@ -1,5 +1,5 @@
 
-# SUMAC 2.0: supermatrix constructor 
+# SUMAC 2.1: supermatrix constructor 
 
 
 SUMAC (Supermatrix Constructor) is a Python package to data-mine GenBank, construct phylogenetic supermatrices, 
@@ -12,9 +12,13 @@ SUMAC is designed to be run as a command-line program, though the modules can al
 SUMAC will assemble supermatrices for any taxonomic group recognized in GenBank, and is optimized to run on multicore systems by utilizing multiple parallel processes.
 Please see the [SUMAC user manual](https://rawgit.com/wf8/sumac/master/manual/SUMAC_Manual.pdf) for many more details.
 
-SUMAC version 2.0 is *significantly* faster than previous versions due to a new clustering algorithm.
+SUMAC works on OSX and Linux. Windows is not currently supported.
 
-SUMAC works on OSX and Linux. Windows is not currently supported, however I hope to add support soon.
+### Updates:
+
+- SUMAC version 2.1 greatly improves the handling of taxonomic names, adds the `--min_clusters` flag to set the minimum number of taxa to include in a cluster, 
+and other additional error checks.
+- SUMAC version 2.0 is *significantly* faster than previous versions due to a new clustering algorithm.  
 
 ### Citation:
 
@@ -49,7 +53,7 @@ For more detailed instructions see the [SUMAC user manual](https://rawgit.com/wf
                    [--ingroup INGROUP] [--outgroup OUTGROUP] [--cores CORES]
                    [--id ID] [--evalue EVALUE] [--length LENGTH]
                    [--maxlength MAXLENGTH] [--minlength MINLENGTH]
-                   [--max_ingroup MAX_INGROUP] [--guide GUIDE]
+                   [--min_clusters MIN_CLUSTERS] [--max_ingroup MAX_INGROUP] [--guide GUIDE]
                    [--alignments ALIGNMENTS [ALIGNMENTS ...]]
                    [--salignments SALIGNMENTS [SALIGNMENTS ...]] [--search]
                    [--decisiveness] [--hac] [--slink]
@@ -86,6 +90,9 @@ For more detailed instructions see the [SUMAC user manual](https://rawgit.com/wf
     --minlength MINLENGTH, -minl MINLENGTH
                           Minimum length of sequences to include in UCLUST
                           clusters. Defaults to 100
+    --min_clusters MIN_CLUSTERS, -minc MIN_CLUSTERS
+                          Minimum number of taxa needed for clusters. Defaults
+                          to 4
     --max_ingroup MAX_INGROUP, -m MAX_INGROUP
                           Maximum number of taxa to include in ingroup. Default
                           is none (no maximum limit).
