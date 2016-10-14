@@ -38,11 +38,11 @@ class ClusterBuilder(object):
         return True
 
 
-    def assemble_fasta(self, gb):
+    def assemble_fasta(self, gb, min_clusters=4):
         """
         Inputs the dictionary of all GenBank sequence.
-        Only make fasta files of clusters containing 4 taxa or more,
-        and delete those clusters with less than 4.
+        Only make fasta files of clusters containing min_clusters taxa or more,
+        and delete those clusters with less than min_clusters.
         Generates a list of FASTA files, each file containing an unaligned sequence cluster.
         """
         cluster_files = []
@@ -58,9 +58,9 @@ class ClusterBuilder(object):
                 otu = descriptors[0] + " " + descriptors[1]
                 if otu not in otus:
                     otus.append(otu)
-            # make fasta file if > 3 OTUs in cluster
+            # make fasta file if >= min_clusters OTUs in cluster
             otus_in_cluster = []
-            if len(otus) > 3:
+            if len(otus) >= min_clusters:
                 sequences = []
                 for seq_key in cluster:
                     descriptors = gb[seq_key].description.split(" ")
@@ -83,10 +83,10 @@ class ClusterBuilder(object):
 
 
     
-    def assemble_fasta_uclust(self):
+    def assemble_fasta_uclust(self, min_clusters=4):
         """
-        Only make fasta files of clusters containing 4 taxa or more,
-        and delete those clusters with less than 4.
+        Only make fasta files of clusters containing min_clusters taxa or more,
+        and delete those clusters with less than min_clusters.
         Generates a list of FASTA files, each file containing an unaligned sequence cluster.
         """
         cluster_files = []
@@ -102,9 +102,9 @@ class ClusterBuilder(object):
                 otu = descriptors[1] + " " + descriptors[2]
                 if otu not in otus:
                     otus.append(otu)
-            # make fasta file if > 3 OTUs in cluster
+            # make fasta file if >= min_clusters OTUs in cluster
             otus_in_cluster = []
-            if len(otus) > 3:
+            if len(otus) >= min_clusters:
                 sequences = []
                 for record in SeqIO.parse(open("uclusters/" + cluster, "rU"), "fasta"):
                     descriptors = record.id.split("_")

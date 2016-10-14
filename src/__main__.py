@@ -41,6 +41,7 @@ def main():
     parser.add_argument("--length", "-l", help="Threshold of sequence length percent similarity to cluster taxa. Defaults to 0.25")
     parser.add_argument("--maxlength", "-maxl", help="Maximum length of sequences to include in UCLUST clusters. Defaults to 5000")
     parser.add_argument("--minlength", "-minl", help="Minimum length of sequences to include in UCLUST clusters. Defaults to 100")
+    parser.add_argument("--min_clusters", "-minc", help="Minimum number of taxa needed for clusters. Defaults to 4")
     parser.add_argument("--max_ingroup", "-m", help="Maximum number of taxa to include in ingroup. Default is none (no maximum limit).") 
     parser.add_argument("--guide", "-g", help="""FASTA file containing sequences to guide cluster construction. If this option is 
                                                  selected then all-by-all BLAST comparisons are not performed.""")
@@ -184,11 +185,14 @@ def main():
 
         # filter clusters, make FASTA files
         print(color.yellow + "Building sequence matrices for each cluster." + color.done)
+        min_clusters = 4
+        if args.min_clusters:
+            min_clusters = int(args.min_clusters)
         if (args.slink or args.hac) or (uclust_error == True):
-            cluster_builder.assemble_fasta(gb)
+            cluster_builder.assemble_fasta(gb, min_clusters)
         else:
-            cluster_builder.assemble_fasta_uclust()
-        print(color.purple + "Kept " + color.red + str(len(cluster_builder.clusters)) + color.purple + " clusters, discarded those with < 4 taxa." + color.done)
+            cluster_builder.assemble_fasta_uclust(min_clusters)
+        print(color.purple + "Kept " + color.red + str(len(cluster_builder.clusters)) + color.purple + " clusters, discarded those with < " + str(min_clusters) + " taxa." + color.done)
         
         # if we are in search and cluster mode we are done
         if args.search:
