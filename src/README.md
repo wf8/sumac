@@ -1,5 +1,5 @@
 
-# SUMAC 2.1: supermatrix constructor 
+# SUMAC 2.2: supermatrix constructor 
 
 
 SUMAC (Supermatrix Constructor) is a Python package to data-mine GenBank, construct phylogenetic supermatrices, 
@@ -16,6 +16,7 @@ SUMAC works on OSX and Linux. Windows is not currently supported.
 
 ### Updates:
 
+- SUMAC version 2.2 allows multiple taxonomic groups to be searched for (not just a single ingroup and outgroup). See manual for details.
 - SUMAC version 2.1 greatly improves the handling of taxonomic names, adds the `--min_clusters` flag to set the minimum number of taxa to include in a cluster, 
 and other additional error checks.
 - SUMAC version 2.0 is *significantly* faster than previous versions due to a new clustering algorithm.  

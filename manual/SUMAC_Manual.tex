@@ -19,7 +19,7 @@
 %----------------------------------------
 %AUTHORS
 %----------------------------------------
-\title{SUMAC: Supermatrix Constructor version 2.1 Manual}
+\title{SUMAC: Supermatrix Constructor version 2.2 Manual}
 \author{William A. Freyman\thanks{freyman@berkeley.edu}}
 \affil{Department of Integrative Biology, University of California, Berkeley}
 
@@ -60,6 +60,12 @@ automatically fixes a lot of the out-of-date taxon names used in GenBank definit
 Additionally it has an option to set the minimum number of OTUs for a cluster (the default remains 4), 
 which you can set by the \texttt{--min\_clusters} flag. 
 These two changes save \textit{a ton} of time in terms of curating SUMAC results.
+
+SUMAC version 2.2
+allows multiple taxonomic group to be searched for,
+not just a single ingroup and outgroup.
+For details see the section below titled 
+\textbf{Specifying Ingroup and Outgroup}.
 
 When run from the command-line, SUMAC will perform a number of steps to construct
 a supermatrix.
@@ -330,6 +336,14 @@ The taxonomic names must be those used by GenBank, and the
 searches for the names are case sensitive.
 If a SUMAC run is repeated with the same ingroup and outgroup, SUMAC
 will load the previous search results to save time.
+
+Multiple taxonomic groups can be searched for by combining
+search terms with a \texttt{+} sign. For example,
+\texttt{-i Orthotrichum+Schlotheimia+Drummondia} will
+search for all three genera \textit{Orthotrichum},
+\textit{Schlotheimia}, and \textit{Drummondia}.
+This is useful for cases where the NCBI Taxonomy database
+is not up-to-date with monophyletic groups.
 
 \section{Setting the Number of CPU Cores}
 
