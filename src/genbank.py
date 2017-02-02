@@ -151,11 +151,20 @@ class GenBankSearch(object):
         keys = gb.keys()
         total = len(keys)
         i = 0
+        ingroup_terms = self.ingroup.split('+')
+        outgroup_terms = self.outgroup.split('+')
         for key in keys:
-            if self.ingroup in gb[key].annotations['taxonomy']:
-                self.ingroup_keys.append(key)
-            elif self.outgroup in gb[key].annotations['taxonomy']:
-                self.outgroup_keys.append(key)
+            found = False
+            for term in ingroup_terms:
+                if term in gb[key].annotations['taxonomy']:
+                    self.ingroup_keys.append(key)
+                    found = True
+                    break
+            if not found:
+                for term in outgroup_terms:
+                    if term in gb[key].annotations['taxonomy']:
+                        self.outgroup_keys.append(key)
+                        break
             self.print_search_status(i, total)
             i += 1
             if max_ingroup is not None and len(self.ingroup_keys) == max_ingroup:
