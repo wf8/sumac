@@ -155,24 +155,30 @@ class GenBankSearch(object):
         outgroup_terms = self.outgroup.split('+')
         for key in keys:
             found = False
-            for term in ingroup_terms:
-                if term in gb[key].annotations['taxonomy']:
-                    self.ingroup_keys.append(key)
-                    found = True
-                    break
-            if not found:
-                for term in outgroup_terms:
+            try:
+                for term in ingroup_terms:
                     if term in gb[key].annotations['taxonomy']:
-                        self.outgroup_keys.append(key)
+                        self.ingroup_keys.append(key)
+                        found = True
                         break
+                if not found:
+                    for term in outgroup_terms:
+                        if term in gb[key].annotations['taxonomy']:
+                            self.outgroup_keys.append(key)
+                            break
+            except:
+                sys.stdout.write('\n')
+                sys.stdout.flush()
+                color = Color()
+                print(color.red + 'Caught Biopython GenBank parsing error! NCBI accession: ' + color.yellow + key + color.done)
             self.print_search_status(i, total)
             i += 1
             if max_ingroup is not None and len(self.ingroup_keys) == max_ingroup:
-                sys.stdout.write("\n")
+                sys.stdout.write('\n')
                 sys.stdout.flush()  
                 self.write_file()
                 return 
-        sys.stdout.write("\n")
+        sys.stdout.write('\n')
         sys.stdout.flush()
         self.write_file()
 
