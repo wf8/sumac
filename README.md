@@ -14,6 +14,9 @@ Please see the [SUMAC user manual](https://rawgit.com/wf8/sumac/master/manual/SU
 
 SUMAC works on OSX and Linux. Windows is not currently supported.
 
+[USEARCH bug 9.15](http://www.drive5.com/usearch/manual/bugs.html) will cause USEARCH to crash during a SUMAC run. 
+This bug affects USEARCH v9.2.64 and v9.0.2132. Please ensure you use a different version of USEARCH with SUMAC.
+
 ### Updates:
 
 - SUMAC v2.21 handles a bug in Biopython's GenBank parsing that could cause SUMAC to crash.
