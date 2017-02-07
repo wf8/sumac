@@ -1,5 +1,5 @@
 
-# SUMAC 2.2: supermatrix constructor 
+# SUMAC 2.21: supermatrix constructor 
 
 
 SUMAC (Supermatrix Constructor) is a Python package to data-mine GenBank, construct phylogenetic supermatrices, 

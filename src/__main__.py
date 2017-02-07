@@ -57,7 +57,7 @@ def main():
     color = Color()
 
     print("")
-    print(color.blue + "SUMAC: supermatrix constructor v2.2" + color.done)
+    print(color.blue + "SUMAC: supermatrix constructor v2.21" + color.done)
     print("")
 
     num_cores = multiprocessing.cpu_count()
