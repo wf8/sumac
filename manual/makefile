@@ -1,4 +1,4 @@
-PROJECT=SUMAC_manual
+PROJECT=SUMAC_Manual
 
 all:
 	pdflatex $(PROJECT).tex

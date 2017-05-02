@@ -2,6 +2,12 @@
 \usepackage{geometry} 
 \usepackage{indentfirst}
 \usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!50!black,
+  urlcolor=blue!50!black,
+  citecolor=green!70!black
+}
 \usepackage{color}
 \usepackage{comment}
 \usepackage[pdftex]{graphicx}  
@@ -11,9 +17,28 @@
 \usepackage{units}
 \usepackage{booktabs}
 \usepackage{authblk}
+\usepackage[breakable, theorems, skins]{tcolorbox}
 \renewcommand{\baselinestretch}{1.5}
 \geometry{a4paper} 
 \bibliographystyle{apalike}
+
+\DeclareRobustCommand{\mybox}[2][gray!20]{
+\begin{tcolorbox}[  
+        breakable,
+        left=0pt,
+        right=0pt,
+        top=0pt,
+        bottom=0pt,
+        colback=#1,
+        colframe=#1,
+        width=\dimexpr\textwidth\relax, 
+        enlarge left by=0mm,
+        boxsep=5pt,
+        arc=0pt,outer arc=0pt,
+        ]
+        #2
+\end{tcolorbox}
+}
 
 
 %----------------------------------------
@@ -122,6 +147,16 @@ like guide sequence searches.
 For clustering, USEARCH's UCLUST algorithm is recommended over all-by-all BLAST
 comparisons because it is orders of magnitude faster.
 \texttt{matplotlib} should also be installed if you want SUMAC to generate graphs.
+
+\vspace{1cm}
+
+\mybox[red!20!white]{
+A known bug in the program USEARCH 
+will cause the newest versions of USEARCH to crash during a SUMAC run. 
+This bug has been reported to the USEARCH developer (bug 9.15) 
+and affects USEARCH versions v9.2.64 and v9.0.2132. Please ensure you use a different version of USEARCH with SUMAC. 
+Until a fix is released use v8.1 which you can download from \url{http://www.drive5.com/usearch/download.html}.
+}
 
 
 \subsection{Installing Dependencies on Linux}
@@ -447,6 +482,6 @@ decisiveness of the matrix more than where MSDS is low.}\label{fig:02}
 \cleardoublepage
 \phantomsection
 \addcontentsline{toc}{chapter}{Bibliography}
-\bibliography{SUMAC_manual}
+\bibliography{SUMAC_Manual}
 
 \end{document}
