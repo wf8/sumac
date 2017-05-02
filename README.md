@@ -15,7 +15,7 @@ Please see the [SUMAC user manual](https://rawgit.com/wf8/sumac/master/manual/SU
 SUMAC works on OSX and Linux. Windows is not currently supported.
 
 :exclamation: [USEARCH bug 9.15](http://www.drive5.com/usearch/manual/bugs.html) will cause USEARCH to crash during a SUMAC run. 
-This bug affects USEARCH v9.2.64 and v9.0.2132. Please ensure you use a different version of USEARCH with SUMAC. Until a new version is released use v8.1 which you can download [here](http://www.drive5.com/usearch/download.html).
+This bug affects USEARCH versions v9.2.64 and v9.0.2132. Please ensure you use a different version of USEARCH with SUMAC. Until a new version is released use v8.1 which you can download [here](http://www.drive5.com/usearch/download.html).
 
 ### Updates:
 
