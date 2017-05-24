@@ -157,13 +157,13 @@ class GenBankSearch(object):
             found = False
             try:
                 for term in ingroup_terms:
-                    if term in gb[key].annotations['taxonomy']:
+                    if term in gb[key].annotations['taxonomy'] or term in gb[key].annotations["organism"]:
                         self.ingroup_keys.append(key)
                         found = True
                         break
                 if not found:
                     for term in outgroup_terms:
-                        if term in gb[key].annotations['taxonomy']:
+                        if term in gb[key].annotations['taxonomy'] or term in gb[key].annotations["organism"]:
                             self.outgroup_keys.append(key)
                             break
             except:
