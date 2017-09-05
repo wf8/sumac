@@ -1,5 +1,5 @@
 
-# SUMAC 2.21: supermatrix constructor 
+# SUMAC 2.22: supermatrix constructor 
 
 
 SUMAC (Supermatrix Constructor) is a Python package to data-mine GenBank, construct phylogenetic supermatrices, 
@@ -19,6 +19,7 @@ This bug affects USEARCH versions v9.2.64 and v9.0.2132. Please ensure you use a
 
 ### Updates:
 
+- SUMAC v2.22 updates SUMAC to handle SeqRecord comparisons deprecated in Biopython 1.67.
 - SUMAC v2.21 handles a bug in Biopython's GenBank parsing that could cause SUMAC to crash.
 - SUMAC v2.2 allows multiple taxonomic groups to be searched for (not just a single ingroup and outgroup). See manual for details.
 - SUMAC v2.1 greatly improves the handling of taxonomic names, adds the `--min_clusters` flag to set the minimum number of taxa to include in a cluster, 
