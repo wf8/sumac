@@ -460,7 +460,7 @@ class GuidedClusterBuilder(ClusterBuilder):
         # remember how many guide sequences there are
         num_guides = len(list(guide_sequences))
 
-        for guide in guide_sequences:
+        for i, guide in enumerate(guide_sequences):
             # check whether another process is already comparing this guide sequence
             compare_guide = False
             with lock:
@@ -497,9 +497,9 @@ class GuidedClusterBuilder(ClusterBuilder):
                                 # Subject_145 AJ620515.1 Gaura parviflora ITS1, 5.8S rRNA gene, and ITS2
                                 accession = alignment.title.split(" ")[1]
                                 with lock:
-                                    temp_cluster = clusters[guide_sequences.index(guide)]
+                                    temp_cluster = clusters[i]
                                     temp_cluster.append(accession)
-                                    clusters[guide_sequences.index(guide)] = temp_cluster
+                                    clusters[i] = temp_cluster
                 blastn_xml.close()
             # update status
             percent = str(round(100 * len(already_compared)/float(num_guides), 2))

@@ -188,7 +188,7 @@ def main():
         min_clusters = 4
         if args.min_clusters:
             min_clusters = int(args.min_clusters)
-        if (args.slink or args.hac) or (uclust_error == True):
+        if (args.slink or args.hac or args.guide) or (uclust_error == True):
             cluster_builder.assemble_fasta(gb, min_clusters)
         else:
             cluster_builder.assemble_fasta_uclust(min_clusters)
