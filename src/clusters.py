@@ -400,6 +400,7 @@ class GuidedClusterBuilder(ClusterBuilder):
         clusters = manager.list()
 
         color = Color()
+        guide_seq_ids = []
         # check for fasta file of guide sequences
         if not os.path.isfile(guide_seq):
             print(color.red + "FASTA file of guide sequences not found. Please re-try." + color.done)
@@ -408,6 +409,7 @@ class GuidedClusterBuilder(ClusterBuilder):
             # initialize an empty list for each cluster
             guide_sequences = SeqIO.parse(open(guide_seq, "rU"), "fasta")
             for guide in guide_sequences:
+                guide_seq_ids.append(guide.id)
                 clusters.append([])
 
         # make blast database
@@ -435,10 +437,22 @@ class GuidedClusterBuilder(ClusterBuilder):
         
         sys.stdout.write("\n")
         sys.stdout.flush()
-        self.clusters = clusters
         if os.path.isfile("blast_db.fasta"):
             os.remove("blast_db.fasta")
-
+        
+        final_clusters = []
+        merged_clusters = []
+        # merge clusters with multiple guide sequences
+        for i, seq_id in enumerate(guide_seq_ids):
+            if i not in merged_clusters:
+                new_cluster = clusters[i]
+                merged_clusters.append(i)
+                for j in range(i + 1, len(guide_seq_ids)):
+                    if guide_seq_ids[i][:-1] == guide_seq_ids[j][:-1]:
+                        new_cluster = new_cluster + clusters[j]
+                        merged_clusters.append(j)
+                final_clusters.append(new_cluster)
+        self.clusters = final_clusters
 
 
     def make_guided_clusters_worker(self, guide_seq, all_seq_keys, length_threshold, evalue_threshold, clusters, already_compared, lock, process_num, gb_dir):
