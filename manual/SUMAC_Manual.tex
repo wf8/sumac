@@ -99,6 +99,9 @@ SUMAC to crash.
 SUMAC version 2.22
 updates SUMAC to handle certain functions deprecated in Biopython 1.67.
 
+SUMAC version 2.23
+update to handle multiple guide sequences for each target locus.
+
 When run from the command-line, SUMAC will perform a number of steps to construct
 a supermatrix.
 First, SUMAC creates a local SQLite3 \citep{sqlite} database of the specified GenBank division (e.g. PLN or MAM),
@@ -396,9 +399,16 @@ used with the \texttt{-c} flag.
 \section{Using Guide Sequences}
 
 Guide sequences should be in a single standard FASTA file specified
-using the \verb|-g| option. The names of the
-guide sequences will be ignored, and each of the ingroup and outgroup 
-sequences will be BLASTed against the guide sequences.
+using the \verb|-g| option. 
+You can use more than a single guide sequence for each target locus
+by naming the guide sequence with a number (0-9) following it (no space).
+For example, if you have four guide sequences with the names
+\texttt{ITS}, \texttt{18S}, \texttt{rbcL1}, and \texttt{rbcL2}
+the final results will be three clusters of sequences;
+\texttt{rbcL1} and \texttt{rbcL2} will be clustered together.
+This helps when you want to align sequences from distantly
+related lineages that may not otherwise cluster together with
+only a single guide sequence.
 
 \section{Homologous Sequence Thresholds}
 
