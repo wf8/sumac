@@ -151,19 +151,24 @@ class GenBankSearch(object):
         keys = gb.keys()
         total = len(keys)
         i = 0
+
         ingroup_terms = self.ingroup.split('+')
         outgroup_terms = self.outgroup.split('+')
+
         for key in keys:
             found = False
             try:
+                taxonomy = set(gb[key].annotations['taxonomy'])
+                organism = set(gb[key].annotations['organism'])
+                tax_and_org = taxonomy.union(organism)
                 for term in ingroup_terms:
-                    if term in gb[key].annotations['taxonomy'] or term in gb[key].annotations["organism"]:
+                    if term in tax_and_org:
                         self.ingroup_keys.append(key)
                         found = True
                         break
                 if not found:
                     for term in outgroup_terms:
-                        if term in gb[key].annotations['taxonomy'] or term in gb[key].annotations["organism"]:
+                        if term in tax_and_org:
                             self.outgroup_keys.append(key)
                             break
             except:
@@ -181,7 +186,6 @@ class GenBankSearch(object):
         sys.stdout.write('\n')
         sys.stdout.flush()
         self.write_file()
-
 
     def print_search_status(self, i, total):
         color = Color()
