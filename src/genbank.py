@@ -151,15 +151,21 @@ class GenBankSearch(object):
         keys = gb.keys()
         total = len(keys)
         i = 0
-
         ingroup_terms = self.ingroup.split('+')
         outgroup_terms = self.outgroup.split('+')
-
         for key in keys:
             found = False
             try:
-                taxonomy = set(gb[key].annotations['taxonomy'])
-                organism = set(gb[key].annotations['organism'])
+                gb_tax = gb[key].annotations['taxonomy']
+                if type(gb_tax) == str:
+                  taxonomy = set([gb_tax])
+                else:
+                  taxonomy = set(gb_tax)
+                gb_org = gb[key].annotations['organism']
+                if type(gb_org) == str:
+                  organism = set([gb_org])
+                else:
+                  organism = set(gb_org)
                 tax_and_org = taxonomy.union(organism)
                 for term in ingroup_terms:
                     if term in tax_and_org:
